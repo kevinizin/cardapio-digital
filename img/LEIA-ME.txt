@@ -1,0 +1,64 @@
+IMAGENS
+=======
+
+Coloque aqui a logo e as fotos dos produtos. Depois aponte no config.js.
+
+
+LOGO
+----
+  Arquivo:  logo.png  (ou .jpg / .webp)
+  Formato:  quadrada, tipo 500x500px
+  No config.js:      logo: "img/logo.png",
+
+  Sem logo ainda? Deixe  logo: ""  no config e o site desenha um
+  monograma com as iniciais do nome. Fica apresentável na hora.
+
+
+FOTO DE CAPA (opcional)
+-----------------------
+  Arquivo:  capa.jpg
+  Formato:  bem larga, tipo 1600x1000px, o lanche em destaque
+  No config.js, na seção CAPA:    imagem: "img/capa.jpg",
+
+  Sem foto de capa, o site monta um fundo gráfico com a cor da marca.
+  Fica bom — não é quebra-galho feio.
+
+
+FOTOS DOS PRODUTOS
+------------------
+  Formato:  quadrada, 800x800px
+  Nome:     sem espaço, sem acento.   prod_cheddar.jpg    ✓
+                                      Cheddar Bacon.jpg   ✗
+  No config.js:     img: "img/prod_cheddar.jpg",
+
+  Produto sem foto: use um emoji no lugar.
+      e: "🍔"   hambúrguer
+      e: "🍟"   batata / porção
+      e: "🌭"   hot dog / cachorro-quente
+      e: "🍗"   frango
+      e: "🥓"   bacon
+      e: "🥤"   bebida
+      e: "🍦"   sobremesa
+
+  Dá pra misturar: alguns produtos com foto, outros com emoji.
+  Não fica torto — o espaço é o mesmo.
+
+
+PESO DAS IMAGENS — LEIA ISSO
+----------------------------
+Foto direto do celular tem 4MB. Vinte fotos assim = cardápio que demora
+15 segundos pra abrir no 4G, e o cliente desiste antes.
+
+Deixe cada foto com MENOS DE 200KB. Use um site de compressão como
+squoosh.app ou tinypng.com — é de graça, arrasta e solta.
+
+Se der, salve em .webp em vez de .jpg: pesa quase metade com a mesma
+qualidade.
+
+
+FOTO DO PRÓPRIO CLIENTE
+-----------------------
+Peça as fotos que ele já tem no Instagram — normalmente são melhores do
+que foto tirada às pressas. Se for tirar na hora: perto da janela, luz
+natural, fundo simples, de cima ou de lado. Sem flash, que estoura o
+brilho do queijo e o lanche fica com cara de plástico.

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de QR Code — Cardápio Digital</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+/* ==========================================================================
+   Página só de ferramenta: o dono usa pra imprimir os QR das mesas.
+   Não sobe junto com o site se você não quiser — nada aqui é público.
+   ========================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+[hidden]{display:none !important}
+
+:root{
+  --fundo:#0B0A09; --caixa:#161311; --caixa2:#1F1B17; --linha:#2C2621;
+  --txt:#F6F1E8; --txt2:#A2978A; --marca:#E8B33C; --marca-txt:#100C08;
+  --marca2:#C4351B;
+  --f-display:'Anton', Impact, sans-serif;
+  --f-txt:system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+body{background:var(--fundo); color:var(--txt); font-family:var(--f-txt);
+  line-height:1.55; -webkit-font-smoothing:antialiased}
+button,input,select{font:inherit; color:inherit}
+button{background:none; border:0; cursor:pointer}
+h1,h2,h3{font-family:var(--f-display); font-weight:400; text-transform:uppercase;
+  line-height:1.05; letter-spacing:.005em}
+
+/* --------------------------------- painel --------------------------------- */
+.topo{border-bottom:1px solid var(--linha); background:var(--caixa)}
+.topo-in{max-width:1100px; margin-inline:auto; padding:22px 20px}
+.topo h1{font-size:clamp(1.5rem,4vw,2.1rem)}
+.topo p{color:var(--txt2); font-size:.92rem; margin-top:6px; max-width:62ch}
+
+.painel{max-width:1100px; margin:26px auto; padding-inline:20px;
+  display:grid; gap:22px}
+@media(min-width:900px){.painel{grid-template-columns:340px 1fr; align-items:start}}
+
+.bloco{background:var(--caixa); border:1px solid var(--linha); border-radius:18px;
+  padding:20px; display:grid; gap:16px}
+@media(min-width:900px){.bloco{position:sticky; top:20px}}
+.bloco h2{font-size:1.05rem}
+
+.campo{display:grid; gap:7px}
+.campo > span{font-size:.74rem; font-weight:800; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--txt2)}
+.campo input,.campo select{width:100%; background:var(--caixa2);
+  border:1.5px solid var(--linha); border-radius:11px; padding:.7em .9em; outline:0}
+.campo input:focus,.campo select:focus{border-color:var(--marca)}
+.campo small{font-size:.76rem; color:var(--txt2); line-height:1.45}
+.campo.ruim input{border-color:var(--marca2)}
+
+.linha2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+
+.chk{display:flex; align-items:center; gap:10px; cursor:pointer;
+  background:var(--caixa2); border:1.5px solid var(--linha); border-radius:11px;
+  padding:.7em .85em; font-size:.9rem}
+.chk.on{border-color:var(--marca)}
+.chk input{width:17px; height:17px; accent-color:var(--marca); flex:none}
+
+.acoes{display:grid; gap:9px}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+  padding:.85em 1.3em; border-radius:99px; font-weight:800; font-size:.93rem;
+  transition:filter .18s, transform .15s}
+.btn:active{transform:scale(.98)}
+.btn-p{background:var(--marca); color:var(--marca-txt)}
+.btn-s{border:1.5px solid var(--linha); background:var(--caixa2)}
+.btn:hover{filter:brightness(1.1)}
+.btn-s:hover{border-color:var(--marca)}
+
+.nota{font-size:.8rem; color:var(--txt2); background:var(--caixa2);
+  border-left:3px solid var(--marca); border-radius:0 10px 10px 0;
+  padding:11px 13px; line-height:1.5}
+.nota.alerta{border-left-color:var(--marca2)}
+.nota b{color:var(--txt)}
+
+/* -------------------------------- prévia -------------------------------- */
+.previa-hd{display:flex; align-items:baseline; justify-content:space-between;
+  gap:14px; margin-bottom:14px; flex-wrap:wrap}
+.previa-hd h2{font-size:1.05rem}
+.previa-hd em{font-style:normal; font-size:.82rem; color:var(--txt2)}
+
+.folhas{display:grid; gap:calc(26px * var(--e, 1)); --e:1}
+.previa-caixa{padding-bottom:10px}
+
+/* Cada folha é sempre uma A4 cheia (210x297mm) — os 3 formatos foram
+   dimensionados pra ladrilhar a folha exata. Na tela ela aparece reduzida
+   por --e; a caixa em volta encolhe junto pra nada se sobrepor.        */
+.folha-box{
+  width:calc(210mm * var(--e, 1));
+  height:calc(297mm * var(--e, 1));
+  overflow:hidden;
+  box-shadow:0 20px 50px -20px rgba(0,0,0,.7);
+}
+.folha{
+  width:210mm; height:297mm; background:#fff; color:#111;
+  display:grid; align-content:start;
+  transform:scale(var(--e, 1)); transform-origin:top left;
+}
+
+/* ============================== O CARTÃO ============================== */
+.cartao{
+  position:relative; overflow:hidden; background:#fff; color:#100C08;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  border:1px dashed #c9c9c9;
+  padding:6mm 5mm 5mm;
+}
+.cartao-topo{
+  position:absolute; inset:0 0 auto; height:4mm;
+  background:var(--cor-marca, #E8B33C);
+}
+.cartao-logo{width:16mm; height:16mm; border-radius:4mm; overflow:hidden;
+  margin-top:3mm; flex:none; display:grid; place-items:center}
+.cartao-logo img{width:100%; height:100%; object-fit:cover}
+.cartao-mono{width:100%; height:100%; display:grid; place-items:center;
+  background:linear-gradient(142deg, var(--cor-marca,#E8B33C), var(--cor-marca2,#C4351B));
+  color:#fff; font-family:var(--f-display); font-size:7mm; line-height:1}
+.cartao-nome{font-family:var(--f-display); font-size:5.4mm; line-height:1.05;
+  margin-top:2.5mm; text-transform:uppercase; max-width:100%; word-break:break-word}
+.cartao-olho{font-size:2.5mm; font-weight:800; letter-spacing:.22em;
+  text-transform:uppercase; color:#8a8178; margin-top:1mm}
+
+.cartao-qr{position:relative; width:44mm; height:44mm; margin:3.5mm 0 0; flex:none}
+.cartao-qr svg{display:block; width:100%; height:100%}
+.qr-logo{
+  position:absolute; inset:50% auto auto 50%; translate:-50% -50%;
+  width:11mm; height:11mm; border-radius:2.5mm; overflow:hidden;
+  background:#fff; box-shadow:0 0 0 1.2mm #fff; display:grid; place-items:center;
+}
+.qr-logo img{width:100%; height:100%; object-fit:cover}
+.qr-logo .cartao-mono{font-size:5mm; border-radius:0}
+
+.cartao-cta{margin-top:3mm; font-size:3.4mm; font-weight:800; line-height:1.3;
+  max-width:52mm}
+.cartao-cta b{color:var(--cor-marca-escura, #9a6f13)}
+.cartao-passos{margin-top:1.5mm; font-size:2.5mm; color:#6f675f; line-height:1.5}
+
+.cartao-mesa{
+  margin-top:auto; margin-bottom:0; padding-top:3mm;
+  display:flex; align-items:center; gap:2mm;
+}
+.cartao-mesa span{
+  background:var(--cor-marca,#E8B33C); color:var(--cor-marca-txt,#100C08);
+  font-family:var(--f-display); font-size:5mm; line-height:1;
+  padding:1.6mm 3.4mm; border-radius:2mm; text-transform:uppercase;
+}
+.cartao-pe{margin-top:2.5mm; font-size:2.3mm; color:#8a8178; word-break:break-all;
+  max-width:100%; line-height:1.4}
+
+/* formatos */
+.f-mesa   .folha{grid-template-columns:repeat(2,105mm)}
+.f-mesa   .cartao{width:105mm; height:148.5mm}
+.f-adesivo .folha{grid-template-columns:repeat(3,70mm)}
+.f-adesivo .cartao{width:70mm; height:99mm; padding:4mm 3mm}
+.f-adesivo .cartao-qr{width:34mm; height:34mm; margin-top:2.5mm}
+.f-adesivo .cartao-nome{font-size:4.2mm}
+.f-adesivo .cartao-logo{width:11mm; height:11mm; margin-top:2mm}
+.f-adesivo .cartao-cta{font-size:2.8mm; margin-top:2mm; max-width:44mm}
+.f-adesivo .cartao-passos{display:none}
+.f-adesivo .cartao-mesa span{font-size:4mm}
+.f-cartaz .folha{grid-template-columns:210mm}
+.f-cartaz .cartao{width:210mm; height:297mm; padding:20mm 16mm 16mm}
+.f-cartaz .cartao-topo{height:9mm}
+.f-cartaz .cartao-logo{width:34mm; height:34mm; border-radius:9mm; margin-top:6mm}
+.f-cartaz .cartao-mono{font-size:15mm}
+.f-cartaz .cartao-nome{font-size:15mm; margin-top:7mm}
+.f-cartaz .cartao-olho{font-size:4.4mm; margin-top:3mm}
+.f-cartaz .cartao-qr{width:100mm; height:100mm; margin-top:10mm}
+.f-cartaz .qr-logo{width:24mm; height:24mm; border-radius:5mm}
+.f-cartaz .qr-logo .cartao-mono{font-size:11mm}
+.f-cartaz .cartao-cta{font-size:8mm; margin-top:9mm; max-width:150mm}
+.f-cartaz .cartao-passos{font-size:4.4mm; margin-top:4mm}
+.f-cartaz .cartao-mesa span{font-size:11mm; padding:3mm 6mm}
+.f-cartaz .cartao-pe{font-size:3.6mm; margin-top:6mm}
+
+/* ============================== IMPRESSÃO ============================== */
+@page{size:A4; margin:0}
+@media print{
+  .topo,.bloco,.previa-hd,.so-tela{display:none !important}
+  body{background:#fff}
+  .painel{display:block; margin:0; padding:0; max-width:none}
+  .previa-caixa{padding:0}
+  .folhas{gap:0}
+  .folha-box{width:210mm; height:297mm; overflow:visible; box-shadow:none;
+    break-after:page; page-break-after:always}
+  .folha-box:last-child{break-after:auto; page-break-after:auto}
+  .folha{transform:none !important}
+  .cartao{border-color:#e2e2e2}
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-in">
+    <h1>Gerador de QR Code</h1>
+    <p>Gera as plaquinhas de mesa do cardápio digital. O QR é criado aqui mesmo, no
+       navegador — não passa por site nenhum, funciona sem internet e não expira.</p>
+  </div>
+</header>
+
+<div class="painel">
+
+  <!-- ============================ CONTROLES ============================ -->
+  <section class="bloco">
+    <h2>Configuração</h2>
+
+    <label class="campo" id="cpURL">
+      <span>Endereço do cardápio</span>
+      <input id="url" type="url" placeholder="https://cardapio.dolugar.com.br" autocomplete="off">
+      <small id="urlDica"></small>
+    </label>
+
+    <div class="linha2">
+      <label class="campo">
+        <span>Mesas</span>
+        <input id="mesas" type="number" min="0" max="120" step="1" value="8">
+        <small>0 = um QR só, sem número</small>
+      </label>
+      <label class="campo">
+        <span>Começa na</span>
+        <input id="inicio" type="number" min="1" max="999" step="1" value="1">
+        <small>número da 1ª mesa</small>
+      </label>
+    </div>
+
+    <label class="campo">
+      <span>Formato pra imprimir</span>
+      <select id="formato">
+        <option value="mesa">Plaquinha de mesa — 4 por folha A4</option>
+        <option value="adesivo">Adesivo pequeno — 9 por folha A4</option>
+        <option value="cartaz">Cartaz de balcão — 1 folha A4 inteira</option>
+      </select>
+    </label>
+
+    <label class="campo">
+      <span>Cor do QR</span>
+      <select id="corQR">
+        <option value="preto">Preto no branco (recomendado)</option>
+        <option value="marca">Cor da marca</option>
+      </select>
+      <small id="corDica"></small>
+    </label>
+
+    <label class="chk on" id="lbLogo">
+      <input id="comLogo" type="checkbox" checked>
+      <span>Logo no meio do QR</span>
+    </label>
+
+    <div class="acoes">
+      <button class="btn btn-p" id="btnImprimir">🖨️ Imprimir / salvar em PDF</button>
+      <button class="btn btn-s" id="btnPNG">⬇️ Baixar 1 QR em PNG</button>
+    </div>
+
+    <p class="nota" id="nota"></p>
+  </section>
+
+  <!-- ============================== PRÉVIA ============================== -->
+  <section>
+    <div class="previa-hd so-tela">
+      <h2>Prévia</h2>
+      <em id="resumo"></em>
+    </div>
+    <div class="previa-caixa">
+      <div class="folhas" id="folhas"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="config.js?v=1"></script>
+<script src="qr.js?v=1"></script>
+<script>
+(function () {
+"use strict";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+/* paleta que está valendo no config.js */
+const P = (typeof TEMA === "object" ? TEMA : PALETAS[TEMA]) || PALETAS.brasa;
+
+const hexRGB = h => {
+  let x = String(h).replace("#","").trim();
+  if (x.length === 3) x = [...x].map(c => c+c).join("");
+  const v = parseInt(x, 16);
+  return [(v>>16)&255, (v>>8)&255, v&255];
+};
+const lum = hex => {
+  const [r,g,b] = hexRGB(hex).map(c => {
+    const s = c/255;
+    return s <= 0.03928 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4);
+  });
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+};
+/* contraste da cor contra o branco — QR precisa de bastante */
+const contrasteNoBranco = hex => (1.05) / (lum(hex) + 0.05);
+const escurece = (hex, f) => "#" + hexRGB(hex)
+  .map(c => Math.round(c*f).toString(16).padStart(2,"0")).join("");
+
+const iniciais = LOJA.nome.replace(/[^\p{L}\p{N} ]/gu,"").split(/\s+/)
+  .filter(Boolean).slice(0,2).map(w => w[0]).join("").toUpperCase() || "QR";
+
+const logoHTML = () => LOJA.logo
+  ? `<img src="${esc(LOJA.logo)}" alt="">`
+  : `<div class="cartao-mono">${esc(iniciais)}</div>`;
+
+/* ---------------------- endereço padrão do cardápio ---------------------- */
+(function () {
+  const naWeb = location.protocol === "http:" || location.protocol === "https:";
+  const base = naWeb ? location.href.replace(/[^\/]*$/, "") : "";
+  $("#url").value = base;
+  $("#urlDica").textContent = naWeb
+    ? "Peguei o endereço desta página. Confirme se é o endereço público do cardápio."
+    : "Você abriu o arquivo direto do computador, então não tem endereço ainda. "
+    + "Publique o cardápio e cole aqui o link (ex: https://cardapio.dolugar.com.br).";
+})();
+
+/* -------------------------------- prévia -------------------------------- */
+function monta() {
+  const url = $("#url").value.trim();
+  const nMesas = Math.max(0, Math.min(120, parseInt($("#mesas").value) || 0));
+  const inicio = Math.max(1, parseInt($("#inicio").value) || 1);
+  const formato = $("#formato").value;
+  const comLogo = $("#comLogo").checked;
+  const usaMarca = $("#corQR").value === "marca";
+
+  $("#lbLogo").classList.toggle("on", comLogo);
+  document.body.className = "f-" + formato;
+
+  /* contraste: QR claro não escaneia */
+  const cQR = usaMarca ? P.marca : "#111111";
+  const razao = contrasteNoBranco(cQR);
+  let corFinal = cQR, avisoCor = "";
+  if (usaMarca && razao < 4) {
+    corFinal = escurece(P.marca, 0.45);
+    avisoCor = `A cor da marca é clara demais pro QR (contraste ${razao.toFixed(1)}:1). `
+             + `Escureci automaticamente pra garantir a leitura.`;
+  }
+  $("#corDica").textContent = usaMarca
+    ? (avisoCor || `Contraste ${razao.toFixed(1)}:1 — ok pra leitura.`)
+    : "Preto é o que os celulares leem mais rápido, em qualquer luz.";
+
+  const alvo = $("#folhas");
+  alvo.innerHTML = "";
+
+  if (!url || !/^https?:\/\/.+/i.test(url)) {
+    $("#cpURL").classList.add("ruim");
+    $("#nota").className = "nota alerta";
+    $("#nota").innerHTML = "<b>Falta o endereço.</b> Cole o link público do cardápio "
+      + "no campo de cima pra eu gerar os QR.";
+    $("#resumo").textContent = "";
+    return;
+  }
+  $("#cpURL").classList.remove("ruim");
+
+  /* nível de correção: H quando tem logo tapando o meio */
+  const nivel = comLogo ? "H" : "Q";
+  const furo = comLogo ? 7 : 0;
+
+  const lista = nMesas > 0
+    ? Array.from({ length: nMesas }, (_, i) => inicio + i)
+    : [null];
+
+  const porFolha = { mesa: 4, adesivo: 9, cartaz: 1 }[formato];
+  let folha = null;
+  let erro = "";
+
+  lista.forEach((mesa, i) => {
+    if (i % porFolha === 0) {
+      const caixa = document.createElement("div");
+      caixa.className = "folha-box";
+      folha = document.createElement("div");
+      folha.className = "folha";
+      caixa.appendChild(folha);
+      alvo.appendChild(caixa);
+    }
+
+    /* Todo QR daqui é do estabelecimento, então sempre leva pra versão de
+       salão (comer aqui / pra viagem). Com numeração vai "mesa=N"; sem
+       numeração vai "local=1", que abre a mesma versão sem número.      */
+    const link = url + (url.includes("?") ? "&" : "?")
+               + (mesa == null ? "local=1" : "mesa=" + mesa);
+
+    let svg;
+    try {
+      /* zona de silêncio de 4 módulos: é o que o padrão pede pra leitura */
+      svg = QR.svg(QR.encode(link, nivel), { cor: corFinal, fundo: "#FFFFFF", furo, zona: 4 });
+    } catch (e) {
+      erro = e.message;
+      svg = "";
+    }
+
+    const cartao = document.createElement("div");
+    cartao.className = "cartao";
+    cartao.style.setProperty("--cor-marca", P.marca);
+    cartao.style.setProperty("--cor-marca2", P.marca2);
+    cartao.style.setProperty("--cor-marca-txt", lum(P.marca) > 0.42 ? "#100C08" : "#fff");
+    cartao.style.setProperty("--cor-marca-escura", escurece(P.marca, 0.62));
+
+    cartao.innerHTML = `
+      <div class="cartao-topo"></div>
+      <div class="cartao-logo">${logoHTML()}</div>
+      <div class="cartao-nome">${esc(LOJA.nome)}</div>
+      <div class="cartao-olho">Cardápio digital</div>
+      <div class="cartao-qr">
+        ${svg}
+        ${comLogo ? `<div class="qr-logo">${logoHTML()}</div>` : ""}
+      </div>
+      <div class="cartao-cta">Aponte a câmera do celular<br><b>e veja o cardápio</b></div>
+      <div class="cartao-passos">Abra a câmera · aponte pro código · toque no link.<br>
+        Monte seu pedido e ele chega pronto no nosso WhatsApp.</div>
+      ${mesa != null ? `<div class="cartao-mesa"><span>Mesa ${mesa}</span></div>` : ""}
+      <div class="cartao-pe">${esc(LOJA.instagram ? "@" + LOJA.instagram + " · " : "")}${esc(url.replace(/^https?:\/\//,""))}</div>`;
+
+    folha.appendChild(cartao);
+  });
+
+  /* completa a última folha com cartões vazios pro grid não desalinhar */
+  const sobra = lista.length % porFolha;
+  if (sobra) for (let i = sobra; i < porFolha; i++) {
+    const vazio = document.createElement("div");
+    vazio.className = "cartao";
+    vazio.style.border = "1px dashed #eee";
+    folha.appendChild(vazio);
+  }
+
+  const folhasN = Math.ceil(lista.length / porFolha);
+  $("#resumo").textContent =
+    `${lista.length} ${lista.length === 1 ? "cartão" : "cartões"} · ${folhasN} folha${folhasN>1?"s":""} A4`;
+
+  $("#nota").className = "nota" + (erro ? " alerta" : "");
+  $("#nota").innerHTML = erro
+    ? `<b>Link comprido demais.</b> ${esc(erro)}`
+    : `<b>Antes de imprimir tudo:</b> imprima 1 folha e teste com o celular. `
+    + `Na janela de impressão, deixe margens em <b>Nenhuma</b> e desmarque `
+    + `“ajustar à página” pro tamanho sair certo.`;
+
+  ajustaEscala();
+}
+
+/* Reduz a folha A4 pra caber na tela. A impressão ignora isso e sai 1:1.
+   Mede 210mm de verdade em vez de chutar 96dpi.                        */
+function ajustaEscala() {
+  const caixa = $(".previa-caixa");
+  if (!caixa) return;
+  const regua = document.createElement("div");
+  regua.style.cssText = "width:210mm;position:absolute;visibility:hidden";
+  document.body.appendChild(regua);
+  const larguraA4 = regua.offsetWidth;
+  regua.remove();
+  const escala = Math.min(1, (caixa.clientWidth - 2) / larguraA4);
+  $("#folhas").style.setProperty("--e", escala);
+}
+
+/* ------------------------------- ações ------------------------------- */
+["#url","#mesas","#inicio","#formato","#corQR","#comLogo"].forEach(s => {
+  $(s).addEventListener("input", monta);
+  $(s).addEventListener("change", monta);
+});
+addEventListener("resize", ajustaEscala);
+
+$("#btnImprimir").addEventListener("click", () => window.print());
+
+$("#btnPNG").addEventListener("click", () => {
+  const url = $("#url").value.trim();
+  if (!/^https?:\/\/.+/i.test(url)) { $("#url").focus(); return; }
+  const mesas = parseInt($("#mesas").value) || 0;
+  const inicio = Math.max(1, parseInt($("#inicio").value) || 1);
+  const link = url + (url.includes("?") ? "&" : "?")
+             + (mesas > 0 ? "mesa=" + inicio : "local=1");
+  const comLogo = $("#comLogo").checked;
+  const qr = QR.encode(link, comLogo ? "H" : "Q");
+  const dados = QR.png(qr, { px: 16, cor: "#111111", fundo: "#FFFFFF", zona: 4 });
+  const a = document.createElement("a");
+  a.href = dados;
+  a.download = "qr-" + LOJA.nome.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+             + (mesas > 0 ? "-mesa" + inicio : "") + ".png";
+  a.click();
+});
+
+monta();
+})();
+</script>
+</body>
+</html>
