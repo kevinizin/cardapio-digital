@@ -13,6 +13,7 @@
   --marca2:#C4351B; --marca2-rgb:196,53,27;
   --zap:#22C55E;   --zap-txt:#04160A;
   --f-display:'Anton', Impact, sans-serif;
+  --f-display-peso:400;          /* Anton só tem 400; fontes com peso vêm do config */
   --f-txt:system-ui, -apple-system, sans-serif;
 
   --max:1180px;
@@ -58,7 +59,7 @@ svg{width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2;
 .wrap{width:100%; max-width:var(--max); margin-inline:auto; padding-inline:18px}
 
 .h2{
-  font-family:var(--f-display); font-weight:400;
+  font-family:var(--f-display); font-weight:var(--f-display-peso,400);
   font-size:clamp(1.75rem, 5.2vw, 2.9rem); line-height:1.04;
   letter-spacing:.005em; text-transform:uppercase;
 }
@@ -117,14 +118,14 @@ svg{width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2;
 .brand-logo,.capa-logo,.ft-logo{container-type:size}
 .mono{
   width:100%; height:100%; display:grid; place-items:center;
-  font-family:var(--f-display); font-weight:400; text-transform:uppercase;
+  font-family:var(--f-display); font-weight:var(--f-display-peso,400); text-transform:uppercase;
   background:linear-gradient(142deg, var(--marca), var(--marca2));
   color:var(--marca-txt); line-height:1; letter-spacing:.01em;
   font-size:1.1rem; font-size:44cqmin;
 }
 .brand-txt{display:flex; flex-direction:column; min-width:0; line-height:1.1}
 .brand-txt b{
-  font-family:var(--f-display); font-weight:400; font-size:1.16rem;
+  font-family:var(--f-display); font-weight:var(--f-display-peso,400); font-size:1.16rem;
   text-transform:uppercase; letter-spacing:.01em;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
@@ -214,7 +215,7 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
   box-shadow:0 0 0 4px rgb(var(--marca2-rgb)/.18)}
 
 .capa h1{
-  font-family:var(--f-display); font-weight:400;
+  font-family:var(--f-display); font-weight:var(--f-display-peso,400);
   font-size:clamp(2.4rem, 9.5vw, 5.2rem); line-height:.96;
   text-transform:uppercase; letter-spacing:-.004em;
   text-wrap:balance; white-space:pre-line;
@@ -290,7 +291,7 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
   padding:.4em .72em; border-radius:8px; box-shadow:var(--sombra-s);
 }
 
-.preco{font-family:var(--f-display); font-weight:400; font-size:1.34rem;
+.preco{font-family:var(--f-display); font-weight:var(--f-display-peso,400); font-size:1.34rem;
   color:var(--marca); letter-spacing:.01em; line-height:1}
 .preco-de{font-size:.78rem; color:var(--txt2); text-decoration:line-through;
   margin-right:.45em; font-family:var(--f-txt); font-weight:600}
@@ -345,7 +346,7 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
 /* grupo */
 .grupo{padding-top:42px; scroll-margin-top:calc(var(--topo) + 62px)}
 .grupo-hd{display:flex; align-items:center; gap:14px; margin-bottom:20px}
-.grupo-hd h3{font-family:var(--f-display); font-weight:400; text-transform:uppercase;
+.grupo-hd h3{font-family:var(--f-display); font-weight:var(--f-display-peso,400); text-transform:uppercase;
   font-size:clamp(1.35rem,4.4vw,1.95rem); line-height:1; white-space:nowrap}
 .grupo-hd i{flex:1; height:1px; background:var(--linha)}
 .grupo-hd em{font-style:normal; font-size:.76rem; color:var(--txt2); text-align:right;
@@ -457,7 +458,7 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
 .ft{border-top:1px solid var(--linha); padding:52px 0 46px; text-align:center}
 .ft-in{display:grid; justify-items:center; gap:11px}
 .ft-logo{width:60px; height:60px; border-radius:16px; overflow:hidden; margin-bottom:6px}
-.ft-nome{font-family:var(--f-display); font-weight:400; text-transform:uppercase;
+.ft-nome{font-family:var(--f-display); font-weight:var(--f-display-peso,400); text-transform:uppercase;
   font-size:1.4rem; line-height:1}
 .ft-tag{font-size:.87rem; color:var(--txt2)}
 .ft-links{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px}
@@ -519,7 +520,7 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
 
 .folha-hd{display:flex; align-items:center; justify-content:space-between; gap:14px;
   padding:20px 20px 14px; border-bottom:1px solid var(--linha)}
-.folha-hd h2{font-family:var(--f-display); font-weight:400; text-transform:uppercase;
+.folha-hd h2{font-family:var(--f-display); font-weight:var(--f-display-peso,400); text-transform:uppercase;
   font-size:1.5rem; line-height:1}
 .folha-corpo{padding:20px; overflow-y:auto; overscroll-behavior:contain; flex:1}
 .folha-pe{padding:14px 20px calc(18px + env(safe-area-inset-bottom));
@@ -547,13 +548,13 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
   border-radius:var(--r3) var(--r3) 0 0; background:var(--caixa2)}
 .prod-capa img{width:100%; height:100%; object-fit:cover}
 .prod-capa .card-em{font-size:5.5rem}
-.folha-prod h2{font-family:var(--f-display); font-weight:400; text-transform:uppercase;
+.folha-prod h2{font-family:var(--f-display); font-weight:var(--f-display-peso,400); text-transform:uppercase;
   font-size:clamp(1.5rem,5.5vw,2rem); line-height:1.02; margin-bottom:8px}
 .prod-tag{display:inline-block; background:var(--marca2); color:#fff; font-size:.66rem;
   font-weight:800; text-transform:uppercase; letter-spacing:.1em;
   padding:.36em .7em; border-radius:7px; margin-bottom:10px}
 .prod-d{color:var(--txt2); font-size:.94rem; text-wrap:pretty}
-.prod-p{font-family:var(--f-display); font-weight:400; color:var(--marca);
+.prod-p{font-family:var(--f-display); font-weight:var(--f-display-peso,400); color:var(--marca);
   font-size:1.6rem; margin-top:12px; line-height:1}
 .prod-p .preco-de{font-size:.85rem; vertical-align:middle}
 
@@ -636,7 +637,7 @@ html[data-claro="1"] .capa.tem-foto{color:#fff}
 .conta > div span:last-child{color:var(--txt); font-weight:700}
 .conta-total{padding-top:11px; border-top:1px solid var(--linha); align-items:baseline}
 .conta-total span{font-size:.95rem; font-weight:800; color:var(--txt) !important}
-.conta-total strong{font-family:var(--f-display); font-weight:400; font-size:1.7rem;
+.conta-total strong{font-family:var(--f-display); font-weight:var(--f-display-peso,400); font-size:1.7rem;
   color:var(--marca); line-height:1}
 
 .aviso{margin-top:16px; background:rgb(var(--marca2-rgb)/.12);

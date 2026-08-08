@@ -34,14 +34,20 @@ const hexRGB = h => {
   return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
 };
 
-/* escolhe texto preto ou branco de acordo com o brilho da cor de fundo */
-const textoSobre = hex => {
+/* Texto preto ou branco sobre a cor da marca. Não usa "chute" de limiar:
+   calcula o contraste real das duas opções (WCAG) e fica com a maior.
+   Isso importa em cores de brilho médio — dourado envelhecido, laranja,
+   rosa — onde um limiar fixo erra e devolve texto quase ilegível. */
+const luminancia = hex => {
   const [r, g, b] = hexRGB(hex).map(c => {
     const s = c / 255;
     return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
   });
-  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return lum > 0.42 ? "#100C08" : "#FFFFFF";
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const textoSobre = hex => {
+  const L = luminancia(hex);
+  return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? "#100C08" : "#FFFFFF";
 };
 
 function aplicaTema(nome) {
@@ -55,7 +61,8 @@ function aplicaTema(nome) {
     "--marca2": p.marca2, "--marca2-rgb": hexRGB(p.marca2).join(","),
     "--zap": p.zap || "#22C55E",
     "--zap-txt": textoSobre(p.zap || "#22C55E"),
-    "--f-display": FONTES.display, "--f-txt": FONTES.texto
+    "--f-display": FONTES.display, "--f-txt": FONTES.texto,
+    "--f-display-peso": FONTES.peso || 400
   };
   for (const k in v) raiz.style.setProperty(k, v[k]);
   raiz.dataset.claro = p.claro ? "1" : "0";
