@@ -4,10 +4,14 @@ import { extname, join, normalize, resolve, sep } from 'node:path';
 import { z } from 'zod';
 import { findByCodeAndEmail, toPublicData } from '../src/data/publicView';
 import { validateDemoData } from '../src/data/schema';
+import { isValidEmail } from '../src/domain/customer';
 import { err, type DomainError, type Result } from '../src/domain/errors';
 import { cancelByCustomer } from '../src/domain/lifecycle';
 import { buildOnlineDraft, createReservation } from '../src/domain/reservations';
-import type { DemoData, Reservation } from '../src/domain/types';
+import { CUSTOMER_LOCALES, type DemoData, type Reservation } from '../src/domain/types';
+import type { EmailDomainCheck } from './email/domainCheck';
+import { disabledNotifier, type EmailNotifier } from './email/service';
+import { cancellationJobs, confirmationJobs, diffEmailJobs, type EmailJob } from './email/triggers';
 import { createSessionToken, isValidSession, parseCookies, passwordMatches, RateLimiter, SESSION_COOKIE, SESSION_HOURS } from './auth';
 import type { StateStore } from './state';
 
@@ -20,6 +24,10 @@ export interface AppConfig {
   clock?: () => number;
   /** Cookie só por HTTPS (produção). */
   secureCookies?: boolean;
+  /** E-mails aos clientes (fila em segundo plano). Ausente = sem e-mails. */
+  email?: EmailNotifier;
+  /** Recusa e-mails temporários ou de domínios inexistentes nas reservas online. */
+  emailDomainCheck?: EmailDomainCheck;
 }
 
 const MINUTE = 60_000;
@@ -31,12 +39,15 @@ const customerSchema = z.object({
   email: z.string().max(200),
   phone: z.string().max(60),
   notes: z.string().max(600),
+  // Aceite de novidades: o instante é sempre definido pelo servidor.
+  marketingOptIn: z.boolean().optional(),
 });
 const bookingSchema = z.object({
   date: z.string().max(10),
   time: z.string().max(5),
   partySize: z.number().int().min(0).max(100),
   customer: customerSchema,
+  locale: z.enum(CUSTOMER_LOCALES as ['fr', 'pt', 'en']).optional(),
 });
 const lookupSchema = z.object({ code: z.string().max(40), email: z.string().max(200) });
 const loginSchema = z.object({ password: z.string().max(500) });
@@ -131,6 +142,7 @@ export function createHandler(config: AppConfig) {
   const bookingLimiter = new RateLimiter(20, 60 * MINUTE);
   const lookupLimiter = new RateLimiter(30, 15 * MINUTE);
   const { store } = config;
+  const email = config.email ?? disabledNotifier;
   const staticRoot = config.staticDir ? resolve(config.staticDir) : null;
 
   const isAdmin = (req: IncomingMessage) =>
@@ -156,6 +168,7 @@ export function createHandler(config: AppConfig) {
   async function publicCommand(
     res: ServerResponse,
     command: (data: DemoData, nowMs: number) => Result<{ data: DemoData; reservation: Reservation }>,
+    emails: (reservation: Reservation, nowMs: number) => EmailJob[],
   ) {
     type Outcome =
       | { ok: false; errors: DomainError[]; data: DemoData }
@@ -168,6 +181,7 @@ export function createHandler(config: AppConfig) {
       return { data: next, result: { ok: true as const, reservation: result.value.reservation, data: next } };
     });
     const publicData = toPublicData(outcome.data, clock());
+    if (outcome.ok) email.notify(emails(outcome.reservation, clock()));
     if (outcome.ok) send(res, 200, { ok: true, reservation: outcome.reservation, data: publicData });
     else send(res, 422, { ok: false, errors: outcome.errors, data: publicData });
   }
@@ -182,11 +196,22 @@ export function createHandler(config: AppConfig) {
       return send(res, 200, toPublicData(await store.load(), clock()));
     }
 
+    if (method === 'GET' && path === '/api/public/features') {
+      return send(res, 200, { email: email.enabled });
+    }
+
     if (method === 'POST' && path === '/api/public/reservations') {
       limit(bookingLimiter, req);
       const input = parse(bookingSchema, await readJson(req, PUBLIC_BODY_LIMIT));
-      return publicCommand(res, (data, nowMs) =>
-        createReservation(data, buildOnlineDraft(data, input), nowMs, { channel: 'online' }),
+      const address = input.customer.email.trim();
+      if (config.emailDomainCheck && isValidEmail(address)) {
+        const problem = await config.emailDomainCheck(address);
+        if (problem) return send(res, 422, { ok: false, errors: [problem], data: toPublicData(await store.load(), clock()) });
+      }
+      return publicCommand(
+        res,
+        (data, nowMs) => createReservation(data, buildOnlineDraft(data, input), nowMs, { channel: 'online' }),
+        confirmationJobs,
       );
     }
 
@@ -202,7 +227,7 @@ export function createHandler(config: AppConfig) {
       return publicCommand(res, (data, nowMs) => {
         const found = findByCodeAndEmail(data, code, email);
         return found ? cancelByCustomer(data, found.id, nowMs) : { ok: false, errors: [err('NOT_FOUND')] };
-      });
+      }, cancellationJobs);
     }
 
     if (method === 'GET' && path === '/api/admin/session') return send(res, 200, { authenticated: isAdmin(req) });
@@ -230,9 +255,27 @@ export function createHandler(config: AppConfig) {
         const validated = validateDemoData(data);
         if (!validated.ok || validated.data.revision <= baseRevision) throw new HttpError(400, 'dados inválidos');
         const saved = await store.replace(baseRevision, validated.data);
+        if (saved.ok) email.notify(diffEmailJobs(saved.previous, validated.data, clock()));
         return saved.ok
           ? send(res, 200, { ok: true, revision: validated.data.revision })
           : send(res, 409, { ok: false, conflict: true, data: saved.current });
+      }
+
+      if (method === 'GET' && path === '/api/admin/emails') {
+        const reservationId = new URL(req.url ?? '/', 'http://localhost').searchParams.get('reservationId') ?? '';
+        if (!reservationId || reservationId.length > 100) throw new HttpError(400, 'reserva não informada');
+        const emails = await email.history(reservationId);
+        return send(res, 200, {
+          enabled: email.enabled,
+          emails: emails.map(({ kind, status, attempts, createdAt, sentAt, lastError }) => ({
+            kind,
+            status,
+            attempts,
+            createdAt,
+            sentAt,
+            lastError,
+          })),
+        });
       }
     }
 

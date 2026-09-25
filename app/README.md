@@ -32,8 +32,33 @@ O servidor (`server/`) entrega o site e a API na mesma origem. Ele usa as mesmas
    | `SESSION_SECRET` | texto aleatório de 32+ caracteres (ex.: `openssl rand -hex 32`) |
    | `NODE_ENV` | `production` (cookie de sessão só por HTTPS) |
 
+   E-mails aos clientes (opcionais, pelo Brevo):
+
+   | Variável | Valor |
+   |---|---|
+   | `BREVO_API_KEY` | chave da API do Brevo. **Sem ela, o sistema funciona normalmente, só não envia e-mails** (o site diz ao cliente para anotar o código) |
+   | `EMAIL_FROM` | remetente verificado no Brevo (ex.: `reservas@aromasdavivi.fr`); obrigatório com a chave |
+   | `EMAIL_FROM_NAME` | nome do remetente (padrão `Aromas da Vivi`) |
+   | `EMAIL_REPLY_TO` | endereço que recebe as respostas dos clientes (opcional) |
+   | `PUBLIC_URL` | endereço público do site, usado nos links e na logo dos e-mails (padrão `https://reservas-aromasdavivi.up.railway.app`) |
+
 4. Em **Settings → Networking**, gere um domínio público (ou ligue um domínio próprio).
 5. Na primeira inicialização o servidor cria as tabelas e o documento inicial (configurações e mesas, **sem reservas**). Ajuste mesas e horários em **/admin → Configurações**.
+
+**E-mails aos clientes (Brevo)**
+- Criar a chave: em [brevo.com](https://www.brevo.com) (plano gratuito: 300 e-mails/dia), menu **SMTP & API → API Keys → Generate a new API key**; copie a chave para `BREVO_API_KEY`.
+- Verificar o remetente: em **Senders, Domains & Dedicated IPs → Senders → Add a sender**, cadastre o endereço de `EMAIL_FROM` e confirme pelo link recebido. Para melhor entrega (menos spam), autentique também o domínio em **Domains** (registros DKIM/DMARC no DNS).
+- Enviados em francês, português ou inglês (o idioma do site no momento da reserva; reservas da equipe saem em francês):
+  1. **Confirmação**: reserva online e reserva criada pela equipe com e-mail;
+  2. **Alteração**: a equipe mudou dia, horário ou pessoas de uma reserva confirmada;
+  3. **Cancelamento**: pelo cliente ou pela equipe (o motivo interno nunca é enviado);
+  4. **Lembrete**: às 10:00 de Paris da véspera, para as reservas confirmadas do dia seguinte (quem reservou depois disso, ou para o mesmo dia, não recebe).
+- Os e-mails trazem código, data, horário, pessoas, endereço com mapa, link para consultar/cancelar (`/consultar?codigo=…&email=…`), prazo de cancelamento e WhatsApp.
+- Nada disso atrasa ou impede uma reserva: os e-mails entram numa fila (tabela `email_log`), enviada em segundo plano a cada minuto, com até 5 tentativas (espera de 1, 5, 15 e 60 min). A chave de cada e-mail evita duplicados. Na administração, os detalhes da reserva mostram os e-mails enviados ou com falha.
+- Reservas online recusam e-mails temporários (lista `disposable-email-domains`) e domínios que não recebem e-mail (sem MX/A no DNS). Se o DNS falhar ou demorar mais de 3 s, a reserva é aceita.
+
+**Consentimento de novidades (RGPD)**
+- Na etapa "Seus dados" há uma caixa **desmarcada** para receber novidades e eventos; o aceite fica na reserva com data/hora (`marketingOptIn`, `marketingOptInAt`) e aparece nos detalhes e na coluna "Aceita novidades" do CSV. Nenhum e-mail de marketing é enviado pelo sistema.
 
 **Segurança e privacidade**
 - O site do cliente só recebe horários ocupados: nomes, e-mails, telefones, observações e códigos das reservas nunca saem do servidor sem login.

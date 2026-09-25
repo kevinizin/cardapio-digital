@@ -8,6 +8,7 @@ import { copyText, isRecentReservationCode } from '../../data/browser';
 import { normalizeCode } from '../../domain/ids';
 import { MINUTE_MS, parisDate, parisTime, toMs } from '../../domain/time';
 import { useI18n } from '../../i18n';
+import { usePublicFeatures } from '../../state/features';
 import { useData, useStore } from '../../state/store';
 
 export function ConfirmationPage() {
@@ -16,6 +17,7 @@ export function ConfirmationPage() {
   const c = t.public.confirmation;
   const b = t.public.booking;
   const demo = useStore().kind === 'demo';
+  const features = usePublicFeatures();
   useDocumentTitle(c.documentTitle);
   const { code = '' } = useParams();
   const data = useData();
@@ -78,7 +80,13 @@ export function ConfirmationPage() {
           </p>
         </div>
 
-        <Notice tone="neutral">{demo ? c.simulated : c.noEmail}</Notice>
+        {demo ? (
+          <Notice tone="neutral">{c.simulated}</Notice>
+        ) : features?.email && reservation.customer.email ? (
+          <Notice tone="success">{c.emailSent(reservation.customer.email)}</Notice>
+        ) : (
+          features && <Notice tone="neutral">{c.noEmail}</Notice>
+        )}
 
         <dl className="summary-list">
           <div className="summary-row">

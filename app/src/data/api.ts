@@ -1,5 +1,5 @@
 import type { DomainError } from '../domain/errors';
-import type { Customer, DemoData, LocalDate, LocalTime, Reservation } from '../domain/types';
+import type { Customer, CustomerLocale, DemoData, LocalDate, LocalTime, Reservation } from '../domain/types';
 
 /** Contrato HTTP entre o site e o servidor (mesma origem, JSON). */
 
@@ -8,6 +8,22 @@ export interface OnlineBookingInput {
   time: LocalTime;
   partySize: number;
   customer: Customer;
+  /** Idioma do site no momento da reserva (usado nos e-mails). */
+  locale?: CustomerLocale;
+}
+
+export interface PublicFeatures {
+  /** O servidor envia e-mails de confirmação. */
+  email: boolean;
+}
+
+export interface EmailHistoryEntry {
+  kind: 'confirm' | 'change' | 'cancel' | 'reminder';
+  status: 'pending' | 'sent' | 'failed' | 'skipped';
+  attempts: number;
+  createdAt: string;
+  sentAt: string | null;
+  lastError: string | null;
 }
 
 export type PublicCommandResponse =
@@ -62,6 +78,7 @@ async function request<T>(path: string, init: RequestInit & { json?: unknown } =
 
 export const api = {
   publicData: () => request<DemoData>('/api/public/data'),
+  features: () => request<PublicFeatures>('/api/public/features'),
   createOnline: (input: OnlineBookingInput) =>
     request<PublicCommandResponse>('/api/public/reservations', { method: 'POST', json: input }),
   lookup: (code: string, email: string) =>
@@ -75,6 +92,8 @@ export const api = {
   adminData: () => request<DemoData>('/api/admin/data'),
   saveAdminData: (baseRevision: number, data: DemoData) =>
     request<SaveResponse>('/api/admin/data', { method: 'PUT', json: { baseRevision, data } }),
+  adminEmails: (reservationId: string) =>
+    request<{ enabled: boolean; emails: EmailHistoryEntry[] }>(`/api/admin/emails?reservationId=${encodeURIComponent(reservationId)}`),
 };
 
 export type Api = typeof api;

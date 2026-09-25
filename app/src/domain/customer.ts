@@ -11,6 +11,10 @@ export function normalizeCustomer(input: Customer): Customer {
     email: input.email.trim().toLowerCase(),
     phone: input.phone.trim().replace(/\s+/g, ' '),
     notes: input.notes.trim(),
+    // Aceite de novidades só é guardado quando marcado (nunca "false" explícito).
+    ...(input.marketingOptIn === true
+      ? { marketingOptIn: true, ...(input.marketingOptInAt ? { marketingOptInAt: input.marketingOptInAt } : {}) }
+      : {}),
   };
 }
 

@@ -9,6 +9,7 @@ import { isValidLocalDate, isValidLocalTime, localToMs, MINUTE_MS, parisDate, pa
 import { RESERVATION_SOURCES } from './types';
 import type {
   Customer,
+  CustomerLocale,
   DemoData,
   FieldChange,
   Interval,
@@ -28,6 +29,8 @@ export interface ReservationDraft {
   prepMinutes: number;
   customer: Customer;
   source: ReservationSource;
+  /** Idioma do cliente (reservas online), usado nos e-mails. */
+  locale?: CustomerLocale;
 }
 
 export interface ValidatedDraft {
@@ -59,10 +62,12 @@ export function draftFromReservation(reservation: Reservation): ReservationDraft
 /** Rascunho do fluxo público: sempre com mesa automática e as durações vigentes. */
 export function buildOnlineDraft(
   data: DemoData,
-  input: { date: LocalDate; time: LocalTime; partySize: number; customer: Customer },
+  input: { date: LocalDate; time: LocalTime; partySize: number; customer: Customer; locale?: CustomerLocale },
 ): ReservationDraft {
+  const { locale, ...rest } = input;
   return {
-    ...input,
+    ...rest,
+    ...(locale ? { locale } : {}),
     tableId: AUTO_TABLE,
     serviceMinutes: data.settings.rules.serviceMinutes,
     prepMinutes: data.settings.rules.prepMinutes,
@@ -182,6 +187,11 @@ export function validateDraft(
   return ok({ startMs, endMs, tableId: table.id, customer: normalizeCustomer(draft.customer) });
 }
 
+function marketingConsent(customer: Customer): Pick<Customer, 'marketingOptIn' | 'marketingOptInAt'> {
+  if (!customer.marketingOptIn) return {};
+  return { marketingOptIn: true, ...(customer.marketingOptInAt ? { marketingOptInAt: customer.marketingOptInAt } : {}) };
+}
+
 export function replaceReservation(data: DemoData, updated: Reservation): DemoData {
   return { ...data, reservations: data.reservations.map((r) => (r.id === updated.id ? updated : r)) };
 }
@@ -196,6 +206,7 @@ export function createReservation(
   if (!validated.ok) return validated;
   const random = context.random ?? cryptoRandom;
   const createdAt = toIso(nowMs);
+  const { customer } = validated.value;
   const reservation: Reservation = {
     id: generateId('res', random),
     code: generateReservationCode(new Set(data.reservations.map((r) => r.code)), random),
@@ -204,7 +215,8 @@ export function createReservation(
     startAt: toIso(validated.value.startMs),
     serviceMinutes: draft.serviceMinutes,
     prepMinutes: draft.prepMinutes,
-    customer: validated.value.customer,
+    // O instante do aceite de novidades é sempre o da gravação.
+    customer: customer.marketingOptIn ? { ...customer, marketingOptInAt: createdAt } : customer,
     source: draft.source,
     status: 'confirmed',
     createdAt,
@@ -218,6 +230,7 @@ export function createReservation(
     cancelReason: null,
     noShowAt: null,
     history: [{ at: createdAt, kind: 'created', actor: context.channel === 'online' ? 'customer' : 'admin' }],
+    ...(draft.locale ? { locale: draft.locale } : {}),
   };
   return ok({ data: { ...data, reservations: [...data.reservations, reservation] }, reservation });
 }
@@ -269,7 +282,8 @@ export function updateReservation(
     startAt: toIso(startMs),
     serviceMinutes: draft.serviceMinutes,
     prepMinutes: draft.prepMinutes,
-    customer,
+    // A edição administrativa não mexe no aceite de novidades do cliente.
+    customer: { ...customer, ...marketingConsent(original.customer) },
     source: draft.source,
     updatedAt: at,
     history: [...original.history, { at, kind: onlyTable ? 'table_changed' : 'updated', actor: 'admin', changes }],

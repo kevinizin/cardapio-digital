@@ -11,8 +11,8 @@ export interface StateStore {
   load(): Promise<DemoData>;
   /** Executa `fn` com o documento travado; grava se `fn` devolver dados novos. */
   update<T>(fn: (data: DemoData) => { data: DemoData | null; result: T }): Promise<T>;
-  /** Substitui o documento se a revisão atual for `baseRevision`. */
-  replace(baseRevision: number, data: DemoData): Promise<{ ok: true } | { ok: false; current: DemoData }>;
+  /** Substitui o documento se a revisão atual for `baseRevision` (devolve a versão anterior). */
+  replace(baseRevision: number, data: DemoData): Promise<{ ok: true; previous: DemoData } | { ok: false; current: DemoData }>;
   close(): Promise<void>;
 }
 
@@ -41,8 +41,9 @@ export class MemoryStateStore implements StateStore {
 
   async replace(baseRevision: number, data: DemoData) {
     if (this.data.revision !== baseRevision) return { ok: false as const, current: this.data };
+    const previous = this.data;
     this.save(data);
-    return { ok: true as const };
+    return { ok: true as const, previous };
   }
 
   private save(data: DemoData) {
@@ -54,7 +55,8 @@ export class MemoryStateStore implements StateStore {
 }
 
 export class PgStateStore implements StateStore {
-  private readonly pool: pg.Pool;
+  /** Conexões com o banco (compartilhadas com o registro de e-mails). */
+  readonly pool: pg.Pool;
   private readonly clock: () => number;
 
   constructor(connectionString: string, options: { ssl?: boolean; clock?: () => number } = {}) {
@@ -134,7 +136,7 @@ export class PgStateStore implements StateStore {
       }
       await this.write(client, data);
       await client.query('commit');
-      return { ok: true as const };
+      return { ok: true as const, previous: rows[0].data };
     } catch (error) {
       await client.query('rollback').catch(() => undefined);
       throw error;

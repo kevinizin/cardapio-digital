@@ -128,6 +128,7 @@ export function ReservationsPage() {
         r.completedAt ? formatDateTime(toMs(r.completedAt)) : '',
         r.cancelledAt ? formatDateTime(toMs(r.cancelledAt)) : '',
         r.cancelReason ?? '',
+        r.customer.marketingOptIn ? rp.csvYes : rp.csvNo,
       ];
     });
     downloadTextFile(rp.csvFile(today), CSV_BOM + toCsv([rp.csvHeaders, ...rows]), 'text/csv;charset=utf-8');

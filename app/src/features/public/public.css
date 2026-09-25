@@ -928,3 +928,25 @@
   flex: none;
   margin-top: 0.2em;
 }
+
+/* Aceite de novidades e nota de privacidade (etapa "Seus dados") */
+.booking-optin {
+  align-items: flex-start;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.booking-optin input {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+.booking-optin + .field__hint {
+  margin-top: -0.5rem;
+  padding-left: 1.75rem;
+}
+
+.booking-privacy a {
+  color: inherit;
+  white-space: nowrap;
+}

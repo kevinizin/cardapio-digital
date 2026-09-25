@@ -5,6 +5,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Dialog } from '../../components/Dialog';
 import { InlineErrors, Notice, useToast, WarningList } from '../../components/Feedback';
 import { describedBy, Field } from '../../components/Field';
+import { EmailHistory } from './EmailHistory';
 import { LIMITS } from '../../domain/defaults';
 import type { DomainError, DomainWarning } from '../../domain/errors';
 import {
@@ -290,6 +291,11 @@ function ReservationDrawer({
           <DetailRow label={ad.drawer.email}>{r.customer.email || ad.drawer.noValue}</DetailRow>
           <DetailRow label={ad.drawer.phone}>{r.customer.phone || ad.drawer.noValue}</DetailRow>
           <DetailRow label={ad.drawer.notes}>{r.customer.notes || ad.drawer.noValue}</DetailRow>
+          <DetailRow label={ad.drawer.marketing}>
+            {r.customer.marketingOptIn
+              ? ad.drawer.marketingYes(r.customer.marketingOptInAt ? formatDateTime(toMs(r.customer.marketingOptInAt)) : '—')
+              : ad.drawer.marketingNo}
+          </DetailRow>
         </dl>
       </section>
 
@@ -316,6 +322,8 @@ function ReservationDrawer({
           </dl>
         </section>
       )}
+
+      <EmailHistory reservationId={r.id} updatedAt={r.updatedAt} />
 
       <section className="drawer-section">
         <h3 className="drawer-section__title">{t.history.title}</h3>

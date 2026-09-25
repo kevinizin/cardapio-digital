@@ -73,6 +73,10 @@ export function errorMessage(error: DomainError): string {
       return 'Informe um e-mail válido, como nome@exemplo.com.';
     case 'EMAIL_TOO_LONG':
       return `O e-mail pode ter até ${p.max} caracteres.`;
+    case 'EMAIL_DISPOSABLE':
+      return 'Este endereço é de um serviço de e-mail temporário. Use um e-mail que você consulte para receber a confirmação.';
+    case 'EMAIL_DOMAIN_INVALID':
+      return 'Este domínio de e-mail não recebe mensagens. Confira se está escrito certo (ex.: gmail.com, hotmail.com).';
     case 'PHONE_REQUIRED':
       return 'Informe um telefone para contato.';
     case 'PHONE_INVALID':

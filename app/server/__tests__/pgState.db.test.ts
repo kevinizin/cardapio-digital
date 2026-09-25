@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createReservation, buildOnlineDraft } from '../../src/domain/reservations';
 import { at } from '../../src/domain/__tests__/fixtures';
+import { MAX_ATTEMPTS, PgEmailLog } from '../email/log';
 import { PgStateStore } from '../state';
 
 /**
@@ -60,9 +61,53 @@ describe('PgStateStore', () => {
   it('substituição com revisão antiga devolve a versão atual', async () => {
     const current = await store.load();
     const next = { ...current, revision: current.revision + 1 };
-    expect(await store.replace(current.revision, next)).toEqual({ ok: true });
+    expect(await store.replace(current.revision, next)).toEqual({ ok: true, previous: current });
     const stale = await store.replace(current.revision, next);
     expect(stale.ok).toBe(false);
+  });
+});
+
+describe('PgEmailLog', () => {
+  const log = new PgEmailLog(store.pool);
+  const job = (key: string, reservationId = 'res_1') => ({ kind: 'confirm' as const, reservationId, key });
+
+  beforeAll(async () => {
+    await store.pool.query('drop table if exists email_log');
+    await log.migrate();
+    await log.migrate(); // idempotente
+  });
+
+  it('a chave única impede duplicar o mesmo e-mail', async () => {
+    expect(await log.enqueue(job('confirm:res_1'), NOW)).toBe(true);
+    expect(await log.enqueue(job('confirm:res_1'), NOW)).toBe(false);
+    const due = await log.due(NOW, 10);
+    expect(due).toHaveLength(1);
+    expect(due[0]).toMatchObject({ reservationId: 'res_1', kind: 'confirm', key: 'confirm:res_1', status: 'pending', attempts: 0 });
+  });
+
+  it('falha agenda nova tentativa; enviado sai da fila; limite de tentativas', async () => {
+    const [entry] = await log.due(NOW, 10);
+    await log.markFailed(entry.id, 'x'.repeat(900), NOW + 60_000);
+    expect(await log.due(NOW, 10)).toHaveLength(0);
+    const [retry] = await log.due(NOW + 60_000, 10);
+    expect(retry).toMatchObject({ status: 'failed', attempts: 1 });
+    expect(retry.lastError).toHaveLength(500);
+    await log.markSent(retry.id, NOW + 61_000);
+    expect(await log.due(NOW + 3_600_000, 10)).toHaveLength(0);
+    const [sent] = await log.listByReservation('res_1');
+    expect(sent).toMatchObject({ status: 'sent', attempts: 2, lastError: null, sentAt: new Date(NOW + 61_000).toISOString() });
+
+    await log.enqueue(job('confirm:res_2', 'res_2'), NOW);
+    for (let i = 0; i < MAX_ATTEMPTS; i += 1) {
+      const [pending] = await log.due(NOW + i * 60_000, 10);
+      await log.markFailed(pending.id, 'erro', NOW + (i + 1) * 60_000);
+    }
+    expect(await log.due(NOW + 3_600_000, 10)).toHaveLength(0);
+
+    await log.enqueue(job('confirm:res_3', 'res_3'), NOW);
+    const [third] = await log.due(NOW, 10);
+    await log.markSkipped(third.id, 'obsoleto');
+    expect((await log.listByReservation('res_3'))[0]).toMatchObject({ status: 'skipped', lastError: 'obsoleto' });
   });
 });
 

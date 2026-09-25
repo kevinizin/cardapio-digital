@@ -78,6 +78,18 @@ export const adminCore = {
     noShowFrom: (time: string) => `Ausência disponível a partir das ${time}.`,
     notFound: 'Reserva não encontrada.',
     lockedEdit: 'Reservas concluídas, canceladas ou com ausência ficam registradas e não podem ser editadas.',
+    marketing: 'Novidades por e-mail',
+    marketingYes: (when: string) => `Aceitou em ${when}`,
+    marketingNo: 'Não aceitou',
+  },
+  emails: {
+    title: 'E-mails ao cliente',
+    empty: 'Nenhum e-mail registrado para esta reserva.',
+    disabled: 'Envio de e-mails desativado no servidor (configure o Brevo).',
+    loadError: 'Não foi possível carregar os e-mails.',
+    kind: { confirm: 'Confirmação', change: 'Alteração', cancel: 'Cancelamento', reminder: 'Lembrete' },
+    status: { pending: 'Na fila', sent: 'Enviado', failed: 'Falhou', skipped: 'Não enviado' },
+    attempts: (n: number) => (n === 1 ? '1 tentativa' : `${n} tentativas`),
   },
   dialogs: {
     arriveTitle: 'Registrar chegada?',

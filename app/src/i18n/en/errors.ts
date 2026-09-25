@@ -74,6 +74,10 @@ export function errorMessage(error: DomainError): string {
       return 'Please enter a valid email, such as name@example.com.';
     case 'EMAIL_TOO_LONG':
       return `The email can be up to ${p.max} characters long.`;
+    case 'EMAIL_DISPOSABLE':
+      return 'This address is from a temporary email service. Please use an address you check, so you receive the confirmation.';
+    case 'EMAIL_DOMAIN_INVALID':
+      return 'This email domain can’t receive messages. Please check the spelling (e.g. gmail.com, outlook.com).';
     case 'PHONE_REQUIRED':
       return 'Please enter a phone number.';
     case 'PHONE_INVALID':

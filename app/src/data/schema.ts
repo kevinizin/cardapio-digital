@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { RESERVATION_SOURCES, RESERVATION_STATUSES, SCHEMA_VERSION } from '../domain/types';
+import { CUSTOMER_LOCALES, RESERVATION_SOURCES, RESERVATION_STATUSES, SCHEMA_VERSION } from '../domain/types';
 import type { DemoData } from '../domain/types';
 
 /** Validação dos dados carregados do navegador, antes de qualquer uso. */
@@ -59,7 +59,15 @@ const reservationSchema = z.object({
   startAt: isoInstant,
   serviceMinutes: z.number().int().positive(),
   prepMinutes: count,
-  customer: z.object({ name: z.string(), email: z.string(), phone: z.string(), notes: z.string() }),
+  customer: z.object({
+    name: z.string(),
+    email: z.string(),
+    phone: z.string(),
+    notes: z.string(),
+    // Campos opcionais: dados antigos continuam válidos (schemaVersion 1).
+    marketingOptIn: z.boolean().optional(),
+    marketingOptInAt: isoInstant.optional(),
+  }),
   source: z.enum(RESERVATION_SOURCES as [string, ...string[]]),
   status: z.enum(RESERVATION_STATUSES as [string, ...string[]]),
   createdAt: isoInstant,
@@ -73,6 +81,7 @@ const reservationSchema = z.object({
   cancelReason: z.string().nullable(),
   noShowAt: isoInstant.nullable(),
   history: z.array(historyEntry),
+  locale: z.enum(CUSTOMER_LOCALES as [string, ...string[]]).optional(),
 });
 
 export const demoDataSchema = z

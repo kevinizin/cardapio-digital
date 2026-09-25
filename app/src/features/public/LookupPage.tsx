@@ -26,7 +26,8 @@ export function LookupPage() {
   const now = useNow(30_000);
   const notify = useToast();
   const [code, setCode] = useState(() => params.get('codigo') ?? '');
-  const [email, setEmail] = useState('');
+  // Link dos e-mails: /consultar?codigo=…&email=… já preenche os dois campos.
+  const [email, setEmail] = useState(() => params.get('email') ?? '');
   const [foundId, setFoundId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
