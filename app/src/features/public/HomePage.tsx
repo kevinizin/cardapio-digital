@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { Notice } from '../../components/Feedback';
 import { useDocumentTitle } from '../../components/PageLoading';
-import { currentOrNextShift, currentWeeklyRules, getShiftsForDate, lastBookableDate } from '../../domain/schedule';
+import { nextOpening, upcomingSpecials } from '../../domain/closures';
+import { currentWeeklyRules, getShiftsForDate, lastBookableDate } from '../../domain/schedule';
 import { parisDate } from '../../domain/time';
 import type { DayRule } from '../../domain/types';
 import { useI18n, type PublicMessages } from '../../i18n';
@@ -40,7 +41,7 @@ export function groupWeekdays(t: PublicMessages, weekly: DayRule[]) {
 }
 
 export function HomePage() {
-  const { t, f } = useI18n();
+  const { t, f, publicLocale } = useI18n();
   const { formatDuration, formatLocalDateCompact, formatLocalDateShort, formatParisOffset, formatTime } = f;
   const h = t.public.home;
   const demo = useStore().kind === 'demo';
@@ -53,9 +54,10 @@ export function HomePage() {
   const hours = useMemo(() => groupWeekdays(t, currentWeeklyRules(settings)), [t, settings]);
   const today = parisDate(now);
   const todayShifts = getShiftsForDate(settings, today);
-  const next = currentOrNextShift(settings, now);
+  const next = nextOpening(settings, now);
   const lastDate = lastBookableDate(settings, now);
-  const specials = settings.exceptions.filter((e) => e.date >= today && e.date <= lastDate).slice(0, 3);
+  // Períodos fechados agrupados (ex.: "10/08 – 24/08 — Fermé") e horários especiais; nunca a observação interna.
+  const specials = useMemo(() => upcomingSpecials(settings, today, lastDate, publicLocale).slice(0, 3), [settings, today, lastDate, publicLocale]);
   const activeTables = tables.filter((table) => table.active);
   // Áreas compartilhadas (controle por lugares) não contam como mesas, só como lugares.
   const plainTables = activeTables.filter((table) => !table.shared);
@@ -110,18 +112,29 @@ export function HomePage() {
               </p>
               {!todayShifts.length && next && (
                 <p className="pub-arch__next">
-                  {h.nextOpening(formatLocalDateCompact(next.shift.date), formatTime(next.shift.startMs))}
+                  {h.nextOpening(formatLocalDateCompact(next.date), formatTime(next.startMs))}
                 </p>
               )}
               {specials.length > 0 && (
                 <ul className="pub-specials">
-                  {specials.map((special) => (
-                    <li key={special.id}>
-                      <strong className="num">{formatLocalDateShort(special.date)}</strong> —{' '}
-                      {special.closed ? h.closed : shiftsText(t, { lunch: special.lunch, dinner: special.dinner }).join(' · ')}
-                      {special.note && <span className="subtle"> ({special.note})</span>}
-                    </li>
-                  ))}
+                  {specials.map((special) =>
+                    special.kind === 'closed' ? (
+                      <li key={special.from}>
+                        <strong className="num">
+                          {special.from === special.to
+                            ? formatLocalDateShort(special.from)
+                            : `${formatLocalDateShort(special.from)} – ${formatLocalDateShort(special.to)}`}
+                        </strong>{' '}
+                        — {h.closed}
+                        {special.message && <span className="subtle"> ({special.message})</span>}
+                      </li>
+                    ) : (
+                      <li key={special.date}>
+                        <strong className="num">{formatLocalDateShort(special.date)}</strong> —{' '}
+                        {shiftsText(t, { lunch: special.exception.lunch, dinner: special.exception.dinner }).join(' · ')}
+                      </li>
+                    ),
+                  )}
                 </ul>
               )}
               <p className="pub-arch__groups">{h.onlineGroups(rules.onlineMaxPartySize)}</p>

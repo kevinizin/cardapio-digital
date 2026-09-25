@@ -148,6 +148,14 @@ export function errorMessage(error: DomainError): string {
       return `La remarque peut comporter jusqu’à ${p.max} caractères.`;
     case 'SCHEDULE_CONFLICTS':
       return 'Des réservations à venir ne tiendraient plus dans les horaires. Annulez-les avec un motif ou modifiez-les avant d’enregistrer.';
+    case 'CLOSURE_RANGE_INVALID':
+      return 'La date de fin doit être identique ou postérieure à la date de début.';
+    case 'CLOSURE_TOO_LONG':
+      return `Fermez au maximum ${p.max} jours à la fois.`;
+    case 'CLOSURE_GUESTS_PRESENT':
+      return 'Des clients sont actuellement à table. Terminez ces services avant de fermer la journée.';
+    case 'CLOSURE_MESSAGE_TOO_LONG':
+      return `Le message aux clients peut comporter jusqu’à ${p.max} caractères.`;
     case 'CAPACITY_INVALID':
       return `La capacité doit être comprise entre ${p.min} et ${p.max} couverts.`;
     case 'TABLE_CHANGE_CONFLICTS':

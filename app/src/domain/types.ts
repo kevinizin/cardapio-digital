@@ -63,7 +63,17 @@ export interface DateException {
   closed: boolean;
   lunch: ShiftConfig;
   dinner: ShiftConfig;
+  /** Observação interna (administração, em português); nunca exibida ao cliente. */
   note: string;
+  /** Aviso opcional aos clientes, por idioma do site público. */
+  publicMessage?: PublicMessage;
+}
+
+/** Texto exibido ao cliente em cada idioma do site (vazio/ausente = sem mensagem). */
+export interface PublicMessage {
+  fr?: string;
+  pt?: string;
+  en?: string;
 }
 
 export interface BookingRules {

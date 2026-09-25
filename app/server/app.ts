@@ -9,6 +9,7 @@ import { cancelByCustomer } from '../src/domain/lifecycle';
 import { buildOnlineDraft, createReservation } from '../src/domain/reservations';
 import type { DemoData, Reservation } from '../src/domain/types';
 import { createSessionToken, isValidSession, parseCookies, passwordMatches, RateLimiter, SESSION_COOKIE, SESSION_HOURS } from './auth';
+import { adminHolidays } from './holidays';
 import type { StateStore } from './state';
 
 export interface AppConfig {
@@ -224,6 +225,7 @@ export function createHandler(config: AppConfig) {
       if (!isAdmin(req)) throw new HttpError(401, 'login necessário');
 
       if (method === 'GET' && path === '/api/admin/data') return send(res, 200, await store.load());
+      if (method === 'GET' && path === '/api/admin/holidays') return adminHolidays.handle(req.url).then((r) => send(res, r.status, r.body));
 
       if (method === 'PUT' && path === '/api/admin/data') {
         const { baseRevision, data } = parse(saveSchema, await readJson(req, ADMIN_BODY_LIMIT));
