@@ -7,6 +7,7 @@ export const common = {
     name: 'Aromas da Vivi',
     city: 'Paris',
     logoAlt: 'Aromas da Vivi, Paris',
+    homeLink: 'Aromas da Vivi — início',
   },
   demo: {
     ribbon: 'Demonstração — dados fictícios',
@@ -54,8 +55,13 @@ export const common = {
     range: (start: string, end: string) => `${start}–${end}`,
     tableLabel: (id: string) => `Mesa ${id}`,
     pageNotFound: 'Página não encontrada',
-    pageNotFoundText: 'O endereço acessado não existe nesta demonstração.',
+    pageNotFoundText: 'Não encontramos esta página. Confira o endereço ou volte ao início.',
     goHome: 'Ir para o início',
+  },
+  errorScreen: {
+    title: 'Algo não saiu como esperado',
+    text: 'A página encontrou um erro inesperado. Os dados salvos neste navegador não foram apagados. Recarregue para tentar novamente.',
+    reload: 'Recarregar página',
   },
   reservationStatus: {
     confirmed: 'Confirmada',
@@ -100,7 +106,7 @@ export const common = {
   history: {
     title: 'Histórico',
     empty: 'Sem registros.',
-    created: (actor: Actor) => (actor === 'customer' ? 'Reserva feita pelo cliente (online)' : 'Reserva registrada pela administração'),
+    created: (actor: Actor): string => (actor === 'customer' ? 'Reserva feita pelo cliente (online)' : 'Reserva registrada pela administração'),
     updated: 'Reserva editada',
     table_changed: 'Mesa trocada',
     arrived: (minutes: number) =>
@@ -112,7 +118,7 @@ export const common = {
     completed: (prep: number) => `Atendimento concluído; preparação de ${prep} min iniciada`,
     prep_ended: (remaining: number) => `Preparação concluída manualmente (${remaining} min antes do previsto)`,
     prep_extended: (minutes: number) => `Preparação estendida em ${minutes} min`,
-    cancelled: (actor: Actor) => (actor === 'customer' ? 'Cancelada pelo cliente' : 'Cancelada pela administração'),
+    cancelled: (actor: Actor): string => (actor === 'customer' ? 'Cancelada pelo cliente' : 'Cancelada pela administração'),
     no_show: 'Ausência registrada',
     reason: (reason: string) => `Motivo: ${reason}`,
     fields: {
@@ -139,6 +145,11 @@ export const common = {
       'Os dados salvos neste navegador não puderam ser lidos. Nada foi apagado: a demonstração está rodando em memória até você decidir.',
     downloadRaw: 'Baixar dados salvos (cópia bruta)',
     restore: 'Restaurar demonstração',
+    restoreTitle: 'Restaurar a demonstração?',
+    restoreText:
+      'Os dados salvos ilegíveis desta aplicação serão substituídos por novos dados fictícios. Outras informações do navegador não são afetadas.',
+    restoredTitle: 'Demonstração restaurada',
+    restoredText: 'Novos dados fictícios foram gerados.',
     externalUpdate: 'Dados atualizados por outra aba deste navegador.',
   },
 };

@@ -9,17 +9,20 @@ import { useDocumentTitle } from '../../components/PageLoading';
 import type { DomainError } from '../../domain/errors';
 import { customerCancelState } from '../../domain/lifecycle';
 import { MINUTE_MS, parisDate, parisTime, toMs } from '../../domain/time';
-import { errorMessage, formatDateTime, formatDuration, formatLocalDate, formatLocalDateLong, formatParisOffset, formatTime, t } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
 
-const l = t.public.lookup;
-const b = t.public.booking;
-
 export function LookupPage() {
+  const { t, f, errorMessage } = useI18n();
+  const { formatDateTime, formatDuration, formatLocalDate, formatLocalDateLong, formatParisOffset, formatTime } = f;
+  const l = t.public.lookup;
+  const b = t.public.booking;
   useDocumentTitle(l.documentTitle);
   const [params] = useSearchParams();
   const data = useData();
   const store = useStore();
+  const demo = store.kind === 'demo';
+  const cancelledText = demo ? `${l.cancelledText} ${l.cancelledDemo}` : l.cancelledText;
   const now = useNow(30_000);
   const notify = useToast();
   const [code, setCode] = useState(() => params.get('codigo') ?? '');
@@ -70,7 +73,7 @@ export function LookupPage() {
       setConfirming(false);
       setCancelErrors([]);
       setJustCancelled(true);
-      notify({ tone: 'success', title: l.cancelledTitle, description: l.cancelledText });
+      notify({ tone: 'success', title: l.cancelledTitle, description: cancelledText });
     } else {
       setCancelErrors(result.errors);
     }
@@ -171,7 +174,7 @@ export function LookupPage() {
 
             {reservation.status === 'cancelled' && reservation.cancelledAt && (
               <Notice tone={justCancelled ? 'success' : 'neutral'} title={justCancelled ? l.cancelledTitle : undefined}>
-                <p>{justCancelled ? l.cancelledText : l.alreadyCancelled(formatDateTime(toMs(reservation.cancelledAt)))}</p>
+                <p>{justCancelled ? cancelledText : l.alreadyCancelled(formatDateTime(toMs(reservation.cancelledAt)))}</p>
               </Notice>
             )}
             {reservation.status === 'seated' && <Notice tone="neutral">{l.seated}</Notice>}
@@ -180,7 +183,7 @@ export function LookupPage() {
             {cancelState === 'deadline_passed' && (
               <Notice tone="warning">{l.deadlinePassed(data.settings.rules.customerCancelMinutes)}</Notice>
             )}
-            {reservation.status === 'confirmed' && <p className="muted">{l.changeNote}</p>}
+            {reservation.status === 'confirmed' && <p className="muted">{demo ? `${l.changeNote} ${l.changeNoteDemo}` : l.changeNote}</p>}
 
             <div className="booking-actions">
               <button

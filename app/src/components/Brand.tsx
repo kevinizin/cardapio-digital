@@ -2,7 +2,7 @@ import '@fontsource/great-vibes/latin-400.css';
 import { Clock } from 'lucide-react';
 import { useId } from 'react';
 import { Link } from 'react-router';
-import { formatParisOffset, formatTime, t } from '../i18n';
+import { useI18n, useT } from '../i18n';
 import { useNow } from '../state/store';
 
 type LogoVariant = 'header' | 'hero' | 'footer' | 'sidebar';
@@ -20,6 +20,7 @@ export const LOGO_IMAGE: string | null = null;
 
 /** Logo da marca nas variantes header, hero, footer e sidebar. */
 export function Logo({ variant = 'header', eager = false }: { variant?: LogoVariant; eager?: boolean }) {
+  const t = useT();
   if (LOGO_IMAGE) {
     return (
       <span className={`logo logo--image logo--${variant}`}>
@@ -97,8 +98,9 @@ function Wordmark() {
 }
 
 export function LogoLink({ to, variant = 'header' }: { to: string; variant?: LogoVariant }) {
+  const t = useT();
   return (
-    <Link to={to} className="logo-link" aria-label={`${t.brand.name} — início`}>
+    <Link to={to} className="logo-link" aria-label={t.brand.homeLink}>
       <Logo variant={variant} eager />
     </Link>
   );
@@ -107,6 +109,8 @@ export function LogoLink({ to, variant = 'header' }: { to: string; variant?: Log
 /** Relógio de Paris, para deixar claro o fuso de todos os horários. */
 export function ParisClock({ compact = false }: { compact?: boolean }) {
   const now = useNow(15_000);
+  const { t, f } = useI18n();
+  const { formatParisOffset, formatTime } = f;
   return (
     <span className="paris-clock" title={t.demo.timezoneNote(formatParisOffset(now))}>
       <Clock aria-hidden="true" />

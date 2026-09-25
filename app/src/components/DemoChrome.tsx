@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../data/api';
 import { clearBookingDraft, downloadTextFile } from '../data/browser';
-import { t } from '../i18n';
+import { t as ptTexts, useT } from '../i18n';
 import { useSnapshot, useStore } from '../state/store';
 import { ConfirmDialog } from './ConfirmDialog';
 import { Notice, useToast } from './Feedback';
@@ -12,6 +12,7 @@ import { ParisClock } from './Brand';
 /** Aviso discreto e permanente de demonstração, com alternância entre as interfaces. */
 export function DemoRibbon({ area }: { area: 'public' | 'admin' }) {
   const store = useStore();
+  const t = useT();
   if (store.kind === 'remote') return area === 'admin' ? <AdminBar /> : null;
   return (
     <div className="demo-ribbon">
@@ -34,6 +35,7 @@ export function DemoRibbon({ area }: { area: 'public' | 'admin' }) {
 
 /** Barra da administração real: situação do salvamento, site do cliente e sair. */
 function AdminBar() {
+  const t = ptTexts;
   const { persistence } = useSnapshot();
   const sync = persistence.mode === 'remote' ? persistence.sync : 'saved';
   const [leaving, setLeaving] = useState(false);
@@ -70,6 +72,7 @@ function AdminBar() {
 
 /** Explica quando os dados estão apenas em memória; nunca apaga nada sozinho. */
 export function PersistenceBanner() {
+  const t = useT();
   const { persistence } = useSnapshot();
   const store = useStore();
   const notify = useToast();
@@ -122,8 +125,8 @@ export function PersistenceBanner() {
       </Notice>
       <ConfirmDialog
         open={confirming}
-        title="Restaurar a demonstração?"
-        description="Os dados salvos ilegíveis desta aplicação serão substituídos por novos dados fictícios. Outras informações do navegador não são afetadas."
+        title={t.persistence.restoreTitle}
+        description={t.persistence.restoreText}
         confirmLabel={t.persistence.restore}
         tone="danger"
         onClose={() => setConfirming(false)}
@@ -131,7 +134,7 @@ export function PersistenceBanner() {
           store.restoreDemo();
           clearBookingDraft();
           setConfirming(false);
-          notify({ tone: 'success', title: 'Demonstração restaurada', description: 'Novos dados fictícios foram gerados.' });
+          notify({ tone: 'success', title: t.persistence.restoredTitle, description: t.persistence.restoredText });
         }}
       />
     </div>

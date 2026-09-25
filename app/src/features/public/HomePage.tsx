@@ -6,14 +6,12 @@ import { useDocumentTitle } from '../../components/PageLoading';
 import { currentOrNextShift, currentWeeklyRules, getShiftsForDate, lastBookableDate } from '../../domain/schedule';
 import { parisDate } from '../../domain/time';
 import type { DayRule } from '../../domain/types';
-import { formatDuration, formatLocalDateCompact, formatLocalDateShort, formatParisOffset, formatTime, t } from '../../i18n';
-import { useData, useNow } from '../../state/store';
+import { useI18n, type PublicMessages } from '../../i18n';
+import { useData, useNow, useStore } from '../../state/store';
+import { ContactList } from './PublicChrome';
+import { hasContact } from '../../config/restaurant';
 
-const h = t.public.home;
-
-const plainWeekday = (index: number) => t.weekdays[index].replace('-feira', '');
-
-function shiftsText(rule: DayRule): string[] {
+function shiftsText(t: PublicMessages, rule: DayRule): string[] {
   const parts: string[] = [];
   if (rule.lunch.enabled) parts.push(`${t.shift.lunch} ${rule.lunch.start}–${rule.lunch.end}`);
   if (rule.dinner.enabled) parts.push(`${t.shift.dinner} ${rule.dinner.start}–${rule.dinner.end}`);
@@ -21,10 +19,11 @@ function shiftsText(rule: DayRule): string[] {
 }
 
 /** Agrupa dias consecutivos com o mesmo funcionamento (ex.: "Terça a domingo"). */
-function groupWeekdays(weekly: DayRule[]) {
+export function groupWeekdays(t: PublicMessages, weekly: DayRule[]) {
+  const h = t.public.home;
   const groups: { days: number[]; lines: string[] }[] = [];
   weekly.forEach((rule, index) => {
-    const lines = shiftsText(rule);
+    const lines = shiftsText(t, rule);
     const last = groups[groups.length - 1];
     if (last && last.lines.join('|') === lines.join('|') && last.days[last.days.length - 1] === index - 1) last.days.push(index);
     else groups.push({ days: [index], lines });
@@ -34,20 +33,24 @@ function groupWeekdays(weekly: DayRule[]) {
       group.days.length === 1
         ? t.weekdays[group.days[0]]
         : group.days.length === 2
-          ? `${plainWeekday(group.days[0])} e ${plainWeekday(group.days[1]).toLowerCase()}`
-          : `${plainWeekday(group.days[0])} a ${plainWeekday(group.days[group.days.length - 1]).toLowerCase()}`,
+          ? h.dayPair(h.weekdaysPlain[group.days[0]], h.weekdaysPlain[group.days[1]])
+          : h.dayRange(h.weekdaysPlain[group.days[0]], h.weekdaysPlain[group.days[group.days.length - 1]]),
     lines: group.lines,
   }));
 }
 
 export function HomePage() {
+  const { t, f } = useI18n();
+  const { formatDuration, formatLocalDateCompact, formatLocalDateShort, formatParisOffset, formatTime } = f;
+  const h = t.public.home;
+  const demo = useStore().kind === 'demo';
   useDocumentTitle(h.documentTitle);
   const data = useData();
   const now = useNow(60_000);
   const { settings, tables } = data;
   const { rules } = settings;
 
-  const hours = useMemo(() => groupWeekdays(currentWeeklyRules(settings)), [settings]);
+  const hours = useMemo(() => groupWeekdays(t, currentWeeklyRules(settings)), [t, settings]);
   const today = parisDate(now);
   const todayShifts = getShiftsForDate(settings, today);
   const next = currentOrNextShift(settings, now);
@@ -105,7 +108,7 @@ export function HomePage() {
               </p>
               {!todayShifts.length && next && (
                 <p className="pub-arch__next">
-                  {h.nextOpening(`${formatLocalDateCompact(next.shift.date)} às ${formatTime(next.shift.startMs)}`)}
+                  {h.nextOpening(formatLocalDateCompact(next.shift.date), formatTime(next.shift.startMs))}
                 </p>
               )}
               {specials.length > 0 && (
@@ -113,7 +116,7 @@ export function HomePage() {
                   {specials.map((special) => (
                     <li key={special.id}>
                       <strong className="num">{formatLocalDateShort(special.date)}</strong> —{' '}
-                      {special.closed ? h.closed : shiftsText({ lunch: special.lunch, dinner: special.dinner }).join(' · ')}
+                      {special.closed ? h.closed : shiftsText(t, { lunch: special.lunch, dinner: special.dinner }).join(' · ')}
                       {special.note && <span className="subtle"> ({special.note})</span>}
                     </li>
                   ))}
@@ -185,11 +188,11 @@ export function HomePage() {
           </div>
           <Notice tone="neutral" title={h.groupsTitle}>
             <p>{h.groupsText(rules.onlineMaxPartySize)}</p>
-            <p className="subtle">{h.groupsDemo}</p>
+            {hasContact() ? <ContactList /> : demo && <p className="subtle">{h.groupsDemo}</p>}
           </Notice>
         </div>
         <div className="pub-cta">
-          <p className="pub-cta__text">{h.heading}</p>
+          <p className="pub-cta__text">{h.ctaTitle}</p>
           <Link to="/reservar" className="btn btn--primary btn--lg">
             {h.ctaBook}
             <ArrowRight aria-hidden="true" />

@@ -823,3 +823,105 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Idioma e contatos ---------- */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.lang-switch__btn {
+  min-width: 2.3rem;
+  min-height: 2rem;
+  padding: 0 0.45rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.lang-switch__btn:hover {
+  background: var(--blush-100);
+  color: var(--wine-900);
+}
+
+.lang-switch__btn[aria-pressed='true'] {
+  background: var(--wine-900);
+  color: var(--ink-000);
+}
+
+.lang-switch__btn:focus-visible {
+  outline: 2px solid var(--gold-500);
+  outline-offset: 1px;
+}
+
+.site-nav__lang {
+  margin-right: 0.25rem;
+}
+
+/* Celular: o seletor de idioma divide o cabeçalho, então a consulta vira só ícone (texto mantido para leitores de tela). */
+@media (max-width: 520px) {
+  .site-nav {
+    gap: 0.2rem;
+  }
+  .site-nav__lang {
+    margin-right: 0;
+  }
+  .site-nav__lang .lang-switch__btn {
+    min-width: 1.9rem;
+    padding: 0 0.25rem;
+  }
+  .site-nav__link {
+    padding: 0 0.55rem;
+  }
+  .site-nav__link .label-short {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.site-footer__inner:has(.site-footer__lang) {
+  grid-template-columns: auto 1fr auto;
+}
+
+@media (max-width: 560px) {
+  .site-footer__inner:has(.site-footer__lang) {
+    grid-template-columns: 1fr;
+  }
+  .site-footer__lang {
+    justify-self: start;
+  }
+}
+
+.pub-contact {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pub-contact li {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.pub-contact svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
