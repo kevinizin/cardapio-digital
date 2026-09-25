@@ -27,6 +27,9 @@ export const publicMessages = {
     phone: 'Téléphone',
     email: 'E-mail',
     instagram: 'Instagram',
+    whatsapp: 'WhatsApp',
+    mapTitle: 'Voir sur la carte (Google Maps)',
+    whatsappTitle: 'Écrire au restaurant sur WhatsApp',
   },
   home: {
     documentTitle: 'Réservations',
@@ -52,7 +55,9 @@ export const publicMessages = {
     kitchenText: 'Une cuisine brésilienne préparée avec soin et générosité, à savourer sans se presser.',
     roomTitle: 'Une salle chaleureuse',
     roomText: (tables: number, seats: number) =>
-      `${plural(tables, 'table', 'tables')} et ${plural(seats, 'couvert', 'couverts')} pour accueillir couples, familles et amis.`,
+      tables > 0
+        ? `${plural(tables, 'table', 'tables')} et ${plural(seats, 'couvert', 'couverts')} pour accueillir couples, familles et amis.`
+        : `${plural(seats, 'couvert', 'couverts')} pour accueillir couples, familles et amis.`,
     timeTitle: 'Prendre son temps',
     timeText: (duration: string, tolerance: number) =>
       `Chaque réservation prévoit environ ${duration} à table. Merci d’arriver à l’heure${nb}; un retard de ${tolerance}${nb}minutes maximum est toléré.`,
@@ -61,7 +66,7 @@ export const publicMessages = {
     howSteps: [
       'Choisissez la date et le nombre de personnes.',
       'Seuls les horaires réellement disponibles s’affichent.',
-      'Indiquez votre nom et votre e-mail, vérifiez, puis confirmez.',
+      'Indiquez vos coordonnées, vérifiez, puis confirmez.',
       'Conservez le code pour consulter ou annuler.',
     ],
     policiesTitle: 'Bon à savoir',
@@ -69,15 +74,15 @@ export const publicMessages = {
     policyAdvance: (minutes: number) => `Réservation en ligne au moins ${minutes}${nb}minutes à l’avance.`,
     policyCancel: (minutes: number) => `Annulation en ligne possible jusqu’à ${hoursText(minutes)} avant l’heure réservée.`,
     groupsTitle: 'Groupes',
-    groupsText: (max: number) =>
-      `Au-delà de ${max} personnes, la réservation se fait directement auprès du restaurant, car les tables ne sont pas regroupées pour les réservations en ligne.`,
+    groupsText: (max: number, whatsapp = false) =>
+      `Au-delà de ${max} personnes, la réservation se fait directement auprès du restaurant${whatsapp ? ', sur WhatsApp' : ''}${nb}: nous préparons ainsi les tables pour accueillir tout le groupe ensemble.`,
     groupsDemo: `Cette démonstration ne comporte aucun contact réel${nb}; sur le site publié, les coordonnées du restaurant apparaîtraient ici.`,
     ctaTitle: 'Votre table vous attend.',
   },
   booking: {
     documentTitle: 'Réserver une table',
     heading: 'Réserver une table',
-    intro: 'La table est attribuée automatiquement selon la taille de votre groupe.',
+    intro: 'Seuls les horaires où il reste de la place pour votre groupe sont proposés.',
     stepsLabel: 'Étapes de la réservation',
     steps: ['Date et personnes', 'Horaire', 'Vos coordonnées', 'Récapitulatif'],
     stepOf: (current: number, total: number) => `Étape ${current} sur ${total}`,
@@ -92,8 +97,8 @@ export const publicMessages = {
     slotGone: 'L’horaire choisi n’est plus disponible. Choisissez-en un autre.',
     partyLarger: (max: number) => `Plus de ${max}`,
     largerTitle: 'Groupes',
-    largerText: (max: number) =>
-      `La réservation en ligne est possible jusqu’à ${max} personnes, car les tables ne sont pas regroupées. Pour un groupe plus nombreux, la réservation se fait directement auprès du restaurant.`,
+    largerText: (max: number, whatsapp = false) =>
+      `La réservation en ligne est possible jusqu’à ${max} personnes. Pour un groupe plus nombreux, contactez directement le restaurant${whatsapp ? ' sur WhatsApp' : ''} afin que nous organisions les tables.`,
     largerDemo: 'Cette démonstration ne comporte ni téléphone ni e-mail réels pour ce contact.',
     dateLegend: 'Choisissez la date',
     prevMonth: 'Mois précédent',

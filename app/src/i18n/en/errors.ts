@@ -8,15 +8,20 @@ const hoursText = (minutes: number) =>
   minutes % 60 === 0 ? `${minutes / 60} ${minutes === 60 ? 'hour' : 'hours'}` : formatDuration(minutes);
 
 /** Readable message for each business-rule error code. */
+/** Area name (shared table) when the error carries `area`. */
+const areaName = (p: Record<string, string | number>) =>
+  p.area ? (common.area[p.area as keyof typeof common.area] ?? String(p.area)) : '';
+
 export function errorMessage(error: DomainError): string {
   const p = error.params ?? {};
+  const area = areaName(p);
   switch (error.code) {
     case 'PARTY_SIZE_INVALID':
       return 'Please enter the number of guests.';
     case 'PARTY_ABOVE_ONLINE_LIMIT':
       return `Online bookings are for groups of up to ${p.max}.`;
     case 'PARTY_ABOVE_CAPACITY':
-      return `No active table can seat this group (up to ${p.max} per table; tables are not combined).`;
+      return `No active table or area can seat this group (up to ${p.max} people).`;
     case 'DATE_INVALID':
       return 'Please enter a valid date.';
     case 'TIME_INVALID':
@@ -44,13 +49,17 @@ export function errorMessage(error: DomainError): string {
     case 'TABLE_NOT_FOUND':
       return 'Table not found.';
     case 'TABLE_INACTIVE':
-      return `Table ${p.table} is inactive.`;
+      return area ? `The ${area.toLowerCase()} is inactive.` : `Table ${p.table} is inactive.`;
     case 'TABLE_TOO_SMALL':
-      return `Table ${p.table} seats ${p.capacity} and the group has ${p.partySize}.`;
+      return area
+        ? `The ${area.toLowerCase()} seats ${p.capacity} people at a time and the group has ${p.partySize}.`
+        : `Table ${p.table} seats ${p.capacity} and the group has ${p.partySize}.`;
     case 'CONFLICT':
-      return `Table ${p.table} is already taken for part of this period.`;
+      return area
+        ? `The ${area.toLowerCase()} doesn’t have enough seats for this group during part of this period (full or blocked).`
+        : `Table ${p.table} is already taken for part of this period.`;
     case 'NO_TABLE_AVAILABLE':
-      return 'No free table can seat this group at this time.';
+      return 'There is no free table or enough seats for this group at this time.';
     case 'SLOT_UNAVAILABLE':
       return 'This time has just been taken.';
     case 'NAME_REQUIRED':
@@ -65,6 +74,8 @@ export function errorMessage(error: DomainError): string {
       return 'Please enter a valid email, such as name@example.com.';
     case 'EMAIL_TOO_LONG':
       return `The email can be up to ${p.max} characters long.`;
+    case 'PHONE_REQUIRED':
+      return 'Please enter a phone number.';
     case 'PHONE_INVALID':
       return 'Use 6 to 15 digits; spaces and the symbols + ( ) - . are allowed.';
     case 'PHONE_TOO_LONG':
@@ -96,7 +107,9 @@ export function errorMessage(error: DomainError): string {
     case 'ARRIVAL_WINDOW_ENDED':
       return 'The expected period for this booking has ended. Record a no-show or a new walk-in booking.';
     case 'TABLE_BUSY_NOW':
-      return `Table ${p.table} isn’t free right now. Wait until it’s free or change the table before recording the arrival.`;
+      return area
+        ? `The ${area.toLowerCase()} doesn’t have enough free seats for this group right now. Wait for guests to leave or change the area before recording the arrival.`
+        : `Table ${p.table} isn’t free right now. Wait until it’s free or change the table before recording the arrival.`;
     case 'PREP_NOT_ACTIVE':
       return 'The table isn’t being prepared right now.';
     case 'EXTENSION_INVALID':
@@ -140,7 +153,7 @@ export function errorMessage(error: DomainError): string {
     case 'TABLE_CHANGE_CONFLICTS':
       return 'Some upcoming bookings, seated guests or preparations would become invalid. Change the table for those bookings before saving.';
     case 'ONLINE_LIMIT_ABOVE_CAPACITY':
-      return `The online group limit can’t exceed the largest active table (${p.max} seats).`;
+      return `The online group limit can’t exceed the largest active table or area (${p.max} seats).`;
     case 'NO_ACTIVE_TABLES':
       return 'Keep at least one table active.';
     case 'PERSISTENCE_BLOCKED':
@@ -154,13 +167,16 @@ export function errorMessage(error: DomainError): string {
 
 export function warningMessage(warning: DomainWarning): string {
   const p = warning.params ?? {};
+  const area = areaName(p);
   switch (warning.code) {
     case 'EARLY_ARRIVAL':
       return `Very early arrival: ${p.minutes} min before the booking time. The table was free and is now occupied.`;
     case 'LATE_ARRIVAL':
       return `Arrival ${p.minutes} min late. Other bookings have not been moved.`;
     case 'PREP_OVERLAPS_NEXT':
-      return `Preparation of table ${p.table} will end after the next booking starts. Consider changing the table for the next booking.`;
+      return area
+        ? `With the preparation time, the ${area.toLowerCase()} will be over capacity when the next bookings arrive. Consider moving one of them to another area.`
+        : `Preparation of table ${p.table} will end after the next booking starts. Consider changing the table for the next booking.`;
     case 'SHIFT_TOO_SHORT':
       return `An opening period is shorter than service + preparation (${p.minutes} min): it will have no available times.`;
     case 'SAVED_IN_MEMORY_ONLY':

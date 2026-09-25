@@ -2,12 +2,12 @@ import { maxActiveCapacity } from './availability';
 import { LIMITS } from './defaults';
 import { err, fail, ok, type DomainError, type DomainWarning, type Result } from './errors';
 import { isPrepActive } from './lifecycle';
-import { plannedBlockEnd } from './occupancy';
+import { isSharedTable, overloadedReservationIds, plannedBlockEnd, segmentsForTable } from './occupancy';
 import { currentWeeklyRules, findShiftForInterval } from './schedule';
 import { isValidLocalDate, isValidLocalTime, parisDate, timeToMinutes, toIso, toMs } from './time';
 import type { BookingRules, DateException, DayRule, DemoData, Reservation, Settings, Table, WeeklyRules } from './types';
 
-type RangeKey = Exclude<keyof BookingRules, 'slotIntervalMinutes'>;
+type RangeKey = Exclude<keyof BookingRules, 'slotIntervalMinutes' | 'phoneRequired'>;
 
 const RULE_RANGES: Record<RangeKey, { min: number; max: number; step: number }> = {
   serviceMinutes: LIMITS.serviceMinutes,
@@ -27,6 +27,9 @@ export function validateRules(rules: BookingRules, tables: readonly Table[]): Do
     if (!Number.isInteger(value) || value < range.min || value > range.max || value % range.step !== 0) {
       errors.push(err('RULE_OUT_OF_RANGE', { field: key, params: { ...range } }));
     }
+  }
+  if (rules.phoneRequired !== undefined && typeof rules.phoneRequired !== 'boolean') {
+    errors.push(err('RULE_OUT_OF_RANGE', { field: 'phoneRequired' }));
   }
   if (!LIMITS.slotIntervalOptions.includes(rules.slotIntervalMinutes)) {
     errors.push(err('RULE_OUT_OF_RANGE', { field: 'slotIntervalMinutes', params: { options: LIMITS.slotIntervalOptions.join(', ') } }));
@@ -178,7 +181,7 @@ export function saveTables(
     return change ? { ...table, capacity: change.capacity, active: change.active } : table;
   });
   for (const table of nextTables) {
-    const range = LIMITS.tableCapacity;
+    const range = isSharedTable(table) ? LIMITS.sharedCapacity : LIMITS.tableCapacity;
     if (!Number.isInteger(table.capacity) || table.capacity < range.min || table.capacity > range.max) {
       errors.push(err('CAPACITY_INVALID', { field: `tables.${table.id}.capacity`, params: { min: range.min, max: range.max } }));
     }
@@ -194,6 +197,16 @@ export function saveTables(
     if (!table.active && (upcoming || onTableNow)) return true;
     return (upcoming || r.status === 'seated') && r.partySize > table.capacity;
   });
+  // Áreas compartilhadas: a nova capacidade precisa comportar o pico de pessoas simultâneas.
+  for (const table of nextTables) {
+    const before = data.tables.find((t) => t.id === table.id);
+    if (!isSharedTable(table) || !table.active || !before || table.capacity >= before.capacity) continue;
+    const segments = segmentsForTable(data, table.id, nowMs, { relevantFrom: nowMs });
+    for (const id of overloadedReservationIds(segments, table.capacity, nowMs)) {
+      const r = data.reservations.find((item) => item.id === id);
+      if (r && !conflicting.includes(r)) conflicting.push(r);
+    }
+  }
   if (conflicting.length) {
     return fail(err('TABLE_CHANGE_CONFLICTS', { reservationIds: conflicting.map((r) => r.id) }));
   }

@@ -99,3 +99,8 @@
 .settings-tables__capacity {
   width: 5.5rem;
 }
+
+/* Cabeçalho longo das áreas ("pessoas ao mesmo tempo") quebra em telas estreitas. */
+.data-table th.settings-tables__wrap {
+  white-space: normal;
+}

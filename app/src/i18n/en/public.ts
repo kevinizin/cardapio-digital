@@ -26,6 +26,9 @@ export const publicMessages = {
     phone: 'Phone',
     email: 'Email',
     instagram: 'Instagram',
+    whatsapp: 'WhatsApp',
+    mapTitle: 'View on the map (Google Maps)',
+    whatsappTitle: 'Message the restaurant on WhatsApp',
   },
   home: {
     documentTitle: 'Bookings',
@@ -51,7 +54,9 @@ export const publicMessages = {
     kitchenText: 'Brazilian cooking prepared with care and generosity, to be enjoyed slowly, just like at home.',
     roomTitle: 'A welcoming dining room',
     roomText: (tables: number, seats: number) =>
-      `${plural(tables, 'table', 'tables')} and ${plural(seats, 'seat', 'seats')} for couples, families and friends.`,
+      tables > 0
+        ? `${plural(tables, 'table', 'tables')} and ${plural(seats, 'seat', 'seats')} for couples, families and friends.`
+        : `${plural(seats, 'seat', 'seats')} for couples, families and friends.`,
     timeTitle: 'Time to enjoy',
     timeText: (duration: string, tolerance: number) =>
       `Each booking allows about ${duration} at the table. Please arrive on time; we can wait up to ${tolerance} minutes.`,
@@ -60,7 +65,7 @@ export const publicMessages = {
     howSteps: [
       'Choose the date and number of guests.',
       'Only times that are actually available are shown.',
-      'Enter your name and email, check the details and confirm.',
+      'Enter your contact details, check them and confirm.',
       'Keep the code to view or cancel your booking.',
     ],
     policiesTitle: 'Good to know',
@@ -68,15 +73,15 @@ export const publicMessages = {
     policyAdvance: (minutes: number) => `Online bookings at least ${minutes} minutes in advance.`,
     policyCancel: (minutes: number) => `Online cancellation up to ${hoursText(minutes)} before your booking.`,
     groupsTitle: 'Larger groups',
-    groupsText: (max: number) =>
-      `For groups of more than ${max}, please book directly with the restaurant, as tables are not combined for online bookings.`,
+    groupsText: (max: number, whatsapp = false) =>
+      `For groups of more than ${max}, please book directly with the restaurant${whatsapp ? ' on WhatsApp' : ''}, so we can set up the tables to seat everyone together.`,
     groupsDemo: 'This demo has no real contact details; on the live site, the restaurant’s contact details would appear here.',
     ctaTitle: 'Your table is waiting.',
   },
   booking: {
     documentTitle: 'Book a table',
     heading: 'Book a table',
-    intro: 'Your table is assigned automatically based on the size of your group.',
+    intro: 'Only times with room for your group are shown.',
     stepsLabel: 'Booking steps',
     steps: ['Date & guests', 'Time', 'Your details', 'Review'],
     stepOf: (current: number, total: number) => `Step ${current} of ${total}`,
@@ -91,8 +96,8 @@ export const publicMessages = {
     slotGone: 'The time you chose is no longer available. Please choose another time.',
     partyLarger: (max: number) => `More than ${max}`,
     largerTitle: 'Larger groups',
-    largerText: (max: number) =>
-      `Online bookings are for groups of up to ${max}, as tables are not combined. For larger groups, please book directly with the restaurant.`,
+    largerText: (max: number, whatsapp = false) =>
+      `Online bookings are for groups of up to ${max}. For larger groups, please contact the restaurant directly${whatsapp ? ' on WhatsApp' : ''} so we can arrange the tables.`,
     largerDemo: 'This demo has no real phone number or email for this.',
     dateLegend: 'Choose a date',
     prevMonth: 'Previous month',

@@ -6,14 +6,15 @@ import { EmptyState, Notice } from '../../components/Feedback';
 import { useDocumentTitle } from '../../components/PageLoading';
 import { intersect, subtractIntervals } from '../../domain/intervals';
 import { isPrepActive } from '../../domain/lifecycle';
-import { blockSegment, reservationSegments, type OccupancySegment } from '../../domain/occupancy';
+import { blockSegment, isSharedTable, peakLoad, reservationSegments, segmentsForTable, type OccupancySegment } from '../../domain/occupancy';
 import { findException, getShiftsForDate } from '../../domain/schedule';
 import { dayBounds, HOUR_MS, MINUTE_MS, parisDate, toMs } from '../../domain/time';
-import { RESERVATION_STATUSES, type Area, type Interval, type Reservation, type ReservationStatus, type ShiftKind } from '../../domain/types';
+import { RESERVATION_STATUSES, type Area, type Interval, type Reservation, type ReservationStatus, type ShiftKind, type Table } from '../../domain/types';
 import { formatTime, t } from '../../i18n';
 import { useData, useNow } from '../../state/store';
 import { useAdminActions } from './AdminActions';
 import { PageHead } from './AdminLayout';
+import { allShared, placeLabel } from './adminFormat';
 import { BlockDialog } from './BlockDialog';
 import './agenda.css';
 
@@ -23,6 +24,37 @@ interface TimelineItem {
   key: string;
   segment: OccupancySegment | (Interval & { kind: 'released'; reservationId: string });
   reservation?: Reservation;
+}
+
+/** Altura de cada sub-linha de uma área compartilhada (rem). */
+const LANE_REM = 1.85;
+/** Fatias do indicador de lotação (min). */
+const LOAD_SLOT_MINUTES = 30;
+
+/**
+ * Empilha reservas que se sobrepõem numa área em sub-linhas (primeira linha
+ * livre, em ordem de início). Atendimento e preparação da mesma reserva ficam
+ * na mesma sub-linha; bloqueios ocupam a área inteira e ficam fora do empilhamento.
+ */
+export function packLanes(items: readonly TimelineItem[]): { lanes: number; laneOf: Map<string, number> } {
+  const groups = new Map<string, Interval>();
+  for (const item of items) {
+    if (!item.reservation) continue;
+    const id = item.reservation.id;
+    const current = groups.get(id);
+    groups.set(id, current ? { start: Math.min(current.start, item.segment.start), end: Math.max(current.end, item.segment.end) } : { start: item.segment.start, end: item.segment.end });
+  }
+  const ends: number[] = [];
+  const laneOf = new Map<string, number>();
+  for (const [id, interval] of [...groups.entries()].sort((a, b) => a[1].start - b[1].start || a[0].localeCompare(b[0]))) {
+    let lane = ends.findIndex((end) => end <= interval.start);
+    if (lane === -1) {
+      lane = ends.length;
+      ends.push(interval.end);
+    } else ends[lane] = interval.end;
+    laneOf.set(id, lane);
+  }
+  return { lanes: Math.max(1, ends.length), laneOf };
 }
 
 export function AgendaPage() {
@@ -116,6 +148,24 @@ export function AgendaPage() {
   const ticks = Array.from({ length: hours + 1 }, (_, i) => windowRange.start + i * HOUR_MS);
   const closedBands = subtractIntervals([windowRange], visibleShifts.map((s) => ({ start: s.startMs, end: s.endMs })));
   const showNow = date === today && now >= windowRange.start && now <= windowRange.end;
+  const onlyAreas = allShared(data.tables);
+
+  // Lotação por fatia de horário em cada área (todas as reservas que ocupam lugares, sem filtros).
+  const loadSlots = useMemo(() => {
+    const map = new Map<string, { start: number; end: number; load: number }[]>();
+    const slotMs = LOAD_SLOT_MINUTES * MINUTE_MS;
+    for (const table of data.tables) {
+      if (!isSharedTable(table)) continue;
+      const segments = segmentsForTable(data, table.id, now, { relevantFrom: windowRange.start });
+      const slots = [];
+      for (let start = windowRange.start; start < windowRange.end; start += slotMs) {
+        const slot = { start, end: Math.min(windowRange.end, start + slotMs) };
+        slots.push({ ...slot, load: peakLoad(segments, slot, table.capacity) });
+      }
+      map.set(table.id, slots);
+    }
+    return map;
+  }, [data, now, windowRange.start, windowRange.end]);
 
   const toggleStatus = (status: ReservationStatus) =>
     setStatuses((current) => {
@@ -153,10 +203,15 @@ export function AgendaPage() {
     return null;
   };
 
-  const segmentButton = (item: TimelineItem) => {
+  const segmentButton = (item: TimelineItem, lane?: number) => {
     const { segment, reservation } = item;
     const range = `${formatTime(segment.start)}–${formatTime(segment.end)}`;
-    const style = { left: `${pct(segment.start)}%`, width: `${Math.max(0.4, pct(segment.end) - pct(segment.start))}%` };
+    const style: React.CSSProperties = { left: `${pct(segment.start)}%`, width: `${Math.max(0.4, pct(segment.end) - pct(segment.start))}%` };
+    if (lane !== undefined) {
+      style.top = `${0.3 + lane * LANE_REM}rem`;
+      style.bottom = 'auto';
+      style.height = `${LANE_REM - 0.25}rem`;
+    }
     if (segment.kind === 'block') {
       const block = data.blocks.find((b) => b.id === (segment as OccupancySegment).blockId);
       return (
@@ -191,6 +246,68 @@ export function AgendaPage() {
           <span className="num">{formatTime(toMs(reservation.startAt))}</span> {reservation.customer.name} ({reservation.partySize})
         </span>
       </button>
+    );
+  };
+
+  const trackBackground = () => (
+    <>
+      {closedBands.map((band) => (
+        <span key={band.start} className="timeline__closed" style={{ left: `${pct(band.start)}%`, width: `${pct(band.end) - pct(band.start)}%` }} aria-hidden="true" />
+      ))}
+      {ticks.map((tick) => (
+        <span key={tick} className="timeline__hour" style={{ left: `${pct(tick)}%` }} aria-hidden="true" />
+      ))}
+    </>
+  );
+
+  /** Área compartilhada: reservas empilhadas em sub-linhas + faixa de lotação por horário. */
+  const sharedRows = (table: Table) => {
+    const visible = (items.get(table.id) ?? []).filter((item) => item.segment.end > windowRange.start && item.segment.start < windowRange.end);
+    const { lanes, laneOf } = packLanes(visible);
+    const slots = loadSlots.get(table.id) ?? [];
+    const peak = slots.reduce((best, slot) => (slot.load > best.load ? slot : best), { start: 0, end: 0, load: -1 });
+    const areaName = t.area[table.area];
+    return (
+      <div className="timeline__area" key={table.id}>
+        <div className="timeline__row timeline__row--area">
+          <div className="timeline__label">
+            <strong>{areaName}</strong>
+            <span>{ag.areaCapacity(table.capacity)}</span>
+          </div>
+          <div className="timeline__track" style={{ minHeight: `${0.35 + lanes * LANE_REM}rem` }}>
+            {trackBackground()}
+            {visible.map((item) => (item.reservation ? segmentButton(item, laneOf.get(item.reservation.id) ?? 0) : segmentButton(item)))}
+            {showNow && <span className="timeline__now" style={{ left: `${pct(now)}%` }} aria-hidden="true" />}
+          </div>
+        </div>
+        <div className="timeline__row timeline__row--load">
+          <div className="timeline__label">
+            <span>{ag.loadRow}</span>
+            {peak.load > 0 && <span className="num">{ag.loadPeak(peak.load, table.capacity, formatTime(peak.start))}</span>}
+          </div>
+          <div className="timeline__track" role="list" aria-label={ag.loadLabel(areaName)}>
+            {trackBackground()}
+            {slots.map((slot) => {
+              const ratio = slot.load / Math.max(1, table.capacity);
+              const level = ratio >= 1 ? 'full' : ratio >= 0.75 ? 'high' : ratio > 0 ? 'some' : 'none';
+              const text = ag.loadCell(formatTime(slot.start), slot.load, table.capacity);
+              return (
+                <span
+                  key={slot.start}
+                  role="listitem"
+                  className={`tl-load tl-load--${level}`}
+                  style={{ left: `${pct(slot.start)}%`, width: `${pct(slot.end) - pct(slot.start)}%` }}
+                  title={text}
+                  aria-label={text}
+                >
+                  <span className="tl-load__bar" style={{ height: `${Math.min(100, ratio * 100)}%` }} aria-hidden="true" />
+                  {slot.load > 0 && <span className="tl-load__value num" aria-hidden="true">{slot.load}</span>}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -296,7 +413,7 @@ export function AgendaPage() {
             <div className="timeline__scroll">
               <div className="timeline__grid" style={{ '--tl-hours': hours } as React.CSSProperties}>
                 <div className="timeline__header" aria-hidden="true">
-                  <div className="timeline__corner">{t.common.table}</div>
+                  <div className="timeline__corner">{onlyAreas ? ag.areaCorner : t.common.table}</div>
                   <div className="timeline__axis">
                     {ticks.map((tick) => (
                       <span key={tick} className="timeline__tick num" style={{ left: `${pct(tick)}%` }}>
@@ -305,28 +422,32 @@ export function AgendaPage() {
                     ))}
                   </div>
                 </div>
-                {tables.map((table) => (
-                  <div className="timeline__row" key={table.id}>
-                    <div className="timeline__label">
-                      <strong>{table.id}</strong>
-                      <span>
-                        {t.common.seats(table.capacity)} · {t.area[table.area]}
-                      </span>
+                {tables.map((table) =>
+                  isSharedTable(table) ? (
+                    sharedRows(table)
+                  ) : (
+                    <div className="timeline__row" key={table.id}>
+                      <div className="timeline__label">
+                        <strong>{table.id}</strong>
+                        <span>
+                          {t.common.seats(table.capacity)} · {t.area[table.area]}
+                        </span>
+                      </div>
+                      <div className="timeline__track">
+                        {closedBands.map((band) => (
+                          <span key={band.start} className="timeline__closed" style={{ left: `${pct(band.start)}%`, width: `${pct(band.end) - pct(band.start)}%` }} aria-hidden="true" />
+                        ))}
+                        {ticks.map((tick) => (
+                          <span key={tick} className="timeline__hour" style={{ left: `${pct(tick)}%` }} aria-hidden="true" />
+                        ))}
+                        {(items.get(table.id) ?? [])
+                          .filter((item) => item.segment.end > windowRange.start && item.segment.start < windowRange.end)
+                          .map(segmentButton)}
+                        {showNow && <span className="timeline__now" style={{ left: `${pct(now)}%` }} aria-hidden="true" />}
+                      </div>
                     </div>
-                    <div className="timeline__track">
-                      {closedBands.map((band) => (
-                        <span key={band.start} className="timeline__closed" style={{ left: `${pct(band.start)}%`, width: `${pct(band.end) - pct(band.start)}%` }} aria-hidden="true" />
-                      ))}
-                      {ticks.map((tick) => (
-                        <span key={tick} className="timeline__hour" style={{ left: `${pct(tick)}%` }} aria-hidden="true" />
-                      ))}
-                      {(items.get(table.id) ?? [])
-                        .filter((item) => item.segment.end > windowRange.start && item.segment.start < windowRange.end)
-                        .map(segmentButton)}
-                      {showNow && <span className="timeline__now" style={{ left: `${pct(now)}%` }} aria-hidden="true" />}
-                    </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             </div>
           </section>
@@ -338,6 +459,7 @@ export function AgendaPage() {
             <li><span className="legend-swatch legend-swatch--released" aria-hidden="true" />{ag.legendReleased}</li>
             <li><span className="legend-swatch legend-swatch--closed" aria-hidden="true" />{ag.legendClosed}</li>
             {showNow && <li><span className="legend-swatch legend-swatch--now" aria-hidden="true" />{ag.legendNow}</li>}
+            {loadSlots.size > 0 && <li><span className="legend-swatch legend-swatch--load" aria-hidden="true" />{ag.legendLoad}</li>}
           </ul>
         </>
       ) : filtered.length === 0 ? (
@@ -368,7 +490,7 @@ export function AgendaPage() {
                           </button>
                         </span>
                         <span className="res-item__meta">
-                          <span>{t.common.tableLabel(r.tableId)}</span>
+                          <span>{placeLabel(data.tables, r.tableId)}</span>
                           <span>{t.common.people(r.partySize)}</span>
                           <SourceLabel source={r.source} />
                           <ReservationStatusBadge status={r.status} />

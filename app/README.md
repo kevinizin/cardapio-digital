@@ -130,6 +130,15 @@ As rotas funcionam com acesso direto (recarregar ou abrir o link), tanto no `npm
 - Chegada muito antecipada exige mesa livre naquele momento; ausência só após início + tolerância (15 min). Nada é concluído, deslocado ou marcado como ausência automaticamente: atrasos e atendimentos longos geram alertas.
 - Configurações validam conflitos: fechar um dia, reduzir capacidade, desativar mesa ou criar bloqueio que afete reservas é recusado com a lista do que resolver.
 
+## Configuração do Aromas da Vivi (produção)
+
+Na primeira inicialização do banco (`src/domain/restaurantSetup.ts`):
+
+- Reservas controladas **por lugares em cada área**, não por mesa: `SALAO` (30 pessoas ao mesmo tempo) e `TERRACO` (10), ambas `shared: true`. Várias reservas dividem a área enquanto, em todo o período (atendimento + preparação), a soma de pessoas couber na capacidade. Bloqueios fecham a área inteira. A escolha automática tenta o salão e depois o terraço. Capacidades ajustáveis em Configurações (até 200 por área; mesas comuns continuam até 12).
+- Terça a domingo, 12h–22h contínuo; atendimento de 90 min + 10 min de preparação (última reserva às 20h15). Fechado em 25/12/2026 e 01/01/2027.
+- Online: 1 a 8 pessoas, telefone obrigatório (regra "Telefone obrigatório nas reservas online"); grupos maiores falam com o restaurante pelo WhatsApp (`src/config/restaurant.ts`).
+- Um banco já inicializado **não** é alterado: para adotar as áreas num banco existente, ajuste os dados pela administração ou recrie o documento inicial.
+
 ## Dados fictícios
 
 Na primeira abertura, o sistema gera uma única vez, a partir da data atual de Paris:

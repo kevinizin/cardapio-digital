@@ -19,6 +19,12 @@ export interface Table {
   capacity: number;
   area: Area;
   active: boolean;
+  /**
+   * Mesa compartilhada (área controlada por lugares): `capacity` é o máximo de
+   * pessoas ao mesmo tempo e várias reservas podem se sobrepor enquanto a soma
+   * de pessoas couber. Ausente/false = mesa comum (uma reserva por vez).
+   */
+  shared?: boolean;
 }
 
 /** Registro de ativação/desativação de mesa, usado nos cálculos históricos. */
@@ -69,6 +75,8 @@ export interface BookingRules {
   arrivalToleranceMinutes: number;
   customerCancelMinutes: number;
   onlineMaxPartySize: number;
+  /** Telefone obrigatório nas reservas online (ausente = opcional). */
+  phoneRequired?: boolean;
 }
 
 export interface Settings {

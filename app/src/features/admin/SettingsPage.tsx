@@ -12,6 +12,7 @@ import { createBlock, releaseBlock } from '../../domain/blocks';
 import { LIMITS } from '../../domain/defaults';
 import type { DomainError, DomainWarning } from '../../domain/errors';
 import { generateId } from '../../domain/ids';
+import { isSharedTable } from '../../domain/occupancy';
 import { currentWeeklyRules } from '../../domain/schedule';
 import { removeException, saveException, saveRules, saveTables, saveWeeklySchedule } from '../../domain/settingsRules';
 import { MINUTE_MS, parisDate, parisTime, toMs } from '../../domain/time';
@@ -20,6 +21,7 @@ import { errorMessage, formatDateTime, formatLocalDate, formatLocalDateCompact, 
 import { useData, useNow, useSnapshot, useStore } from '../../state/store';
 import { useAdminActions } from './AdminActions';
 import { PageHead } from './AdminLayout';
+import { placeOf } from './adminFormat';
 import './settings.css';
 
 const s = t.admin.settings;
@@ -55,7 +57,7 @@ function ConflictList({ ids }: { ids: string[] }) {
           const start = toMs(r.startAt);
           return (
             <li key={id}>
-              <span>{t.admin.conflicts.row(r.customer.name, formatLocalDate(parisDate(start)), formatTime(start), r.tableId, r.partySize)}</span>
+              <span>{t.admin.conflicts.row(r.customer.name, formatLocalDate(parisDate(start)), formatTime(start), placeOf(data.tables, r.tableId), r.partySize)}</span>
               <button type="button" className="btn btn--sm" onClick={() => actions.openReservation(id)}>
                 {t.admin.conflicts.open}
               </button>
@@ -83,7 +85,7 @@ function Problems({ errors, inlineFields = [] }: { errors: DomainError[]; inline
 
 /* ---------- Regras ---------- */
 
-type RuleKey = keyof BookingRules;
+type RuleKey = Exclude<keyof BookingRules, 'phoneRequired'>;
 const RULE_FIELDS: { key: RuleKey; range?: { min: number; max: number; step: number } }[] = [
   { key: 'serviceMinutes', range: LIMITS.serviceMinutes },
   { key: 'prepMinutes', range: LIMITS.prepMinutes },
@@ -100,14 +102,17 @@ function RulesSection() {
   const store = useStore();
   const notify = useToast();
   const [values, setValues] = useState<Record<RuleKey, string>>(
-    () => Object.fromEntries(Object.entries(data.settings.rules).map(([key, value]) => [key, String(value)])) as Record<RuleKey, string>,
+    () =>
+      Object.fromEntries(RULE_FIELDS.map(({ key }) => [key, String(data.settings.rules[key])])) as Record<RuleKey, string>,
   );
+  const [phoneRequired, setPhoneRequired] = useState(data.settings.rules.phoneRequired === true);
   const [errors, setErrors] = useState<DomainError[]>([]);
   const [warnings, setWarnings] = useState<DomainWarning[]>([]);
 
   const save = (event: FormEvent) => {
     event.preventDefault();
-    const rules = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Number(value)])) as unknown as BookingRules;
+    const numbers = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Number(value)])) as Record<RuleKey, number>;
+    const rules: BookingRules = { ...numbers, phoneRequired };
     const result = store.execute((fresh) => saveRules(fresh, rules));
     if (!result.ok) {
       setErrors(result.errors);
@@ -165,6 +170,11 @@ function RulesSection() {
             );
           })}
         </div>
+        <label className="checkbox">
+          <input type="checkbox" checked={phoneRequired} onChange={(event) => setPhoneRequired(event.target.checked)} />
+          <span>{s.rules.phoneRequired}</span>
+        </label>
+        <p className="field__hint">{s.rules.phoneRequiredHint}</p>
         <Problems errors={errors} inlineFields={RULE_FIELDS.map((field) => field.key)} />
         <WarningList warnings={warnings} />
         <div className="section-actions">
@@ -402,11 +412,21 @@ function TablesSection() {
   const data = useData();
   const store = useStore();
   const notify = useToast();
-  const [rows, setRows] = useState(() => data.tables.map((table) => ({ id: table.id, area: table.area, capacity: String(table.capacity), active: table.active })));
+  const [rows, setRows] = useState(() =>
+    data.tables.map((table) => ({
+      id: table.id,
+      area: table.area,
+      shared: isSharedTable(table),
+      capacity: String(table.capacity),
+      active: table.active,
+    })),
+  );
   const [errors, setErrors] = useState<DomainError[]>([]);
 
   const activeRows = rows.filter((row) => row.active);
   const seats = activeRows.reduce((sum, row) => sum + (Number(row.capacity) || 0), 0);
+  const onlyAreas = rows.length > 0 && rows.every((row) => row.shared);
+  const anyArea = rows.some((row) => row.shared);
 
   const save = () => {
     const result = store.execute((fresh, nowMs) =>
@@ -418,35 +438,40 @@ function TablesSection() {
   };
 
   return (
-    <Section id="mesas" title={s.sections.tables} intro={s.tables.intro}>
+    <Section id="mesas" title={s.sections.tables} intro={anyArea ? s.tables.introShared : s.tables.intro}>
       <div className="table-scroll">
         <table className="data-table settings-tables">
           <thead>
             <tr>
-              <th scope="col">{s.tables.table}</th>
-              <th scope="col">{s.tables.area}</th>
-              <th scope="col">{s.tables.capacity}</th>
+              <th scope="col">{onlyAreas ? s.tables.area : s.tables.table}</th>
+              {!onlyAreas && <th scope="col">{s.tables.area}</th>}
+              <th scope="col" className="settings-tables__wrap">{onlyAreas ? s.tables.capacityShared : s.tables.capacity}</th>
               <th scope="col">{s.tables.active}</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => {
               const error = errors.find((item) => item.field === `tables.${row.id}.capacity`);
+              const range = row.shared ? LIMITS.sharedCapacity : LIMITS.tableCapacity;
+              const name = row.shared ? t.area[row.area] : row.id;
               return (
                 <tr key={row.id}>
-                  <th scope="row">{row.id}</th>
-                  <td>{t.area[row.area]}</td>
+                  <th scope="row">
+                    {name}
+                    {row.shared && !onlyAreas && <span className="subtle settings-tables__kind"> · {s.tables.areaKind}</span>}
+                  </th>
+                  {!onlyAreas && <td>{t.area[row.area]}</td>}
                   <td>
                     <label className="visually-hidden" htmlFor={`table-capacity-${row.id}`}>
-                      {s.tables.capacity} {row.id}
+                      {row.shared ? s.tables.capacityShared : s.tables.capacity} {name}
                     </label>
                     <input
                       id={`table-capacity-${row.id}`}
                       className="input num settings-tables__capacity"
                       type="number"
                       inputMode="numeric"
-                      min={LIMITS.tableCapacity.min}
-                      max={LIMITS.tableCapacity.max}
+                      min={range.min}
+                      max={range.max}
                       value={row.capacity}
                       aria-invalid={Boolean(error)}
                       onChange={(event) => setRows(rows.map((item, i) => (i === index ? { ...item, capacity: event.target.value } : item)))}
@@ -461,7 +486,7 @@ function TablesSection() {
                         onChange={(event) => setRows(rows.map((item, i) => (i === index ? { ...item, active: event.target.checked } : item)))}
                       />
                       <span className="visually-hidden">
-                        {s.tables.active} {row.id}
+                        {s.tables.active} {name}
                       </span>
                     </label>
                   </td>
@@ -471,11 +496,13 @@ function TablesSection() {
           </tbody>
         </table>
       </div>
-      <p className="field__hint">{s.tables.totals(seats, activeRows.length)}</p>
+      <p className="field__hint">
+        {onlyAreas ? s.tables.totalsShared(seats, activeRows.length) : s.tables.totals(seats, activeRows.length)}
+      </p>
       <Problems errors={errors} inlineFields={['tables.']} />
       <div className="section-actions">
         <button type="button" className="btn btn--primary" onClick={save}>
-          {s.tables.save}
+          {onlyAreas ? s.tables.saveShared : s.tables.save}
         </button>
       </div>
     </Section>
@@ -520,11 +547,17 @@ function BlocksSection() {
     <Section id="bloqueios" title={s.sections.blocks} intro={s.blocks.intro}>
       <form noValidate onSubmit={create} className="settings-subform stack">
         <div className="form-grid">
-          <Field id="block-table" label={s.blocks.table} error={error('tableId')}>
+          <Field
+            id="block-table"
+            label={data.tables.every(isSharedTable) ? t.admin.agenda.colArea : data.tables.some(isSharedTable) ? s.blocks.tableOrArea : s.blocks.table}
+            error={error('tableId')}
+          >
             <select id="block-table" className="select" value={draft.tableId} onChange={(event) => setDraft({ ...draft, tableId: event.target.value })}>
               {data.tables.map((table) => (
                 <option key={table.id} value={table.id}>
-                  {table.id} · {t.common.seats(table.capacity)} · {t.area[table.area]}
+                  {isSharedTable(table)
+                    ? `${t.area[table.area]} · ${t.common.seats(table.capacity)}`
+                    : `${table.id} · ${t.common.seats(table.capacity)} · ${t.area[table.area]}`}
                 </option>
               ))}
             </select>
@@ -572,7 +605,7 @@ function BlocksSection() {
                 <li key={block.id}>
                   <span>
                     <span className={`badge ${ongoing ? 'badge--blocked' : 'badge--neutral'}`}>{ongoing ? s.blocks.ongoing : s.blocks.scheduled}</span>{' '}
-                    {s.blocks.item(block.tableId, `${formatDateTime(start)}–${formatDateTime(toMs(block.endAt))}`, block.reason)}
+                    {s.blocks.item(placeOf(data.tables, block.tableId), `${formatDateTime(start)}–${formatDateTime(toMs(block.endAt))}`, block.reason)}
                   </span>
                   <button type="button" className="btn btn--sm btn--danger-soft" onClick={() => setPending(block.id)}>
                     {ongoing ? s.blocks.endNow : s.blocks.remove}
@@ -588,7 +621,7 @@ function BlocksSection() {
       <ConfirmDialog
         open={Boolean(pendingBlock)}
         title={pendingOngoing ? s.blocks.endTitle : s.blocks.removeTitle}
-        description={pendingBlock ? s.blocks.item(pendingBlock.tableId, `${formatDateTime(toMs(pendingBlock.startAt))}–${formatDateTime(toMs(pendingBlock.endAt))}`, pendingBlock.reason) : ''}
+        description={pendingBlock ? s.blocks.item(placeOf(data.tables, pendingBlock.tableId), `${formatDateTime(toMs(pendingBlock.startAt))}–${formatDateTime(toMs(pendingBlock.endAt))}`, pendingBlock.reason) : ''}
         confirmLabel={pendingOngoing ? s.blocks.endNow : s.blocks.remove}
         tone="danger"
         onClose={() => setPending(null)}

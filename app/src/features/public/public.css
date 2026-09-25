@@ -917,11 +917,14 @@
 .pub-contact li {
   display: flex;
   gap: 0.45rem;
-  align-items: center;
+  align-items: flex-start;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .pub-contact svg {
   width: 16px;
   height: 16px;
   flex: none;
+  margin-top: 0.2em;
 }

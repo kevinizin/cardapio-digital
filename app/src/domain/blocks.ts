@@ -1,7 +1,7 @@
 import { LIMITS } from './defaults';
 import { err, fail, ok, type DomainError, type Result } from './errors';
 import { cryptoRandom, generateId, type RandomSource } from './ids';
-import { findConflicts, segmentsForTable } from './occupancy';
+import { findConflicts, segmentsForTable, tableParams } from './occupancy';
 import { isValidLocalDate, isValidLocalTime, localToMs, MINUTE_MS, toIso, toMs } from './time';
 import type { DemoData, LocalDate, LocalTime, TableBlock } from './types';
 
@@ -51,7 +51,7 @@ export function validateBlock(
     start: startMs,
     end: endMs,
   });
-  if (conflicts.length) return fail(err('CONFLICT', { field: 'tableId', conflicts, params: { table: draft.tableId } }));
+  if (conflicts.length) return fail(err('CONFLICT', { field: 'tableId', conflicts, params: tableParams(table, draft.tableId) }));
   return ok({ startMs, endMs, tableId: draft.tableId, reason });
 }
 

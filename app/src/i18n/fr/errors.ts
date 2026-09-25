@@ -8,15 +8,20 @@ const num = (value: string | number | undefined) => Number(value ?? 0);
 const hoursText = (minutes: number) => (minutes % 60 === 0 ? `${minutes / 60}${nb}h` : formatDuration(minutes));
 
 /** Message lisible pour chaque code d’erreur des règles. */
+/** Nom de l’espace (table partagée) quand l’erreur contient `area`. */
+const areaName = (p: Record<string, string | number>) =>
+  p.area ? (common.area[p.area as keyof typeof common.area] ?? String(p.area)) : '';
+
 export function errorMessage(error: DomainError): string {
   const p = error.params ?? {};
+  const area = areaName(p);
   switch (error.code) {
     case 'PARTY_SIZE_INVALID':
       return 'Indiquez le nombre de personnes.';
     case 'PARTY_ABOVE_ONLINE_LIMIT':
       return `La réservation en ligne est possible jusqu’à ${p.max} personnes.`;
     case 'PARTY_ABOVE_CAPACITY':
-      return `Aucune table disponible ne peut accueillir ce groupe (jusqu’à ${p.max} personnes par table${nb}; les tables ne sont pas regroupées).`;
+      return `Aucune table ni aucun espace actif ne peut accueillir ce groupe (jusqu’à ${p.max} personnes).`;
     case 'DATE_INVALID':
       return 'Indiquez une date valide.';
     case 'TIME_INVALID':
@@ -44,13 +49,17 @@ export function errorMessage(error: DomainError): string {
     case 'TABLE_NOT_FOUND':
       return 'Table introuvable.';
     case 'TABLE_INACTIVE':
-      return `La table ${p.table} est désactivée.`;
+      return area ? `L’espace «${nb}${area}${nb}» est désactivé.` : `La table ${p.table} est désactivée.`;
     case 'TABLE_TOO_SMALL':
-      return `La table ${p.table} accueille ${p.capacity} personnes et le groupe en compte ${p.partySize}.`;
+      return area
+        ? `L’espace «${nb}${area}${nb}» accueille ${p.capacity} personnes en même temps et le groupe en compte ${p.partySize}.`
+        : `La table ${p.table} accueille ${p.capacity} personnes et le groupe en compte ${p.partySize}.`;
     case 'CONFLICT':
-      return `La table ${p.table} est déjà occupée sur une partie de cette période.`;
+      return area
+        ? `L’espace «${nb}${area}${nb}» n’a pas assez de places pour ce groupe sur une partie de cette période (complet ou bloqué).`
+        : `La table ${p.table} est déjà occupée sur une partie de cette période.`;
     case 'NO_TABLE_AVAILABLE':
-      return 'Aucune table libre ne peut accueillir ce groupe à cet horaire.';
+      return 'Il n’y a ni table libre ni assez de places pour ce groupe à cet horaire.';
     case 'SLOT_UNAVAILABLE':
       return 'Cet horaire vient d’être réservé.';
     case 'NAME_REQUIRED':
@@ -65,6 +74,8 @@ export function errorMessage(error: DomainError): string {
       return 'Indiquez un e-mail valide, par exemple nom@exemple.fr.';
     case 'EMAIL_TOO_LONG':
       return `L’e-mail peut comporter jusqu’à ${p.max} caractères.`;
+    case 'PHONE_REQUIRED':
+      return 'Indiquez un numéro de téléphone.';
     case 'PHONE_INVALID':
       return `Utilisez de 6 à 15 chiffres${nb}; les espaces et les symboles + ( ) - . sont acceptés.`;
     case 'PHONE_TOO_LONG':
@@ -96,7 +107,9 @@ export function errorMessage(error: DomainError): string {
     case 'ARRIVAL_WINDOW_ENDED':
       return 'La période prévue pour cette réservation est terminée. Enregistrez une absence ou une nouvelle réservation sur place.';
     case 'TABLE_BUSY_NOW':
-      return `La table ${p.table} n’est pas libre pour le moment. Attendez qu’elle se libère ou changez de table avant d’enregistrer l’arrivée.`;
+      return area
+        ? `L’espace «${nb}${area}${nb}» n’a pas assez de places libres pour ce groupe en ce moment. Attendez des départs ou changez d’espace avant d’enregistrer l’arrivée.`
+        : `La table ${p.table} n’est pas libre pour le moment. Attendez qu’elle se libère ou changez de table avant d’enregistrer l’arrivée.`;
     case 'PREP_NOT_ACTIVE':
       return 'La table n’est pas en préparation en ce moment.';
     case 'EXTENSION_INVALID':
@@ -140,7 +153,7 @@ export function errorMessage(error: DomainError): string {
     case 'TABLE_CHANGE_CONFLICTS':
       return 'Des réservations à venir, des clients présents ou des préparations deviendraient invalides. Changez la table de ces réservations avant d’enregistrer.';
     case 'ONLINE_LIMIT_ABOVE_CAPACITY':
-      return `La limite de personnes en ligne ne peut pas dépasser la plus grande table active (${p.max} couverts).`;
+      return `La limite de personnes en ligne ne peut pas dépasser la plus grande table ou le plus grand espace actif (${p.max} couverts).`;
     case 'NO_ACTIVE_TABLES':
       return 'Gardez au moins une table active.';
     case 'PERSISTENCE_BLOCKED':
@@ -154,13 +167,16 @@ export function errorMessage(error: DomainError): string {
 
 export function warningMessage(warning: DomainWarning): string {
   const p = warning.params ?? {};
+  const area = areaName(p);
   switch (warning.code) {
     case 'EARLY_ARRIVAL':
       return `Arrivée très en avance${nb}: ${p.minutes}${nb}min avant l’heure réservée. La table était libre et est désormais occupée.`;
     case 'LATE_ARRIVAL':
       return `Arrivée ${p.minutes}${nb}min après l’heure. Les autres réservations n’ont pas été décalées.`;
     case 'PREP_OVERLAPS_NEXT':
-      return `La préparation de la table ${p.table} se terminera après le début de la réservation suivante. Pensez à changer la table de la réservation suivante.`;
+      return area
+        ? `Avec la préparation, l’espace «${nb}${area}${nb}» dépassera sa capacité à l’arrivée des prochaines réservations. Pensez à changer l’une d’elles d’espace.`
+        : `La préparation de la table ${p.table} se terminera après le début de la réservation suivante. Pensez à changer la table de la réservation suivante.`;
     case 'SHIFT_TOO_SHORT':
       return `Un service est plus court que service + préparation (${p.minutes}${nb}min)${nb}: il n’aura aucun horaire disponible.`;
     case 'SAVED_IN_MEMORY_ONLY':

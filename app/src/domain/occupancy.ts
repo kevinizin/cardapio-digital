@@ -14,6 +14,8 @@ export interface OccupancySegment extends Interval {
   tableId: string;
   reservationId?: string;
   blockId?: string;
+  /** Pessoas da reserva (usado nas mesas compartilhadas, controladas por lugares). */
+  partySize?: number;
 }
 
 type OccupancyData = Pick<DemoData, 'reservations' | 'blocks'>;
@@ -58,7 +60,7 @@ export function prepEndMs(reservation: Reservation): number | null {
  * - cancelada e ausência: liberam o período.
  */
 export function reservationSegments(reservation: Reservation, nowMs: number): OccupancySegment[] {
-  const base = { tableId: reservation.tableId, reservationId: reservation.id };
+  const base = { tableId: reservation.tableId, reservationId: reservation.id, partySize: reservation.partySize };
   const start = toMs(reservation.startAt);
   const prepMs = reservation.prepMinutes * MINUTE_MS;
   switch (reservation.status) {
@@ -162,6 +164,142 @@ export function toConflictInfo(segment: OccupancySegment): ConflictInfo {
 
 export function findConflicts(segments: readonly OccupancySegment[], interval: Interval): ConflictInfo[] {
   return segments.filter((segment) => overlaps(segment, interval)).map(toConflictInfo);
+}
+
+/** Mesa compartilhada: um conjunto de lugares (área) onde várias reservas coexistem. */
+export function isSharedTable(table: Pick<Table, 'shared'> | undefined | null): boolean {
+  return table?.shared === true;
+}
+
+/**
+ * Parâmetros de erro que identificam a mesa; numa área compartilhada inclui
+ * `area` para as mensagens falarem "Salão"/"Terraço" em vez do identificador.
+ */
+export function tableParams(table: Pick<Table, 'id' | 'area' | 'shared'> | undefined, fallbackId = ''): Record<string, string> {
+  if (!table) return { table: fallbackId };
+  return isSharedTable(table) ? { table: table.id, area: table.area } : { table: table.id };
+}
+
+/** Pessoas que um segmento ocupa numa área: bloqueio ocupa a área inteira. */
+export function segmentLoad(segment: OccupancySegment, capacity: number): number {
+  return segment.kind === 'block' ? capacity : (segment.partySize ?? 0);
+}
+
+export interface LoadPiece extends Interval {
+  load: number;
+}
+
+/**
+ * Perfil de lotação (soma de pessoas) dentro do intervalo, em trechos
+ * contíguos de carga constante (varredura por eventos de início/fim).
+ */
+export function loadProfile(segments: readonly OccupancySegment[], interval: Interval, capacity: number): LoadPiece[] {
+  const events: { at: number; delta: number }[] = [];
+  for (const segment of segments) {
+    if (!overlaps(segment, interval)) continue;
+    const load = segmentLoad(segment, capacity);
+    if (load <= 0) continue;
+    events.push({ at: Math.max(segment.start, interval.start), delta: load });
+    events.push({ at: Math.min(segment.end, interval.end), delta: -load });
+  }
+  events.sort((a, b) => a.at - b.at || a.delta - b.delta);
+  const pieces: LoadPiece[] = [];
+  let load = 0;
+  let cursor = interval.start;
+  for (const event of events) {
+    if (event.at > cursor) {
+      pieces.push({ start: cursor, end: event.at, load });
+      cursor = event.at;
+    }
+    load += event.delta;
+  }
+  if (cursor < interval.end) pieces.push({ start: cursor, end: interval.end, load });
+  return pieces;
+}
+
+/** Maior soma de pessoas simultâneas no intervalo (preparação conta; bloqueio = área cheia). */
+export function peakLoad(segments: readonly OccupancySegment[], interval: Interval, capacity: number): number {
+  return loadProfile(segments, interval, capacity).reduce((max, piece) => Math.max(max, piece.load), 0);
+}
+
+/** Pessoas na área num instante. */
+export function loadAt(segments: readonly OccupancySegment[], atMs: number, capacity: number): number {
+  return segments.reduce((sum, s) => (containsInstant(s, atMs) ? sum + segmentLoad(s, capacity) : sum), 0);
+}
+
+/**
+ * Conflitos para ocupar a mesa no intervalo com `partySize` pessoas.
+ * Mesa comum: qualquer sobreposição. Mesa compartilhada: só quando, em algum
+ * instante, a soma das pessoas + o novo grupo passa da capacidade; os
+ * conflitos devolvidos são os segmentos presentes nos trechos lotados.
+ */
+export function tableConflicts(
+  table: Pick<Table, 'capacity' | 'shared'>,
+  segments: readonly OccupancySegment[],
+  interval: Interval,
+  partySize: number,
+): ConflictInfo[] {
+  if (!isSharedTable(table)) return findConflicts(segments, interval);
+  const full = loadProfile(segments, interval, table.capacity).filter((p) => p.load + partySize > table.capacity);
+  if (!full.length) return [];
+  return segments.filter((s) => full.some((piece) => overlaps(s, piece))).map(toConflictInfo);
+}
+
+/**
+ * Reservas envolvidas em trechos em que a área passa da capacidade, a partir
+ * de `fromMs` (bloqueios são ignorados: aqui interessa só quem já reservou).
+ */
+export function overloadedReservationIds(
+  segments: readonly OccupancySegment[],
+  capacity: number,
+  fromMs: number,
+): string[] {
+  const own = segments.filter((s) => s.kind !== 'block' && s.end > fromMs);
+  if (!own.length) return [];
+  const end = Math.max(...own.map((s) => s.end));
+  const over = loadProfile(own, { start: fromMs, end }, capacity).filter((p) => p.load > capacity);
+  const ids = new Set<string>();
+  for (const s of own) if (s.reservationId && over.some((p) => overlaps(s, p))) ids.add(s.reservationId);
+  return [...ids];
+}
+
+export interface AreaLoad {
+  tableId: string;
+  capacity: number;
+  /** Pessoas ocupando lugares no instante (presentes + previstas + preparação). */
+  load: number;
+  /** Clientes presentes (status seated) no instante. */
+  seated: Reservation[];
+  /** Reservas confirmadas cujo atendimento previsto cobre o instante. */
+  reserved: Reservation[];
+  /** Reservas concluídas com preparação em andamento no instante. */
+  prep: Reservation[];
+  /** Bloqueio que cobre o instante (área fechada). */
+  block?: TableBlock;
+  inactive: boolean;
+}
+
+/** Lotação de uma área (mesa compartilhada) num instante, atual ou previsto. */
+export function getAreaLoad(table: Table, data: OccupancyData, atMs: number, nowMs: number): AreaLoad {
+  const segments = segmentsForTable(data, table.id, nowMs).filter((s) => containsInstant(s, atMs));
+  const byId = (id?: string) => data.reservations.find((r) => r.id === id);
+  const pick = (predicate: (s: OccupancySegment, r?: Reservation) => boolean) =>
+    segments.filter((s) => predicate(s, byId(s.reservationId))).map((s) => byId(s.reservationId) as Reservation);
+  const blockSeg = segments.find((s) => s.kind === 'block');
+  return {
+    tableId: table.id,
+    capacity: table.capacity,
+    load: Math.min(
+      blockSeg ? table.capacity : Number.POSITIVE_INFINITY,
+      segments.reduce((sum, s) => sum + segmentLoad(s, table.capacity), 0),
+    ),
+    // Cliente presente além do previsto: a projeção termina "agora", mas ele continua sentado.
+    seated: pick((s, r) => r?.status === 'seated' && (s.kind === 'service' || atMs <= nowMs)),
+    reserved: pick((s, r) => s.kind === 'service' && r?.status === 'confirmed'),
+    prep: pick((s, r) => s.kind === 'prep' && !(r?.status === 'seated' && atMs <= nowMs)),
+    block: blockSeg ? data.blocks.find((b) => b.id === blockSeg.blockId) : undefined,
+    inactive: !table.active,
+  };
 }
 
 export type LiveTableState = 'free' | 'reserved' | 'occupied' | 'prep' | 'blocked' | 'inactive';

@@ -6,7 +6,7 @@ import { InlineErrors, Notice, useToast } from '../../components/Feedback';
 import { describedBy, Field } from '../../components/Field';
 import { LIMITS } from '../../domain/defaults';
 import { err, type DomainError } from '../../domain/errors';
-import { findConflicts, projectedServiceEnd, segmentsForTable } from '../../domain/occupancy';
+import { isSharedTable, peakLoad, projectedServiceEnd, segmentsForTable, tableConflicts } from '../../domain/occupancy';
 import {
   AUTO_TABLE,
   createReservation,
@@ -107,11 +107,11 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
         if (!table.active) note = f.tableInactive;
         else if (partySize > 0 && table.capacity < partySize) note = f.tableSmall;
         else if (interval) {
-          const conflicts = findConflicts(
-            segmentsForTable(data, table.id, now, { excludeReservationId: original?.id, relevantFrom: interval.start }),
-            interval,
-          );
-          note = conflicts.length ? f.tableBusy : f.tableFree;
+          const segments = segmentsForTable(data, table.id, now, { excludeReservationId: original?.id, relevantFrom: interval.start });
+          const conflicts = tableConflicts(table, segments, interval, Math.max(1, partySize));
+          if (isSharedTable(table)) {
+            note = conflicts.length ? f.areaFull : f.areaFree(Math.max(0, table.capacity - peakLoad(segments, interval, table.capacity)));
+          } else note = conflicts.length ? f.tableBusy : f.tableFree;
         }
         return { table, note, disabled: (!table.active || (partySize > 0 && table.capacity < partySize)) && table.id !== original?.tableId };
       }),
@@ -124,6 +124,10 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
     for (const error of errors) if (error.field && !map[error.field]) map[error.field] = errorMessage(error);
     return map;
   }, [errors]);
+  const sharedCount = data.tables.filter(isSharedTable).length;
+  const onlyAreas = sharedCount > 0 && sharedCount === data.tables.length;
+  const selectedShared = isSharedTable(data.tables.find((table) => table.id === form.tableId)) || (form.tableId === AUTO_TABLE && onlyAreas);
+  const maxParty = Math.max(LIMITS.tableCapacity.max, ...data.tables.map((table) => table.capacity));
   const generalErrors = errors.filter((error) => !error.field || error.code === 'CONFLICT');
 
   const useNowPreset = () => {
@@ -225,7 +229,7 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
               type="number"
               inputMode="numeric"
               min={1}
-              max={LIMITS.tableCapacity.max}
+              max={maxParty}
               value={form.partySize}
               onChange={(event) => set('partySize', event.target.value)}
               aria-invalid={invalid('partySize')}
@@ -235,7 +239,7 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
         </div>
 
         <div className="form-grid">
-          <Field id="res-table" label={f.table} error={fieldErrors.tableId}>
+          <Field id="res-table" label={onlyAreas ? f.area : sharedCount ? f.tableOrArea : f.table} error={fieldErrors.tableId}>
             <select
               id="res-table"
               className="select"
@@ -244,10 +248,12 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
               aria-invalid={invalid('tableId')}
               aria-describedby={describedBy('res-table', undefined, fieldErrors.tableId)}
             >
-              <option value={AUTO_TABLE}>{f.tableAuto}</option>
+              <option value={AUTO_TABLE}>{onlyAreas ? f.areaAuto : sharedCount ? f.autoMixed : f.tableAuto}</option>
               {tableChoices.map(({ table, note, disabled }) => (
                 <option key={table.id} value={table.id} disabled={disabled}>
-                  {f.tableOption(table.id, table.capacity, t.area[table.area], note || t.common.none)}
+                  {isSharedTable(table)
+                    ? f.areaOption(t.area[table.area], table.capacity, note || t.common.none)
+                    : f.tableOption(table.id, table.capacity, t.area[table.area], note || t.common.none)}
                 </option>
               ))}
             </select>
@@ -302,7 +308,7 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
           {startMs !== null && service > 0 && (
             <>
               {' '}
-              {f.preview(formatTime(startMs), formatTime(startMs + service * MINUTE_MS), formatTime(startMs + (service + prep) * MINUTE_MS))}
+              {f.preview(formatTime(startMs), formatTime(startMs + service * MINUTE_MS), formatTime(startMs + (service + prep) * MINUTE_MS), selectedShared)}
             </>
           )}
         </p>
