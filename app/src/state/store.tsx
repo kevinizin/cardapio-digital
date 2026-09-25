@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
-import type { DemoStore, StoreSnapshot } from '../data/demoStore';
+import type { AppStore, StoreSnapshot } from '../data/appStore';
 import type { DemoData } from '../domain/types';
 
-const StoreContext = createContext<DemoStore | null>(null);
+const StoreContext = createContext<AppStore | null>(null);
 
-export function StoreProvider({ store, children }: { store: DemoStore; children: ReactNode }) {
+export function StoreProvider({ store, children }: { store: AppStore; children: ReactNode }) {
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }
 
-export function useStore(): DemoStore {
+export function useStore(): AppStore {
   const store = useContext(StoreContext);
   if (!store) throw new Error('StoreProvider ausente na árvore de componentes.');
   return store;

@@ -1,4 +1,5 @@
 import { Link, Route, Routes } from 'react-router';
+import { AdminGate } from './AdminGate';
 import { AdminLayout } from './AdminLayout';
 import { AgendaPage } from './AgendaPage';
 import { FloorPage } from './FloorPage';
@@ -23,16 +24,18 @@ function AdminNotFound() {
 
 export default function AdminApp() {
   return (
-    <Routes>
-      <Route element={<AdminLayout />}>
-        <Route index element={<OverviewPage />} />
-        <Route path="agenda" element={<AgendaPage />} />
-        <Route path="salao" element={<FloorPage />} />
-        <Route path="reservas" element={<ReservationsPage />} />
-        <Route path="mensal" element={<MonthlyPage />} />
-        <Route path="configuracoes" element={<SettingsPage />} />
-        <Route path="*" element={<AdminNotFound />} />
-      </Route>
-    </Routes>
+    <AdminGate>
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route index element={<OverviewPage />} />
+          <Route path="agenda" element={<AgendaPage />} />
+          <Route path="salao" element={<FloorPage />} />
+          <Route path="reservas" element={<ReservationsPage />} />
+          <Route path="mensal" element={<MonthlyPage />} />
+          <Route path="configuracoes" element={<SettingsPage />} />
+          <Route path="*" element={<AdminNotFound />} />
+        </Route>
+      </Routes>
+    </AdminGate>
   );
 }

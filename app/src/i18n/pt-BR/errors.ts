@@ -72,6 +72,12 @@ export function errorMessage(error: DomainError): string {
       return `A observação pode ter até ${p.max} caracteres.`;
     case 'SOURCE_INVALID':
       return 'Escolha uma origem válida.';
+    case 'NETWORK_ERROR':
+      return 'Não foi possível falar com o servidor. Verifique a internet e tente de novo.';
+    case 'RATE_LIMITED':
+      return 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.';
+    case 'SAVE_REJECTED':
+      return 'A alteração não pôde ser salva porque os dados mudaram. A tela foi atualizada; confira e repita se ainda fizer sentido.';
     case 'NOT_FOUND':
       return 'Reserva não encontrada.';
     case 'NOT_EDITABLE':

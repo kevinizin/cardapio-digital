@@ -9,7 +9,8 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
-      include: ['src/**/*.test.{ts,tsx}'],
+      include: ['src/**/*.test.{ts,tsx}', 'server/**/*.test.ts'],
+      exclude: ['**/node_modules/**', '**/*.db.test.ts'],
       environment: 'node',
       env: { TZ: 'America/Sao_Paulo' },
       restoreMocks: true,

@@ -11,7 +11,6 @@ import { findNextAvailableDates, getDayAvailability, summarizeDates, type Sugges
 import { validateCustomer } from '../../domain/customer';
 import { LIMITS } from '../../domain/defaults';
 import type { DomainError, DomainErrorCode } from '../../domain/errors';
-import { buildOnlineDraft, createReservation } from '../../domain/reservations';
 import { findException, getDayStatus, lastBookableDate } from '../../domain/schedule';
 import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate, weekdayIndex } from '../../domain/time';
 import type { Customer, LocalDate, LocalTime } from '../../domain/types';
@@ -245,9 +244,8 @@ export function BookingPage() {
     setSubmitting(true);
     setSubmitErrors([]);
     const input = { date: draft.date, time: draft.time, partySize, customer: draft.customer };
-    // Deixa a interface mostrar "Confirmando…" antes de revalidar com os dados mais recentes.
-    window.setTimeout(() => {
-      const result = store.execute((fresh, nowMs) => createReservation(fresh, buildOnlineDraft(fresh, input), nowMs, { channel: 'online' }));
+    // O servidor revalida com os dados mais recentes antes de gravar.
+    void store.createOnline(input).then((result) => {
       if (result.ok) {
         const { code } = result.value.reservation;
         rememberReservationCode(code);
@@ -269,7 +267,7 @@ export function BookingPage() {
         return;
       }
       setSubmitErrors(result.errors);
-    }, 0);
+    });
   };
 
   const setCustomer = (field: keyof Customer, value: string) =>

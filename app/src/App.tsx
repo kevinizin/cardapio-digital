@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/Feedback';
 import { PageLoading } from './components/PageLoading';
-import type { DemoStore } from './data/demoStore';
+import type { AppStore } from './data/appStore';
 import { BookingPage } from './features/public/BookingPage';
 import { ConfirmationPage } from './features/public/ConfirmationPage';
 import { HomePage } from './features/public/HomePage';
@@ -30,7 +30,7 @@ function RouteEffects() {
   return null;
 }
 
-export function App({ store }: { store: DemoStore }) {
+export function App({ store }: { store: AppStore }) {
   return (
     <StoreProvider store={store}>
       <ToastProvider>

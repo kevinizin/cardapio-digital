@@ -7,10 +7,9 @@ import { Notice, useToast } from '../../components/Feedback';
 import { describedBy, Field } from '../../components/Field';
 import { useDocumentTitle } from '../../components/PageLoading';
 import type { DomainError } from '../../domain/errors';
-import { normalizeCode } from '../../domain/ids';
-import { cancelByCustomer, customerCancelState } from '../../domain/lifecycle';
+import { customerCancelState } from '../../domain/lifecycle';
 import { MINUTE_MS, parisDate, parisTime, toMs } from '../../domain/time';
-import { formatDateTime, formatDuration, formatLocalDate, formatLocalDateLong, formatParisOffset, formatTime, t } from '../../i18n';
+import { errorMessage, formatDateTime, formatDuration, formatLocalDate, formatLocalDateLong, formatParisOffset, formatTime, t } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
 
 const l = t.public.lookup;
@@ -30,6 +29,10 @@ export function LookupPage() {
   const [confirming, setConfirming] = useState(false);
   const [cancelErrors, setCancelErrors] = useState<DomainError[]>([]);
   const [justCancelled, setJustCancelled] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  /** Código e e-mail da consulta que encontrou a reserva (exigidos para cancelar). */
+  const [credentials, setCredentials] = useState<{ code: string; email: string } | null>(null);
 
   const reservation = foundId ? data.reservations.find((r) => r.id === foundId) : undefined;
 
@@ -40,20 +43,29 @@ export function LookupPage() {
       setMessage(l.required);
       return;
     }
-    store.refresh();
-    const normalizedCode = normalizeCode(code);
-    const normalizedEmail = email.trim().toLowerCase();
-    const match = store
-      .getSnapshot()
-      .data.reservations.find((r) => r.code === normalizedCode && r.customer.email.trim().toLowerCase() === normalizedEmail);
-    // Mensagem genérica: não revela se o código existe.
-    setFoundId(match?.id ?? null);
-    setMessage(match ? null : l.notFound);
+    if (searching) return;
+    setSearching(true);
+    const sent = { code, email };
+    void store.lookup(sent.code, sent.email).then((result) => {
+      setSearching(false);
+      if (!result.ok) {
+        setFoundId(null);
+        setMessage(errorMessage(result.errors[0]));
+        return;
+      }
+      const match = result.value.reservation;
+      // Mensagem genérica: não revela se o código existe.
+      setFoundId(match?.id ?? null);
+      setCredentials(match ? sent : null);
+      setMessage(match ? null : l.notFound);
+    });
   };
 
-  const onCancel = () => {
-    if (!reservation) return;
-    const result = store.execute((fresh, nowMs) => cancelByCustomer(fresh, reservation.id, nowMs));
+  const onCancel = async () => {
+    if (!reservation || !credentials || cancelling) return;
+    setCancelling(true);
+    const result = await store.cancelOnline(credentials.code, credentials.email);
+    setCancelling(false);
     if (result.ok) {
       setConfirming(false);
       setCancelErrors([]);
@@ -109,7 +121,7 @@ export function LookupPage() {
               onChange={(event) => setEmail(event.target.value)}
             />
           </Field>
-          <button type="submit" className="btn btn--primary btn--lg">
+          <button type="submit" className="btn btn--primary btn--lg" disabled={searching} aria-busy={searching}>
             <Search aria-hidden="true" />
             {l.submit}
           </button>

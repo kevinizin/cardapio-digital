@@ -1,18 +1,14 @@
-import type { Result } from '../domain/errors';
+import { ok, type Result } from '../domain/errors';
+import { cancelByCustomer } from '../domain/lifecycle';
+import { buildOnlineDraft, createReservation } from '../domain/reservations';
 import { createDemoData } from '../domain/seed';
-import type { DemoData } from '../domain/types';
+import type { DemoData, Reservation } from '../domain/types';
+import type { OnlineBookingInput } from './api';
+import type { AppStore, PersistenceStatus, StoreSnapshot } from './appStore';
+import { findByCodeAndEmail } from './publicView';
 import { DATA_KEY, parseStoredData, type DemoRepository, type SaveResult } from './repository';
 
-export type PersistenceStatus =
-  | { mode: 'local' }
-  | { mode: 'memory'; reason: 'unavailable' | 'quota' | 'invalid'; detail: string };
-
-export interface StoreSnapshot {
-  data: DemoData;
-  persistence: PersistenceStatus;
-  /** Instante da última atualização vinda de outra aba. */
-  externalUpdateAt: number | null;
-}
+export type { PersistenceStatus, StoreSnapshot } from './appStore';
 
 export type Clock = () => number;
 
@@ -22,7 +18,8 @@ export type Clock = () => number;
  * as regras aprovarem. Isso reduz, mas não elimina, corridas entre abas: não
  * há transação atômica no localStorage.
  */
-export class DemoStore {
+export class DemoStore implements AppStore {
+  readonly kind = 'demo' as const;
   private snapshot: StoreSnapshot;
   private readonly listeners = new Set<() => void>();
   private lastRaw: string | null = null;
@@ -144,6 +141,22 @@ export class DemoStore {
   private handleExternalChange(key: string | null) {
     if (key !== null && key !== DATA_KEY) return;
     if (this.refresh()) this.emit({ ...this.snapshot, externalUpdateAt: this.clock() });
+  }
+
+  async createOnline(input: OnlineBookingInput): Promise<Result<{ reservation: Reservation }>> {
+    return this.execute((fresh, nowMs) => createReservation(fresh, buildOnlineDraft(fresh, input), nowMs, { channel: 'online' }));
+  }
+
+  async lookup(code: string, email: string): Promise<Result<{ reservation: Reservation | null }>> {
+    this.refresh();
+    return ok({ reservation: findByCodeAndEmail(this.snapshot.data, code, email) ?? null });
+  }
+
+  async cancelOnline(code: string, email: string): Promise<Result<{ reservation: Reservation }>> {
+    return this.execute((fresh, nowMs) => {
+      const found = findByCodeAndEmail(fresh, code, email);
+      return cancelByCustomer(fresh, found?.id ?? '', nowMs);
+    });
   }
 
   dispose(): void {

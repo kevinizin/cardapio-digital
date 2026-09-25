@@ -75,7 +75,11 @@ export type DomainErrorCode =
   | 'ONLINE_LIMIT_ABOVE_CAPACITY'
   | 'NO_ACTIVE_TABLES'
   // Persistência
-  | 'PERSISTENCE_BLOCKED';
+  | 'PERSISTENCE_BLOCKED'
+  // Servidor
+  | 'NETWORK_ERROR'
+  | 'RATE_LIMITED'
+  | 'SAVE_REJECTED';
 
 export type DomainWarningCode =
   | 'EARLY_ARRIVAL'
