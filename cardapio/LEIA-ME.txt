@@ -256,7 +256,7 @@ A cor do texto sobre os botões é calculada sozinha — não fica ilegível.
 Clicar duas vezes no index.html já funciona pra ver o visual.
 
 Pra testar direito (inclusive o QR das mesas), abra o Prompt de Comando
-na pasta e rode:
+na pasta "cardapio" e rode:
 
     node servidor-teste.js
 
