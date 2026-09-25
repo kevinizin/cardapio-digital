@@ -36,6 +36,7 @@ export type DomainErrorCode =
   | 'EMAIL_REQUIRED'
   | 'EMAIL_INVALID'
   | 'EMAIL_TOO_LONG'
+  | 'PHONE_REQUIRED'
   | 'PHONE_INVALID'
   | 'PHONE_TOO_LONG'
   | 'NOTES_TOO_LONG'

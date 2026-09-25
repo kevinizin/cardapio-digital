@@ -1,5 +1,5 @@
 import { intersectLists, mergeIntervals, subtractIntervals, totalDuration } from './intervals';
-import { blockSegment, getLiveTableStatus } from './occupancy';
+import { blockSegment, getAreaLoad, getLiveTableStatus, isSharedTable } from './occupancy';
 import { getShiftsForDate } from './schedule';
 import { daysOfMonth, MINUTE_MS, monthBounds, parisDate, parisMonth, parisTime, toMs, weekdayIndex } from './time';
 import type { DemoData, Interval, LocalDate, LocalTime, MonthKey, Reservation, ShiftKind, Table, TableEvent } from './types';
@@ -59,10 +59,17 @@ export function tableActiveIntervals(table: Table, events: readonly TableEvent[]
   return intervals;
 }
 
+/** Soma de pessoas × duração (ms) dos trechos de cada intervalo dentro de `available`. */
+function seatTime(list: readonly { interval: Interval; people: number }[], available: readonly Interval[]): number {
+  return list.reduce((sum, item) => sum + item.people * totalDuration(intersectLists([item.interval], available)), 0);
+}
+
 /**
  * Ocupação: minutos de atendimento reservados (sem canceladas/ausências; sem
  * preparação) ÷ minutos de mesas ativas e abertas. Turnos recortam tudo;
  * bloqueios e fechamentos reduzem o denominador uma única vez (união).
+ * Áreas compartilhadas contam lugares: pessoas × minutos de atendimento ÷
+ * capacidade × minutos abertos (o mesmo "tempo-lugar" em cima e embaixo).
  */
 export function computeOccupancy(
   data: DemoData,
@@ -87,9 +94,31 @@ export function computeOccupancy(
     const open = intersectLists(shiftWindows, tableActiveIntervals(table, data.tableEvents, range));
     const blocks = data.blocks.filter((b) => b.tableId === table.id).map(blockSegment);
     const available = subtractIntervals(open, blocks);
+    const own = data.reservations.filter((r) => r.tableId === table.id);
+    if (isSharedTable(table)) {
+      const seats = table.capacity;
+      plannedDen += seats * totalDuration(available);
+      const planned = own
+        .filter((r) => r.status !== 'cancelled' && r.status !== 'no_show')
+        .map((r) => ({
+          people: r.partySize,
+          interval: { start: toMs(r.startAt), end: toMs(r.startAt) + r.serviceMinutes * MINUTE_MS },
+        }));
+      plannedNum += Math.min(seats * totalDuration(available), seatTime(planned, available));
+      const availableElapsed = intersectLists(available, elapsed);
+      realizedDen += seats * totalDuration(availableElapsed);
+      const real = own.flatMap((r) => {
+        if (r.status === 'completed' && r.completedAt) {
+          return [{ people: r.partySize, interval: { start: toMs(r.seatedAt ?? r.startAt), end: toMs(r.completedAt) } }];
+        }
+        if (r.status === 'seated' && r.seatedAt) return [{ people: r.partySize, interval: { start: toMs(r.seatedAt), end: nowMs } }];
+        return [];
+      });
+      realizedNum += Math.min(seats * totalDuration(availableElapsed), seatTime(real, availableElapsed));
+      continue;
+    }
     plannedDen += totalDuration(available);
 
-    const own = data.reservations.filter((r) => r.tableId === table.id);
     const planned = own
       .filter((r) => r.status !== 'cancelled' && r.status !== 'no_show')
       .map((r) => ({ start: toMs(r.startAt), end: toMs(r.startAt) + r.serviceMinutes * MINUTE_MS }));
@@ -170,6 +199,8 @@ export interface DayOverview {
   cancellations: number;
   activeTables: number;
   freeTablesNow: number;
+  /** Lugares das áreas compartilhadas ativas (null quando não há áreas). */
+  seats: { total: number; freeNow: number } | null;
 }
 
 /** Números do dia de Paris; "agora" usa o estado real das mesas. */
@@ -179,6 +210,14 @@ export function computeDayOverview(data: DemoData, date: LocalDate, nowMs: numbe
   const expectedPeopleList = notCancelled.filter((r) => r.status !== 'no_show');
   const seated = data.reservations.filter((r) => r.status === 'seated');
   const activeTables = data.tables.filter((t) => t.active);
+  const areas = activeTables.filter(isSharedTable);
+  const seats = areas.length
+    ? {
+        total: areas.reduce((sum, t) => sum + t.capacity, 0),
+        freeNow: areas.reduce((sum, t) => sum + Math.max(0, t.capacity - getAreaLoad(t, data, nowMs, nowMs).load), 0),
+      }
+    : null;
+  const plainTables = activeTables.filter((t) => !isSharedTable(t));
   return {
     date,
     expectedReservations: notCancelled.length,
@@ -188,7 +227,8 @@ export function computeDayOverview(data: DemoData, date: LocalDate, nowMs: numbe
     completedReservations: ofDay.filter((r) => r.status === 'completed').length,
     noShows: ofDay.filter((r) => r.status === 'no_show').length,
     cancellations: ofDay.filter((r) => r.status === 'cancelled').length,
-    activeTables: activeTables.length,
-    freeTablesNow: activeTables.filter((t) => getLiveTableStatus(t, data, nowMs).state === 'free').length,
+    activeTables: plainTables.length,
+    freeTablesNow: plainTables.filter((t) => getLiveTableStatus(t, data, nowMs).state === 'free').length,
+    seats,
   };
 }

@@ -5,7 +5,7 @@ import { TABLE_STATE_ICONS, TableStateBadge } from '../../components/Badges';
 import { DateField, TimeSelect, timeOptions } from '../../components/DateField';
 import { Notice } from '../../components/Feedback';
 import { useDocumentTitle } from '../../components/PageLoading';
-import { plannedServiceEnd, getForecastTableStatus, getLiveTableStatus, type LiveTableState } from '../../domain/occupancy';
+import { plannedServiceEnd, getForecastTableStatus, getLiveTableStatus, isSharedTable, type LiveTableState } from '../../domain/occupancy';
 import { currentOrNextShift } from '../../domain/schedule';
 import { localToMs, MINUTE_MS, parisDate, parisTime, toMs } from '../../domain/time';
 import type { Reservation, Table, TableBlock } from '../../domain/types';
@@ -13,6 +13,8 @@ import { formatLocalDate, formatLocalDateCompact, formatTime, t } from '../../i1
 import { useData, useNow } from '../../state/store';
 import { useAdminActions } from './AdminActions';
 import { PageHead } from './AdminLayout';
+import { placeOf } from './adminFormat';
+import { AreaBoard } from './AreaBoard';
 import { BlockDialog } from './BlockDialog';
 import './floor.css';
 
@@ -120,7 +122,10 @@ export function FloorPage() {
   const today = parisDate(now);
   const { settings } = data;
 
-  const positions = useMemo(() => floorPositions(data.tables), [data.tables]);
+  // Áreas controladas por lugares aparecem como cartões de lotação; o mapa fica só para mesas comuns.
+  const plainTables = useMemo(() => data.tables.filter((table) => !isSharedTable(table)), [data.tables]);
+  const areas = useMemo(() => data.tables.filter(isSharedTable), [data.tables]);
+  const positions = useMemo(() => floorPositions(plainTables), [plainTables]);
   const [mode, setMode] = useState<'now' | 'forecast'>('now');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [blockId, setBlockId] = useState<string | null>(null);
@@ -142,7 +147,7 @@ export function FloorPage() {
 
   const views: TableView[] = useMemo(
     () =>
-      data.tables.map((table) => {
+      plainTables.map((table) => {
         if (mode === 'now') {
           const live = getLiveTableStatus(table, data, now);
           return { table, state: live.state, reservation: live.reservation, block: live.block, until: live.until, overdue: live.overdue };
@@ -151,7 +156,7 @@ export function FloorPage() {
         const forecast = getForecastTableStatus(table, data, forecastMs, now);
         return { table, state: forecast.state, reservation: forecast.reservation, block: forecast.block, until: forecast.segment?.end };
       }),
-    [data, now, mode, forecastMs, forecastValid],
+    [data, plainTables, now, mode, forecastMs, forecastValid],
   );
 
   const counts = STATES.map((state) => ({ state, count: views.filter((view) => view.state === state).length }));
@@ -186,7 +191,7 @@ export function FloorPage() {
             {block && (
               <button type="button" className="btn" onClick={() => setBlockId(block.id)}>
                 <Lock aria-hidden="true" />
-                {t.admin.agenda.blockDialogTitle(table.id)}
+                {t.admin.agenda.blockDialogTitle(placeOf(data.tables, table.id))}
               </button>
             )}
           </div>
@@ -235,7 +240,7 @@ export function FloorPage() {
             <p className="muted">{block.reason}</p>
             <button type="button" className="btn" onClick={() => setBlockId(block.id)} style={{ justifySelf: 'start' }}>
               <Lock aria-hidden="true" />
-              {t.admin.agenda.blockDialogTitle(table.id)}
+              {t.admin.agenda.blockDialogTitle(placeOf(data.tables, table.id))}
             </button>
           </>
         )}
@@ -297,7 +302,7 @@ export function FloorPage() {
     <>
       <PageHead
         title={fl.title}
-        description={fl.subtitle}
+        description={plainTables.length ? fl.subtitle : fl.subtitleAreas}
         actions={
           <Link to="/admin/agenda" className="btn">
             <CalendarDays aria-hidden="true" />
@@ -358,108 +363,116 @@ export function FloorPage() {
         </Notice>
       )}
 
-      <ul className="floor-counts" aria-label={fl.countsLabel}>
-        {counts
-          .filter(({ state, count }) => state !== 'inactive' || count > 0)
-          .map(({ state, count }) => {
-            const Icon = TABLE_STATE_ICONS[state];
-            return (
-              <li key={state}>
-                <span className={`badge badge--${state}${mode === 'forecast' ? ' badge--dashed' : ''}`}>
-                  <Icon aria-hidden="true" />
-                  {t.tableState[state]}: {count}
-                </span>
-              </li>
-            );
-          })}
-      </ul>
+      {areas.length > 0 && (
+        <AreaBoard areas={areas} mode={mode} now={now} forecastMs={forecastValid ? forecastMs : null} onOpenBlock={setBlockId} />
+      )}
 
-      <div className="floor-layout">
-        <section className="floor-card" aria-label={fl.mapLabel}>
-          <div className="floor-scroll">
-            <div className={`floor-map${mode === 'forecast' ? ' floor-map--forecast' : ''}`}>
-              <FloorBackground />
-              {views.map((view) => {
-                const position = positions[view.table.id] ?? { x: 500, y: 320 };
-                const shape = shapeOf(view.table.capacity);
-                const stateKey = view.state ?? 'neutral';
-                const Icon = view.state ? TABLE_STATE_ICONS[view.state] : null;
-                const chairs = Math.min(view.table.capacity, 12);
+      {plainTables.length > 0 && (
+        <>
+          <ul className="floor-counts" aria-label={fl.countsLabel}>
+            {counts
+              .filter(({ state, count }) => state !== 'inactive' || count > 0)
+              .map(({ state, count }) => {
+                const Icon = TABLE_STATE_ICONS[state];
                 return (
-                  <button
-                    key={view.table.id}
-                    type="button"
-                    className={`floor-table floor-table--${stateKey}`}
-                    style={{ left: `${position.x / 10}%`, top: `${(position.y / 640) * 100}%` } as React.CSSProperties}
-                    aria-pressed={selectedId === view.table.id}
-                    aria-label={fl.tableButton(
-                      view.table.id,
-                      view.table.capacity,
-                      view.state ? t.tableState[view.state] : t.common.unavailable,
-                      mode === 'forecast',
-                    )}
-                    onClick={() => {
-                      setSelectedId(view.table.id);
-                      // Com o painel abaixo do mapa (telas menores), leva os detalhes para a vista.
-                      if (window.matchMedia('(max-width: 1360px)').matches) {
-                        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                        requestAnimationFrame(() => panelRef.current?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' }));
-                      }
-                    }}
-                  >
-                    <span
-                      className={`floor-table__shape${shape.round ? ' is-round' : ''}`}
-                      style={{ '--w': shape.w, '--h': shape.h } as React.CSSProperties}
-                    >
-                      {Array.from({ length: chairs }, (_, index) => {
-                        const angle = (index / chairs) * Math.PI * 2 - Math.PI / 2;
-                        const rx = 50 + Math.cos(angle) * (50 + (14 / shape.w) * 100);
-                        const ry = 50 + Math.sin(angle) * (50 + (14 / shape.h) * 100);
-                        return <span key={index} className="floor-table__chair" style={{ left: `${rx}%`, top: `${ry}%` }} aria-hidden="true" />;
-                      })}
-                      <span className="floor-table__id">{view.table.id}</span>
-                      <span className="floor-table__cap">{view.table.capacity}p</span>
+                  <li key={state}>
+                    <span className={`badge badge--${state}${mode === 'forecast' ? ' badge--dashed' : ''}`}>
+                      <Icon aria-hidden="true" />
+                      {t.tableState[state]}: {count}
                     </span>
-                    <span className="floor-table__state" aria-hidden="true">
-                      {Icon && <Icon />}
-                      {view.state ? fl.pill[view.state] : '—'}
-                    </span>
-                  </button>
+                  </li>
                 );
               })}
-            </div>
-          </div>
-          <ul className="floor-legend" aria-label={fl.legendTitle}>
-            {STATES.map((state) => (
-              <li key={state}>
-                <TableStateBadge state={state} />
-              </li>
-            ))}
           </ul>
-        </section>
 
-        <aside className="floor-card floor-panel" aria-live="polite" ref={panelRef}>
-          {selected ? (
-            <div className="stack">
-              <div className="cluster" style={{ justifyContent: 'space-between' }}>
-                <div>
-                  <h2 className="card__title">{fl.panelTitle(selected.table.id)}</h2>
-                  <p className="subtle">{fl.panelMeta(selected.table.capacity, t.area[selected.table.area])}</p>
+          <div className="floor-layout">
+            <section className="floor-card" aria-label={fl.mapLabel}>
+              <div className="floor-scroll">
+                <div className={`floor-map${mode === 'forecast' ? ' floor-map--forecast' : ''}`}>
+                  <FloorBackground />
+                  {views.map((view) => {
+                    const position = positions[view.table.id] ?? { x: 500, y: 320 };
+                    const shape = shapeOf(view.table.capacity);
+                    const stateKey = view.state ?? 'neutral';
+                    const Icon = view.state ? TABLE_STATE_ICONS[view.state] : null;
+                    const chairs = Math.min(view.table.capacity, 12);
+                    return (
+                      <button
+                        key={view.table.id}
+                        type="button"
+                        className={`floor-table floor-table--${stateKey}`}
+                        style={{ left: `${position.x / 10}%`, top: `${(position.y / 640) * 100}%` } as React.CSSProperties}
+                        aria-pressed={selectedId === view.table.id}
+                        aria-label={fl.tableButton(
+                          view.table.id,
+                          view.table.capacity,
+                          view.state ? t.tableState[view.state] : t.common.unavailable,
+                          mode === 'forecast',
+                        )}
+                        onClick={() => {
+                          setSelectedId(view.table.id);
+                          // Com o painel abaixo do mapa (telas menores), leva os detalhes para a vista.
+                          if (window.matchMedia('(max-width: 1360px)').matches) {
+                            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                            requestAnimationFrame(() => panelRef.current?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' }));
+                          }
+                        }}
+                      >
+                        <span
+                          className={`floor-table__shape${shape.round ? ' is-round' : ''}`}
+                          style={{ '--w': shape.w, '--h': shape.h } as React.CSSProperties}
+                        >
+                          {Array.from({ length: chairs }, (_, index) => {
+                            const angle = (index / chairs) * Math.PI * 2 - Math.PI / 2;
+                            const rx = 50 + Math.cos(angle) * (50 + (14 / shape.w) * 100);
+                            const ry = 50 + Math.sin(angle) * (50 + (14 / shape.h) * 100);
+                            return <span key={index} className="floor-table__chair" style={{ left: `${rx}%`, top: `${ry}%` }} aria-hidden="true" />;
+                          })}
+                          <span className="floor-table__id">{view.table.id}</span>
+                          <span className="floor-table__cap">{view.table.capacity}p</span>
+                        </span>
+                        <span className="floor-table__state" aria-hidden="true">
+                          {Icon && <Icon />}
+                          {view.state ? fl.pill[view.state] : '—'}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-                {selected.state && (
-                  <span className="cluster" style={{ '--cluster-gap': '0.3rem' } as React.CSSProperties}>
-                    <TableStateBadge state={selected.state} forecast={mode === 'forecast'} />
-                    {mode === 'forecast' && <span className="badge badge--forecast">{fl.forecastTag}</span>}
-                  </span>
-                )}
               </div>
-              {panelDetails()}
-            </div>
-          ) : (
-            panelDetails()
-          )}
-        </aside>
-      </div>
+              <ul className="floor-legend" aria-label={fl.legendTitle}>
+                {STATES.map((state) => (
+                  <li key={state}>
+                    <TableStateBadge state={state} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <aside className="floor-card floor-panel" aria-live="polite" ref={panelRef}>
+              {selected ? (
+                <div className="stack">
+                  <div className="cluster" style={{ justifyContent: 'space-between' }}>
+                    <div>
+                      <h2 className="card__title">{fl.panelTitle(selected.table.id)}</h2>
+                      <p className="subtle">{fl.panelMeta(selected.table.capacity, t.area[selected.table.area])}</p>
+                    </div>
+                    {selected.state && (
+                      <span className="cluster" style={{ '--cluster-gap': '0.3rem' } as React.CSSProperties}>
+                        <TableStateBadge state={selected.state} forecast={mode === 'forecast'} />
+                        {mode === 'forecast' && <span className="badge badge--forecast">{fl.forecastTag}</span>}
+                      </span>
+                    )}
+                  </div>
+                  {panelDetails()}
+                </div>
+              ) : (
+                panelDetails()
+              )}
+            </aside>
+          </div>
+        </>
+      )}
 
       {blockId && <BlockDialog blockId={blockId} onClose={() => setBlockId(null)} />}
     </>

@@ -1,5 +1,4 @@
-import { overlaps } from './intervals';
-import { buildOccupancyIndex, type OccupancySegment } from './occupancy';
+import { buildOccupancyIndex, isSharedTable, tableConflicts, type OccupancySegment } from './occupancy';
 import { getDayStatus, getShiftsForDate, lastBookableDate, slotStartsForShift, type DayStatus, type ResolvedShift } from './schedule';
 import { addDays, MINUTE_MS, parisDate, parisTime } from './time';
 import type { DemoData, Interval, LocalDate, LocalTime, ShiftKind, Table } from './types';
@@ -33,22 +32,41 @@ export interface DayAvailability {
 const byCapacityThenId = (a: Table, b: Table) =>
   a.capacity - b.capacity || a.id.localeCompare(b.id, 'en', { numeric: true });
 
-/** Mesas ativas que comportam o grupo, da menor para a maior; desempate pela identificação. */
+/**
+ * Mesas ativas que comportam o grupo: primeiro as mesas comuns, da menor para
+ * a maior (desempate pela identificação); depois as áreas compartilhadas, na
+ * ordem cadastrada (ex.: salão antes do terraço).
+ */
 export function candidateTables(tables: readonly Table[], partySize: number): Table[] {
-  return tables.filter((t) => t.active && t.capacity >= partySize).sort(byCapacityThenId);
+  const fits = tables.filter((t) => t.active && t.capacity >= partySize);
+  return [...fits.filter((t) => !isSharedTable(t)).sort(byCapacityThenId), ...fits.filter(isSharedTable)];
 }
 
 export function maxActiveCapacity(tables: readonly Table[]): number {
   return tables.reduce((max, t) => (t.active ? Math.max(max, t.capacity) : max), 0);
 }
 
-export function isTableFree(index: OccupancyIndex, tableId: string, interval: Interval): boolean {
-  return !(index.get(tableId) ?? []).some((segment) => overlaps(segment, interval));
+/**
+ * Mesa comum: livre se nada se sobrepõe ao intervalo. Mesa compartilhada:
+ * livre se, em todo o intervalo, as pessoas já previstas + o grupo cabem.
+ */
+export function isTableFree(
+  index: OccupancyIndex,
+  table: Pick<Table, 'id' | 'capacity' | 'shared'>,
+  interval: Interval,
+  partySize: number,
+): boolean {
+  return tableConflicts(table, index.get(table.id) ?? [], interval, partySize).length === 0;
 }
 
-/** Menor mesa livre que comporte o grupo no intervalo, de forma determinística. */
-export function pickTable(candidates: readonly Table[], interval: Interval, index: OccupancyIndex): Table | null {
-  return candidates.find((table) => isTableFree(index, table.id, interval)) ?? null;
+/** Primeira mesa candidata livre para o grupo no intervalo, de forma determinística. */
+export function pickTable(
+  candidates: readonly Table[],
+  interval: Interval,
+  index: OccupancyIndex,
+  partySize: number,
+): Table | null {
+  return candidates.find((table) => isTableFree(index, table, interval, partySize)) ?? null;
 }
 
 export function partyStatusFor(data: Pick<DemoData, 'tables' | 'settings'>, partySize: number, channel: Channel): PartyStatus {
@@ -90,7 +108,7 @@ export function getDayAvailability(
     const slots: SlotOption[] = [];
     for (const startMs of slotStartsForShift(shift, rules.slotIntervalMinutes, blockMinutes)) {
       if (startMs < earliest) continue;
-      const table = pickTable(candidates, { start: startMs, end: startMs + blockMinutes * MINUTE_MS }, index);
+      const table = pickTable(candidates, { start: startMs, end: startMs + blockMinutes * MINUTE_MS }, index, partySize);
       if (table) slots.push({ startMs, time: parisTime(startMs), shiftKind: shift.kind, tableId: table.id });
     }
     totalSlots += slots.length;

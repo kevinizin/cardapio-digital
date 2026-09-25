@@ -13,6 +13,7 @@ import { formatDateTime, formatLocalDate, formatLocalDateCompact, formatTime, t 
 import { useData, useNow } from '../../state/store';
 import { useAdminActions } from './AdminActions';
 import { PageHead } from './AdminLayout';
+import { placeLabel } from './adminFormat';
 
 const rp = t.admin.reservations;
 const PAGE_SIZE = 25;
@@ -111,7 +112,7 @@ export function ReservationsPage() {
         r.code,
         formatLocalDate(parisDate(start)),
         parisTime(start),
-        r.tableId,
+        table?.shared ? '' : r.tableId,
         table ? t.area[table.area] : '',
         r.partySize,
         t.reservationStatus[r.status],
@@ -290,7 +291,7 @@ export function ReservationsPage() {
                       </span>
                       <span className="res-item__meta">
                         <span className="num">{r.code}</span>
-                        <span>{t.common.tableLabel(r.tableId)}</span>
+                        <span>{placeLabel(data.tables, r.tableId)}</span>
                         <span>{t.common.people(r.partySize)}</span>
                         <SourceLabel source={r.source} />
                       </span>

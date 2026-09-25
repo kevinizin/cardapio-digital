@@ -3,7 +3,7 @@ import { normalizeCustomer, validateCustomer } from './customer';
 import { LIMITS } from './defaults';
 import { err, fail, ok, type DomainError, type Result } from './errors';
 import { cryptoRandom, generateId, generateReservationCode, type RandomSource } from './ids';
-import { buildOccupancyIndex, findConflicts, projectedServiceEnd } from './occupancy';
+import { buildOccupancyIndex, isSharedTable, projectedServiceEnd, tableConflicts, tableParams } from './occupancy';
 import { findShiftForInterval, getDayStatus, isOnGrid } from './schedule';
 import { isValidLocalDate, isValidLocalTime, localToMs, MINUTE_MS, parisDate, parisTime, toIso, toMs } from './time';
 import { RESERVATION_SOURCES } from './types';
@@ -22,7 +22,7 @@ export interface ReservationDraft {
   date: LocalDate;
   time: LocalTime;
   partySize: number;
-  /** 'auto' atribui a menor mesa livre que comporte o grupo. */
+  /** 'auto' atribui a menor mesa livre que comporte o grupo (ou a primeira área com lugares). */
   tableId: string;
   serviceMinutes: number;
   prepMinutes: number;
@@ -142,7 +142,13 @@ export function validateDraft(
   if (!RESERVATION_SOURCES.includes(draft.source) || (online && draft.source !== 'online')) {
     errors.push(err('SOURCE_INVALID', { field: 'source' }));
   }
-  errors.push(...validateCustomer(draft.customer, { emailRequired: online || draft.source === 'online' }));
+  // Telefone obrigatório vale só para o site (a administração registra sem telefone quando precisa).
+  errors.push(
+    ...validateCustomer(draft.customer, {
+      emailRequired: online || draft.source === 'online',
+      phoneRequired: online && rules.phoneRequired === true,
+    }),
+  );
   if (errors.length) return fail(...errors);
 
   // Quem já está à mesa ocupa desde agora até o término projetado + preparação.
@@ -154,22 +160,24 @@ export function validateDraft(
   const index = buildOccupancyIndex(data, nowMs, { excludeReservationId: original?.id, relevantFrom: interval.start });
 
   if (draft.tableId === AUTO_TABLE) {
-    const table = pickTable(candidateTables(data.tables, draft.partySize), interval, index);
+    const table = pickTable(candidateTables(data.tables, draft.partySize), interval, index, draft.partySize);
     if (!table) return fail(err(online ? 'SLOT_UNAVAILABLE' : 'NO_TABLE_AVAILABLE', { field: 'tableId' }));
     return ok({ startMs, endMs, tableId: table.id, customer: normalizeCustomer(draft.customer) });
   }
 
   const table = data.tables.find((t) => t.id === draft.tableId);
   if (!table) return fail(err('TABLE_NOT_FOUND', { field: 'tableId' }));
-  if (tableChanged && !table.active) return fail(err('TABLE_INACTIVE', { field: 'tableId', params: { table: table.id } }));
+  if (tableChanged && !table.active) return fail(err('TABLE_INACTIVE', { field: 'tableId', params: tableParams(table) }));
   if (table.capacity < draft.partySize) {
     return fail(
-      err('TABLE_TOO_SMALL', { field: 'tableId', params: { table: table.id, capacity: table.capacity, partySize: draft.partySize } }),
+      err('TABLE_TOO_SMALL', { field: 'tableId', params: { ...tableParams(table), capacity: table.capacity, partySize: draft.partySize } }),
     );
   }
-  if (tableChanged || timingChanged) {
-    const conflicts = findConflicts(index.get(table.id) ?? [], interval);
-    if (conflicts.length) return fail(err('CONFLICT', { field: 'tableId', conflicts, params: { table: table.id } }));
+  // Numa área compartilhada, aumentar o grupo também pode lotar a área.
+  const partyGrew = !original || draft.partySize > original.partySize;
+  if (tableChanged || timingChanged || (isSharedTable(table) && partyGrew)) {
+    const conflicts = tableConflicts(table, index.get(table.id) ?? [], interval, draft.partySize);
+    if (conflicts.length) return fail(err('CONFLICT', { field: 'tableId', conflicts, params: tableParams(table) }));
   }
   return ok({ startMs, endMs, tableId: table.id, customer: normalizeCustomer(draft.customer) });
 }

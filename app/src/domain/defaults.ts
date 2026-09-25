@@ -11,6 +11,8 @@ export const LIMITS = {
   customerCancelMinutes: { min: 0, max: 10_080, step: 15 },
   onlineMaxPartySize: { min: 1, max: 12, step: 1 },
   tableCapacity: { min: 1, max: 12, step: 1 },
+  /** Área compartilhada: pessoas ao mesmo tempo. */
+  sharedCapacity: { min: 1, max: 200, step: 1 },
   nameLength: { min: 2, max: 80 },
   emailMaxLength: 120,
   phoneMaxLength: 30,

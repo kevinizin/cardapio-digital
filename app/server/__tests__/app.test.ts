@@ -145,3 +145,42 @@ describe('API da administração', () => {
     expect(invalid.status).toBe(400);
   });
 });
+
+describe('API pública com área controlada por lugares', () => {
+  const shared = () =>
+    baseData({ tables: [{ id: 'SALAO', capacity: 10, area: 'salao', shared: true, active: true }] });
+  const party = (partySize: number) => ({ ...booking, partySize });
+
+  it('soma as pessoas no mesmo horário: 4 + 4 cabem, mais 4 é recusado (422), mais 2 cabe', async () => {
+    const { post, store } = await start(shared());
+    expect((await post('/api/public/reservations', party(4))).status).toBe(200);
+    expect((await post('/api/public/reservations', party(4))).status).toBe(200);
+    const full = await post('/api/public/reservations', party(4));
+    expect(full.status).toBe(422);
+    const body = (await full.json()) as { errors: { code: string }[] };
+    expect(body.errors.map((e) => e.code)).toEqual(['SLOT_UNAVAILABLE']);
+    expect((await post('/api/public/reservations', party(2))).status).toBe(200);
+    const data = await store.load();
+    expect(data.reservations.map((r) => r.tableId)).toEqual(['SALAO', 'SALAO', 'SALAO']);
+    expect(data.reservations.reduce((sum, r) => sum + r.partySize, 0)).toBe(10);
+  });
+
+  it('pedidos simultâneos nunca passam da capacidade', async () => {
+    const { post, store } = await start(shared());
+    const results = await Promise.all(Array.from({ length: 8 }, () => post('/api/public/reservations', party(3))));
+    expect(results.filter((r) => r.status === 200)).toHaveLength(3);
+    const data = await store.load();
+    expect(data.reservations.reduce((sum, r) => sum + r.partySize, 0)).toBe(9);
+  });
+
+  it('com telefone obrigatório, o servidor recusa reserva online sem telefone', async () => {
+    const data = shared();
+    data.settings.rules = { ...data.settings.rules, phoneRequired: true };
+    const { post } = await start(data);
+    const response = await post('/api/public/reservations', { ...booking, customer: { ...booking.customer, phone: '' } });
+    expect(response.status).toBe(422);
+    const body = (await response.json()) as { errors: { code: string }[] };
+    expect(body.errors.map((e) => e.code)).toEqual(['PHONE_REQUIRED']);
+    expect((await post('/api/public/reservations', booking)).status).toBe(200);
+  });
+});

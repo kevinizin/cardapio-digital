@@ -28,6 +28,7 @@ const settingsSchema = z.object({
     arrivalToleranceMinutes: count,
     customerCancelMinutes: count,
     onlineMaxPartySize: z.number().int().positive(),
+    phoneRequired: z.boolean().optional(),
   }),
 });
 
@@ -81,7 +82,7 @@ export const demoDataSchema = z
     revision: count,
     settings: settingsSchema,
     tables: z
-      .array(z.object({ id: z.string().min(1), capacity: z.number().int().positive(), area: z.enum(['salao', 'varanda']), active: z.boolean() }))
+      .array(z.object({ id: z.string().min(1), capacity: z.number().int().positive(), area: z.enum(['salao', 'varanda']), active: z.boolean(), shared: z.boolean().optional() }))
       .min(1),
     tableEvents: z.array(z.object({ tableId: z.string().min(1), active: z.boolean(), at: isoInstant })),
     reservations: z.array(reservationSchema),

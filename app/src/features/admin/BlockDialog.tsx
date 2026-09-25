@@ -6,6 +6,7 @@ import type { DomainError } from '../../domain/errors';
 import { toMs } from '../../domain/time';
 import { formatDateTime, t } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
+import { placeOf } from './adminFormat';
 
 const ag = t.admin.agenda;
 
@@ -34,7 +35,7 @@ export function BlockDialog({ blockId, onClose }: { blockId: string; onClose: ()
     <Dialog
       open
       onClose={onClose}
-      title={ag.blockDialogTitle(block.tableId)}
+      title={ag.blockDialogTitle(placeOf(data.tables, block.tableId))}
       description={`${formatDateTime(start)} – ${formatDateTime(end)}`}
       footer={
         <>

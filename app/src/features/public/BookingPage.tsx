@@ -14,7 +14,7 @@ import type { DomainError, DomainErrorCode } from '../../domain/errors';
 import { findException, getDayStatus, lastBookableDate } from '../../domain/schedule';
 import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate, weekdayIndex } from '../../domain/time';
 import type { Customer, LocalDate, LocalTime } from '../../domain/types';
-import { hasContact } from '../../config/restaurant';
+import { hasContact, RESTAURANT_CONTACT } from '../../config/restaurant';
 import { useI18n, useT } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
 import { ContactList } from './PublicChrome';
@@ -90,6 +90,7 @@ export function BookingPage() {
   const navigate = useNavigate();
   const { settings } = data;
   const { rules } = settings;
+  const phoneRequired = rules.phoneRequired === true;
   const nowMinute = Math.floor(now / MINUTE_MS);
   const today = parisDate(now);
   const lastDate = lastBookableDate(settings, now);
@@ -219,12 +220,12 @@ export function BookingPage() {
 
   const goToDetailsOrReview = () => {
     if (!selectedSlot) return;
-    const valid = validateCustomer(draft.customer, { emailRequired: true }).length === 0;
+    const valid = validateCustomer(draft.customer, { emailRequired: true, phoneRequired }).length === 0;
     update({ step: slotTaken && valid ? 3 : 2 });
   };
 
   const goToReview = () => {
-    const errors = validateCustomer(draft.customer, { emailRequired: true });
+    const errors = validateCustomer(draft.customer, { emailRequired: true, phoneRequired });
     setCustomerErrors(errors);
     if (errors.length) {
       document.getElementById(`booking-${errors[0].field}`)?.focus();
@@ -339,7 +340,7 @@ export function BookingPage() {
 
                 {draft.largeGroup ? (
                   <Notice tone="neutral" title={b.largerTitle}>
-                    <p>{b.largerText(rules.onlineMaxPartySize)}</p>
+                    <p>{b.largerText(rules.onlineMaxPartySize, Boolean(RESTAURANT_CONTACT.whatsapp))}</p>
                     {hasContact() ? <ContactList /> : store.kind === 'demo' && <p className="subtle">{b.largerDemo}</p>}
                   </Notice>
                 ) : (
@@ -478,7 +479,7 @@ export function BookingPage() {
                       required
                     />
                   </Field>
-                  <Field id="booking-phone" label={b.phone} optional hint={b.phoneHint} error={fieldErrors.phone}>
+                  <Field id="booking-phone" label={b.phone} optional={!phoneRequired} hint={b.phoneHint} error={fieldErrors.phone}>
                     <input
                       id="booking-phone"
                       className="input"
@@ -490,6 +491,7 @@ export function BookingPage() {
                       onChange={(event) => setCustomer('phone', event.target.value)}
                       aria-invalid={Boolean(fieldErrors.phone)}
                       aria-describedby={describedBy('booking-phone', b.phoneHint, fieldErrors.phone)}
+                      required={phoneRequired}
                     />
                   </Field>
                   <Field

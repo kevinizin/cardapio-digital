@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { Logo, LogoLink } from '../../components/Brand';
+import { hasContact } from '../../config/restaurant';
 import { DemoRibbon, PersistenceBanner } from '../../components/DemoChrome';
 import { useT } from '../../i18n';
 import { useStore } from '../../state/store';
@@ -45,7 +46,7 @@ export function PublicLayout() {
             <p>{p.footer.tagline}</p>
             <ContactList />
             <p>{p.footer.formats}</p>
-            {demo && <p>{p.footer.demoNoContact}</p>}
+            {demo && !hasContact() && <p>{p.footer.demoNoContact}</p>}
           </div>
           <LanguageSwitcher className="site-footer__lang" />
         </div>

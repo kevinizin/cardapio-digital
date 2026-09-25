@@ -9,7 +9,7 @@ import type { DayRule } from '../../domain/types';
 import { useI18n, type PublicMessages } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
 import { ContactList } from './PublicChrome';
-import { hasContact } from '../../config/restaurant';
+import { hasContact, RESTAURANT_CONTACT } from '../../config/restaurant';
 
 function shiftsText(t: PublicMessages, rule: DayRule): string[] {
   const parts: string[] = [];
@@ -57,6 +57,8 @@ export function HomePage() {
   const lastDate = lastBookableDate(settings, now);
   const specials = settings.exceptions.filter((e) => e.date >= today && e.date <= lastDate).slice(0, 3);
   const activeTables = tables.filter((table) => table.active);
+  // Áreas compartilhadas (controle por lugares) não contam como mesas, só como lugares.
+  const plainTables = activeTables.filter((table) => !table.shared);
   const seats = activeTables.reduce((sum, table) => sum + table.capacity, 0);
 
   return (
@@ -146,7 +148,7 @@ export function HomePage() {
               <Armchair />
             </span>
             <h3>{h.roomTitle}</h3>
-            <p className="muted">{h.roomText(activeTables.length, seats)}</p>
+            <p className="muted">{h.roomText(plainTables.length, seats)}</p>
           </article>
           <article className="pub-feature">
             <span className="pub-feature__icon" aria-hidden="true">
@@ -187,7 +189,7 @@ export function HomePage() {
             </div>
           </div>
           <Notice tone="neutral" title={h.groupsTitle}>
-            <p>{h.groupsText(rules.onlineMaxPartySize)}</p>
+            <p>{h.groupsText(rules.onlineMaxPartySize, Boolean(RESTAURANT_CONTACT.whatsapp))}</p>
             {hasContact() ? <ContactList /> : demo && <p className="subtle">{h.groupsDemo}</p>}
           </Notice>
         </div>

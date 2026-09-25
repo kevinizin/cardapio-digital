@@ -1,5 +1,5 @@
-import { AtSign, Mail, MapPin, Phone } from 'lucide-react';
-import { hasContact, RESTAURANT_CONTACT, type RestaurantContact } from '../../config/restaurant';
+import { AtSign, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { formatWhatsapp, hasContact, RESTAURANT_CONTACT, whatsappUrl, type RestaurantContact } from '../../config/restaurant';
 import { LOCALE_NAMES, LOCALES, useI18n, useT } from '../../i18n';
 
 const LOCALE_CODES = { fr: 'FR', pt: 'PT', en: 'EN' } as const;
@@ -35,11 +35,25 @@ export function ContactList({ contact = RESTAURANT_CONTACT, className = '' }: { 
   const instagram = contact.instagram?.replace(/^@/, '');
   return (
     <ul className={`pub-contact ${className}`} aria-label={c.label}>
+      {contact.whatsapp && (
+        <li>
+          <MessageCircle aria-hidden="true" />
+          <a href={whatsappUrl(contact.whatsapp)} target="_blank" rel="noopener noreferrer" title={c.whatsappTitle}>
+            {c.whatsapp} · {formatWhatsapp(contact.whatsapp)}
+          </a>
+        </li>
+      )}
       {contact.address && (
         <li>
           <MapPin aria-hidden="true" />
           <span className="visually-hidden">{c.address}: </span>
-          {contact.address}
+          {contact.mapsUrl ? (
+            <a href={contact.mapsUrl} target="_blank" rel="noopener noreferrer" title={c.mapTitle}>
+              {contact.address}
+            </a>
+          ) : (
+            contact.address
+          )}
         </li>
       )}
       {contact.phone && (

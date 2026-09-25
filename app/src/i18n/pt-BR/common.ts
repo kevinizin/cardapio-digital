@@ -108,7 +108,7 @@ export const common = {
     empty: 'Sem registros.',
     created: (actor: Actor): string => (actor === 'customer' ? 'Reserva feita pelo cliente (online)' : 'Reserva registrada pela administração'),
     updated: 'Reserva editada',
-    table_changed: 'Mesa trocada',
+    table_changed: 'Mesa ou área alterada',
     arrived: (minutes: number) =>
       minutes < 0
         ? `Chegada registrada (${-minutes} min antes do horário)`
@@ -125,7 +125,7 @@ export const common = {
       date: 'Data',
       time: 'Horário',
       partySize: 'Pessoas',
-      tableId: 'Mesa',
+      tableId: 'Mesa/área',
       serviceMinutes: 'Duração (min)',
       prepMinutes: 'Preparação (min)',
       name: 'Nome',

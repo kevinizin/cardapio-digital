@@ -597,3 +597,22 @@
   color: var(--fg-muted);
   font-size: var(--t-sm);
 }
+
+/* Lotação das áreas na visão geral */
+.overview-area {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.overview-area__label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+}
+
+.overview-area__label span {
+  color: var(--fg-muted);
+  font-size: var(--t-sm);
+}
