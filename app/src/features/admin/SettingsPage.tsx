@@ -614,6 +614,33 @@ function DataSection() {
   const [confirming, setConfirming] = useState(false);
   const { data, persistence } = snapshot;
 
+  if (persistence.mode === 'remote') {
+    return (
+      <Section id="dados" title={s.sections.data} intro={s.data.remoteIntro}>
+        <Notice tone={persistence.sync === 'offline' ? 'warning' : 'success'}>
+          <p>{persistence.sync === 'offline' ? s.data.statusRemoteOffline : s.data.statusRemote}</p>
+          <p className="subtle">{s.data.syncRemote}</p>
+        </Notice>
+        <p className="muted">
+          {s.data.startedAt(formatDateTime(toMs(data.seededAt)))} {s.data.counts(data.reservations.length, data.blocks.length)}
+        </p>
+        <div className="cluster">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              downloadTextFile(s.data.jsonFile(parisDate(now)), store.exportJson(), 'application/json;charset=utf-8');
+              notify({ tone: 'success', title: t.admin.toasts.exported });
+            }}
+          >
+            <Download aria-hidden="true" />
+            {s.data.exportJson}
+          </button>
+        </div>
+      </Section>
+    );
+  }
+
   return (
     <Section id="dados" title={s.sections.data} intro={s.data.intro}>
       <Notice tone={persistence.mode === 'local' ? 'success' : 'warning'}>

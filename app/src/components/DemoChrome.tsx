@@ -107,7 +107,7 @@ export function PersistenceBanner() {
               <button
                 type="button"
                 className="btn btn--sm"
-                onClick={() => downloadTextFile('maison-elise-dados-salvos-brutos.txt', raw, 'text/plain;charset=utf-8')}
+                onClick={() => downloadTextFile('aromas-da-vivi-dados-salvos-brutos.txt', raw, 'text/plain;charset=utf-8')}
               >
                 <Download aria-hidden="true" />
                 {t.persistence.downloadRaw}

@@ -180,7 +180,7 @@ export const adminPages = {
       'Cancelada em',
       'Motivo do cancelamento',
     ],
-    csvFile: (date: string) => `maison-elise-reservas-${date}.csv`,
+    csvFile: (date: string) => `aromas-da-vivi-reservas-${date}.csv`,
     csvDone: (n: number) => (n === 1 ? 'CSV gerado com 1 reserva.' : `CSV gerado com ${n} reservas.`),
   },
   monthly: {
@@ -237,7 +237,7 @@ export const adminPages = {
   settings: {
     documentTitle: 'Configurações',
     title: 'Configurações',
-    subtitle: 'Regras, funcionamento, mesas, bloqueios e dados da demonstração.',
+    subtitle: 'Regras, funcionamento, mesas, bloqueios e dados.',
     sectionNav: 'Seções das configurações',
     sections: {
       rules: 'Regras de reserva',
@@ -245,7 +245,7 @@ export const adminPages = {
       exceptions: 'Exceções por data',
       tables: 'Mesas',
       blocks: 'Bloqueios manuais',
-      data: 'Dados da demonstração',
+      data: 'Dados',
     },
     conflictsIntro: 'Resolva estas reservas antes de salvar (troque a mesa, edite ou cancele com justificativa):',
     rules: {
@@ -317,6 +317,12 @@ export const adminPages = {
     data: {
       intro:
         'Os dados desta demonstração ficam apenas neste navegador (localStorage). Outros dispositivos ou navegadores não compartilham estas informações.',
+      remoteIntro:
+        'Os dados ficam no servidor do restaurante e são compartilhados por todos os aparelhos com acesso à administração. Cada alteração é guardada no histórico do banco.',
+      statusRemote: 'Salvando automaticamente no servidor.',
+      statusRemoteOffline: 'Sem conexão: há alterações aguardando para serem salvas.',
+      syncRemote: 'Outros aparelhos veem as mudanças em até 20 segundos.',
+      startedAt: (date: string) => `Sistema iniciado em ${date}.`,
       statusLocal: 'Salvando automaticamente neste navegador.',
       statusMemory: 'Atenção: os dados estão apenas em memória nesta aba.',
       sync: 'Abas abertas no mesmo navegador são sincronizadas automaticamente.',
@@ -328,7 +334,7 @@ export const adminPages = {
       restoreText:
         'Reservas, bloqueios e configurações atuais serão apagados e substituídos por novos dados fictícios gerados a partir de hoje. Somente as chaves desta aplicação no navegador são removidas.',
       restoreConfirm: 'Apagar e restaurar',
-      jsonFile: (date: string) => `maison-elise-dados-${date}.json`,
+      jsonFile: (date: string) => `aromas-da-vivi-dados-${date}.json`,
     },
   },
 };

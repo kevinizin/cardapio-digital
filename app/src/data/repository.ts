@@ -7,7 +7,7 @@ import { validateDemoData } from './schema';
  * compartilhado, sem mudar as regras de negócio.
  */
 
-export const STORAGE_PREFIX = 'maison-elise-demo:';
+export const STORAGE_PREFIX = 'aromas-da-vivi-demo:';
 export const DATA_KEY = `${STORAGE_PREFIX}data`;
 
 export type LoadResult =

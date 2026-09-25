@@ -59,7 +59,7 @@ export const adminCore = {
     overdue: (minutes: number) => `Atendimento ${minutes} min além do término previsto`,
     prepActive: (time: string) => `Mesa em preparação até ${time}`,
     noShowFrom: (time: string) => `Ausência disponível a partir das ${time}.`,
-    notFound: 'Reserva não encontrada. Ela pode ter sido removida ao restaurar a demonstração.',
+    notFound: 'Reserva não encontrada.',
     lockedEdit: 'Reservas concluídas, canceladas ou com ausência ficam registradas e não podem ser editadas.',
   },
   dialogs: {
