@@ -135,6 +135,6 @@ As regras de negócio não conhecem o armazenamento: trocar o `localStorage` por
 
 ## Identidade visual
 
-- Logo original em `public/brand/logo-maison-elise.png` (cópia da imagem em `maison-elise/identidade`). As versões `logo-maison-elise-480.webp` e `-960.webp` são a mesma arte redimensionada, para carregar mais rápido; os ícones do navegador são um recorte do monograma da própria logo.
-- Paleta: verde `#183D35`, creme `#F7F3EA`, dourado `#B89B63` (só decorativo), sálvia `#DCE5DC`, carvão `#252B28`.
+- Logo: o arquivo oficial do Aromas da Vivi ainda está pendente. Até lá, `src/components/Brand.tsx` desenha um logotipo provisório em SVG (Great Vibes dourado sobre bordô); para usar a imagem, coloque-a em `public/brand/` e defina `LOGO_IMAGE` nesse arquivo. Os ícones do navegador (`public/brand/icon-*.png`, `public/favicon.ico`) são provisórios: um "A" em script dourado sobre bordô.
+- Paleta: bordô `#841731`, dourado metálico `#C9A24A` (só decorativo; `#7A5C1C` em texto), creme `#F8F3EA`, rosado `#F3E2E3`, carvão `#2A2224`. Detalhes em `../identidade/referencia-visual.md`.
 - Tipografia auto-hospedada (sem depender de rede): Cormorant Garamond nos títulos e Source Sans 3 no corpo.

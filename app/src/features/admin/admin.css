@@ -34,7 +34,7 @@
 }
 
 .adm-sidebar__label {
-  color: var(--green-800);
+  color: var(--wine-800);
   font-size: var(--t-2xs);
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -64,18 +64,18 @@
   width: 18px;
   height: 18px;
   flex: none;
-  color: var(--green-700);
+  color: var(--wine-700);
 }
 
 .adm-nav__link:hover {
-  background: var(--sage-100);
-  color: var(--green-900);
+  background: var(--blush-100);
+  color: var(--wine-900);
 }
 
 .adm-nav__link.active {
-  background: var(--surface-sage);
-  color: var(--green-900);
-  box-shadow: inset 3px 0 0 var(--green-800);
+  background: var(--surface-blush);
+  color: var(--wine-900);
+  box-shadow: inset 3px 0 0 var(--wine-800);
 }
 
 .adm-sidebar__foot {
@@ -122,14 +122,14 @@
     padding: 0.35rem var(--gutter) 0;
   }
   .adm-topbar__label {
-    color: var(--green-800);
+    color: var(--wine-800);
     font-size: var(--t-2xs);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
   .adm-topbar .logo--sidebar {
-    --logo-width: 84px;
+    --logo-width: 96px;
   }
   .adm-tabs {
     display: flex;
@@ -150,8 +150,8 @@
     background: var(--surface);
   }
   .adm-tabs .adm-nav__link.active {
-    border-color: var(--green-800);
-    background: var(--green-800);
+    border-color: var(--wine-800);
+    background: var(--wine-800);
     color: var(--ink-000);
     box-shadow: none;
   }
@@ -356,7 +356,7 @@
 }
 
 .res-item__name button:hover {
-  text-decoration-color: var(--green-700);
+  text-decoration-color: var(--wine-700);
 }
 
 .res-item__meta {
@@ -556,9 +556,9 @@
 }
 
 .table-option input:checked + .table-option__face {
-  border-color: var(--green-800);
-  box-shadow: inset 0 0 0 1px var(--green-800);
-  background: var(--green-100);
+  border-color: var(--wine-800);
+  box-shadow: inset 0 0 0 1px var(--wine-800);
+  background: var(--wine-100);
 }
 
 .table-option input:focus-visible + .table-option__face {

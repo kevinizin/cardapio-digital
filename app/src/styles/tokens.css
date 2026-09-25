@@ -1,36 +1,39 @@
 /*
- * Camada de tokens. Cores normativas da marca Maison Élise primeiro;
+ * Camada de tokens. Cores normativas da marca Aromas da Vivi primeiro
+ * (bordô do fundo do logo + dourado metálico das letras);
  * componentes usam apenas os papéis semânticos definidos abaixo.
  */
 :root {
   color-scheme: light;
 
   /* Marca (normativa) */
-  --brand-green: #183d35;
-  --brand-cream: #f7f3ea;
-  --brand-gold: #b89b63;
-  --brand-sage: #dce5dc;
-  --brand-charcoal: #252b28;
+  --brand-wine: #841731;
+  --brand-cream: #f8f3ea;
+  --brand-gold: #c9a24a;
+  --brand-blush: #f3e2e3;
+  --brand-charcoal: #2a2224;
 
-  /* Verde */
-  --green-950: #0f2a24;
-  --green-900: #183d35;
-  --green-800: #1f4b41;
-  --green-700: #2b5e52;
-  --green-600: #3f7466;
-  --green-200: #cfdfd5;
-  --green-100: #e4ede7;
+  /* Bordô (vinho): 900 é a cor da marca; 950 mais escuro, 800→600 mais claros */
+  --wine-950: #5c0f22;
+  --wine-900: #841731;
+  --wine-800: #93213e;
+  --wine-700: #a3304d;
+  --wine-600: #b24a63;
+  --wine-200: #ecccd3;
+  --wine-100: #f8e8eb;
 
-  /* Dourado: decorativo; a versão escura é a única usada em texto */
-  --gold-800: #6e5a31;
-  --gold-500: #b89b63;
-  --gold-300: #d8c49c;
-  --gold-100: #f1e8d6;
+  /* Dourado metálico: decorativo; a versão escura é a única usada em texto */
+  --gold-800: #7a5c1c;
+  --gold-600: #a8822f;
+  --gold-500: #c9a24a;
+  --gold-300: #e6cf8f;
+  --gold-100: #f6edd6;
+  --gold-leaf: linear-gradient(172deg, #f7e2a3 0%, #e0bf6c 34%, #c9a24a 55%, #a8822f 78%, #e8cd82 100%);
 
-  /* Sálvia */
-  --sage-300: #c6d4c7;
-  --sage-200: #dce5dc;
-  --sage-100: #ebf1eb;
+  /* Rosado: tinta clara do bordô, para superfícies de destaque */
+  --blush-300: #e4c6cb;
+  --blush-200: #f3e2e3;
+  --blush-100: #faf0f0;
 
   /* Neutro quente em 12 degraus */
   --ink-000: #fffdf8;
@@ -43,8 +46,8 @@
   --ink-500: #8c8577;
   --ink-600: #676257;
   --ink-700: #4e4b43;
-  --ink-800: #37372f;
-  --ink-900: #252b28;
+  --ink-800: #3b3334;
+  --ink-900: #2a2224;
 
   /* Estados de mesa e de reserva (sempre acompanhados de ícone e texto) */
   --state-free: #2f6b4f;
@@ -59,11 +62,12 @@
   --state-blocked-bg: #e4dfd4;
   --state-inactive: #676257;
   --state-inactive-bg: #eeebe4;
-  --state-noshow: #7a2e3a;
-  --state-noshow-bg: #f3e0e3;
+  --state-noshow: #5b3d82;
+  --state-noshow-bg: #ece6f4;
 
-  --danger: #9b2c2c;
-  --danger-bg: #f8e4e1;
+  --danger: #a3321a;
+  --danger-hover: #852611;
+  --danger-bg: #fbe7df;
   --warning: #7d5412;
   --warning-bg: #fbefd6;
   --info: #2f5470;
@@ -76,19 +80,19 @@
   --surface: var(--ink-000);
   --surface-raised: #ffffff;
   --surface-muted: var(--ink-050);
-  --surface-sage: var(--brand-sage);
-  --surface-sage-soft: var(--sage-100);
+  --surface-blush: var(--brand-blush);
+  --surface-blush-soft: var(--blush-100);
   --fg: var(--brand-charcoal);
   --fg-muted: var(--ink-700);
   --fg-subtle: var(--ink-600);
-  --heading: var(--brand-green);
-  --accent: var(--brand-green);
-  --accent-hover: var(--green-800);
+  --heading: var(--brand-wine);
+  --accent: var(--brand-wine);
+  --accent-hover: var(--wine-950);
   --accent-contrast: var(--ink-000);
   --decor: var(--brand-gold);
   --line: var(--ink-200);
   --line-strong: var(--ink-300);
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--green-700) 32%, transparent);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--wine-700) 32%, transparent);
 
   /* Tipografia: títulos serifados, corpo sem serifa */
   --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Garamond, Georgia, 'Times New Roman', serif;
@@ -121,9 +125,9 @@
   --radius: 10px;
   --radius-lg: 16px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(37, 43, 40, 0.06);
-  --shadow: 0 10px 24px -14px rgba(24, 61, 53, 0.22), 0 1px 2px rgba(37, 43, 40, 0.05);
-  --shadow-lg: 0 28px 56px -24px rgba(15, 42, 36, 0.35), 0 2px 6px rgba(37, 43, 40, 0.06);
+  --shadow-sm: 0 1px 2px rgba(42, 34, 36, 0.06);
+  --shadow: 0 10px 24px -14px rgba(92, 15, 34, 0.22), 0 1px 2px rgba(42, 34, 36, 0.05);
+  --shadow-lg: 0 28px 56px -24px rgba(60, 10, 22, 0.35), 0 2px 6px rgba(42, 34, 36, 0.06);
   --container: 74rem;
   --gutter: clamp(1rem, 0.6rem + 1.6vw, 2rem);
   --tap: 44px;

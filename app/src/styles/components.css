@@ -27,7 +27,7 @@
 
 .btn:hover {
   --btn-bg: var(--ink-050);
-  --btn-border: var(--green-600);
+  --btn-border: var(--wine-600);
   color: var(--btn-fg);
 }
 
@@ -65,7 +65,7 @@
 }
 
 .btn--ghost:hover {
-  --btn-bg: var(--sage-100);
+  --btn-bg: var(--blush-100);
   --btn-border: transparent;
 }
 
@@ -76,8 +76,8 @@
 }
 
 .btn--danger:hover {
-  --btn-bg: #842424;
-  --btn-border: #842424;
+  --btn-bg: var(--danger-hover);
+  --btn-border: var(--danger-hover);
   color: #fff;
 }
 
@@ -206,7 +206,7 @@
 .select:focus-visible,
 .textarea:focus-visible {
   outline: none;
-  border-color: var(--green-700);
+  border-color: var(--wine-700);
   box-shadow: var(--focus-ring);
 }
 
@@ -250,7 +250,7 @@
 .checkbox input {
   width: 1.15rem;
   height: 1.15rem;
-  accent-color: var(--green-800);
+  accent-color: var(--wine-800);
 }
 
 .form-grid {
@@ -359,8 +359,8 @@
 }
 
 .badge--confirmed {
-  --badge-bg: var(--green-100);
-  --badge-fg: var(--green-800);
+  --badge-bg: var(--wine-100);
+  --badge-fg: var(--wine-800);
 }
 .badge--seated,
 .badge--occupied {
@@ -400,8 +400,8 @@
   --badge-fg: var(--state-inactive);
 }
 .badge--neutral {
-  --badge-bg: var(--surface-sage-soft);
-  --badge-fg: var(--green-800);
+  --badge-bg: var(--surface-blush-soft);
+  --badge-fg: var(--wine-800);
 }
 .badge--warning {
   --badge-bg: var(--warning-bg);
@@ -460,8 +460,8 @@
   --notice-bg: var(--success-bg);
 }
 .notice--neutral {
-  --notice-accent: var(--green-700);
-  --notice-bg: var(--surface-sage-soft);
+  --notice-accent: var(--wine-700);
+  --notice-bg: var(--surface-blush-soft);
 }
 
 .notice ul {
@@ -483,7 +483,7 @@
 }
 
 .dialog::backdrop {
-  background: rgba(15, 30, 26, 0.48);
+  background: rgba(46, 10, 20, 0.5);
 }
 
 .dialog[open] {
@@ -703,13 +703,13 @@
 }
 
 .chip:hover {
-  border-color: var(--green-600);
+  border-color: var(--wine-600);
   color: var(--heading);
 }
 
 .chip[aria-pressed='true'] {
-  border-color: var(--green-800);
-  background: var(--green-800);
+  border-color: var(--wine-800);
+  background: var(--wine-800);
   color: var(--ink-000);
 }
 
@@ -770,7 +770,7 @@
 }
 
 .segmented__option input:focus-visible + span {
-  outline: 2px solid var(--green-700);
+  outline: 2px solid var(--wine-700);
   outline-offset: 1px;
 }
 
@@ -814,7 +814,7 @@
 }
 
 .data-table tbody tr:hover {
-  background: var(--surface-sage-soft);
+  background: var(--surface-blush-soft);
 }
 
 .data-table .num {
@@ -842,7 +842,7 @@
 
 .infotip__button:hover,
 .infotip__button[aria-expanded='true'] {
-  background: var(--sage-100);
+  background: var(--blush-100);
   color: var(--heading);
 }
 

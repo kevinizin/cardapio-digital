@@ -77,7 +77,7 @@
 }
 
 .chart__plot:focus-visible {
-  outline: 2px solid var(--green-700);
+  outline: 2px solid var(--wine-700);
   outline-offset: 6px;
 }
 
@@ -119,17 +119,17 @@
 }
 
 .chart__col.is-active {
-  background: color-mix(in srgb, var(--sage-200) 65%, transparent);
+  background: color-mix(in srgb, var(--blush-200) 65%, transparent);
 }
 
 .chart__bar {
   width: min(24px, 100%);
   border-radius: 4px 4px 0 0;
-  background: var(--green-700);
+  background: var(--wine-700);
 }
 
 .chart__col.is-active .chart__bar {
-  background: var(--green-900);
+  background: var(--wine-900);
 }
 
 .chart__tooltip {

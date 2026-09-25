@@ -12,6 +12,6 @@ export function PageLoading() {
 
 export function useDocumentTitle(title: string) {
   useEffect(() => {
-    document.title = `${title} · ${t.brand.name} (demonstração)`;
+    document.title = `${title} · ${t.brand.name}`;
   }, [title]);
 }

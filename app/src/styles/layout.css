@@ -2,9 +2,9 @@
 .demo-ribbon {
   position: relative;
   z-index: 45;
-  border-bottom: 1px solid var(--sage-300);
-  background: var(--surface-sage);
-  color: var(--green-900);
+  border-bottom: 1px solid var(--blush-300);
+  background: var(--surface-blush);
+  color: var(--wine-900);
   font-size: var(--t-xs);
 }
 
@@ -36,7 +36,7 @@
 
 .demo-ribbon__clock {
   margin-left: auto;
-  color: var(--green-800);
+  color: var(--wine-800);
 }
 
 .demo-ribbon__switch {
@@ -45,16 +45,16 @@
   gap: 0.4rem;
   min-height: 30px;
   padding: 0.2rem 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--green-800) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wine-800) 28%, transparent);
   border-radius: var(--radius-pill);
-  color: var(--green-900);
+  color: var(--wine-900);
   font-weight: 700;
   text-decoration: none;
 }
 
 .demo-ribbon__switch:hover {
   background: var(--ink-000);
-  color: var(--green-900);
+  color: var(--wine-900);
 }
 
 .demo-ribbon__switch svg {
@@ -95,29 +95,38 @@
   padding-inline: var(--gutter);
 }
 
-/* ---------- Logo (imagem oficial, enquadramento sem margens) ---------- */
+/* ---------- Logo (provisório em SVG ou imagem oficial via LOGO_IMAGE) ---------- */
 .logo {
   position: relative;
   display: block;
   flex: none;
   width: var(--logo-width, 132px);
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
+  aspect-ratio: 2 / 1;
+}
+
+.logo svg,
+.logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .logo img {
-  position: absolute;
-  top: -12.821%;
-  left: -15.385%;
-  width: 131.282%;
-  max-width: none;
-  height: auto;
-  /* O fundo claro da imagem assume a cor da superfície (creme ou sálvia). */
-  mix-blend-mode: darken;
+  object-fit: contain;
+}
+
+.logo--wordmark {
+  border-radius: calc(var(--logo-width, 132px) * 0.05);
+  box-shadow: 0 6px 16px -10px rgba(92, 15, 34, 0.55);
+}
+
+.logo__script {
+  font-family: 'Great Vibes', 'Brush Script MT', cursive;
+  font-weight: 400;
 }
 
 .logo--header {
-  --logo-width: clamp(96px, 60px + 5vw, 132px);
+  --logo-width: clamp(104px, 70px + 5vw, 138px);
 }
 
 .logo--hero {
@@ -125,11 +134,11 @@
 }
 
 .logo--footer {
-  --logo-width: 112px;
+  --logo-width: 128px;
 }
 
 .logo--sidebar {
-  --logo-width: 138px;
+  --logo-width: 150px;
 }
 
 .logo-link {
@@ -173,7 +182,7 @@
   min-height: var(--tap);
   padding: 0 0.8rem;
   border-radius: var(--radius-sm);
-  color: var(--green-900);
+  color: var(--wine-900);
   font-size: var(--t-sm);
   font-weight: 600;
   text-decoration: none;
@@ -185,8 +194,8 @@
 }
 
 .site-nav__link:hover {
-  background: var(--sage-100);
-  color: var(--green-900);
+  background: var(--blush-100);
+  color: var(--wine-900);
 }
 
 .site-nav__link[aria-current='page'] {
@@ -256,7 +265,7 @@
 .page-loading .spinner {
   width: 28px;
   height: 28px;
-  color: var(--green-700);
+  color: var(--wine-700);
 }
 
 .source-label {

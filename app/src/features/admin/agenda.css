@@ -201,14 +201,14 @@
 
 .tl-seg:focus-visible {
   z-index: 4;
-  outline: 2px solid var(--green-700);
+  outline: 2px solid var(--wine-700);
   outline-offset: 1px;
 }
 
 .tl-seg--service {
-  border-color: var(--green-600);
-  background: var(--green-100);
-  color: var(--green-900);
+  border-color: var(--wine-600);
+  background: var(--wine-100);
+  color: var(--wine-900);
 }
 
 .tl-seg--service.is-seated {
@@ -273,8 +273,8 @@
 }
 
 .legend-swatch--service {
-  border-color: var(--green-600);
-  background: var(--green-100);
+  border-color: var(--wine-600);
+  background: var(--wine-100);
 }
 
 .legend-swatch--seated {
