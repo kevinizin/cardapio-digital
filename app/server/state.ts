@@ -87,6 +87,15 @@ export class PgStateStore implements StateStore {
       'insert into app_state (id, revision, data) values (1, $1, $2) on conflict (id) do nothing',
       [initial.revision, JSON.stringify(initial)],
     );
+    // Enquanto o documento nunca foi alterado (revisão 1, sem reservas nem
+    // bloqueios), acompanha a configuração inicial da versão publicada.
+    await this.pool.query(
+      `update app_state set data = $1, updated_at = now()
+        where id = 1 and revision = 1
+          and jsonb_array_length(data->'reservations') = 0
+          and jsonb_array_length(data->'blocks') = 0`,
+      [JSON.stringify(initial)],
+    );
   }
 
   async load(): Promise<DemoData> {

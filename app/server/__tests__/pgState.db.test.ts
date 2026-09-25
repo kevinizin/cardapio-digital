@@ -65,3 +65,23 @@ describe('PgStateStore', () => {
     expect(stale.ok).toBe(false);
   });
 });
+
+describe('PgStateStore — configuração inicial', () => {
+  it('atualiza o documento nunca alterado e preserva o que já foi usado', async () => {
+    const pg = await import('pg');
+    const client = new pg.default.Client({ connectionString: url });
+    await client.connect();
+    await client.query('drop table if exists app_state, app_state_history');
+    await store.migrate();
+    // Simula um documento antigo, nunca alterado, com outra configuração de mesas.
+    await client.query(`update app_state set data = jsonb_set(data, '{tables}', '[]'::jsonb) where id = 1`);
+    await store.migrate();
+    expect((await store.load()).tables.length).toBeGreaterThan(0);
+
+    const used = { ...(await store.load()), revision: 2, tables: [] };
+    await store.replace(1, used);
+    await store.migrate();
+    expect((await store.load()).tables).toEqual([]);
+    await client.end();
+  });
+});
