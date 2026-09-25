@@ -1,4 +1,4 @@
-import { defaultSettings, defaultTables } from './defaults';
+import { restaurantSettings, restaurantTables } from './restaurantSetup';
 import { parisDate, toIso } from './time';
 import { SCHEMA_VERSION, type DemoData } from './types';
 
@@ -11,8 +11,8 @@ export function createInitialData(nowMs: number): DemoData {
     schemaVersion: SCHEMA_VERSION,
     seededAt: toIso(nowMs),
     revision: 1,
-    settings: defaultSettings(parisDate(nowMs)),
-    tables: defaultTables(),
+    settings: restaurantSettings(parisDate(nowMs)),
+    tables: restaurantTables(),
     tableEvents: [],
     reservations: [],
     blocks: [],

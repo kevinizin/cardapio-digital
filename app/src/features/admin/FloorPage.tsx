@@ -35,6 +35,33 @@ const LAYOUT: Record<string, { x: number; y: number }> = {
   M12: { x: 900, y: 440 },
 };
 
+/** Colunas e faixa vertical livres em cada área do quadro (fora do bar, cozinha e entrada). */
+const AREA_GRID: Record<Table['area'], { columns: number[]; top: number; bottom: number }> = {
+  salao: { columns: [95, 215, 335, 455], top: 118, bottom: 520 },
+  varanda: { columns: [760, 900], top: 150, bottom: 520 },
+};
+
+/**
+ * Usa o desenho fixo quando todas as mesas são as do desenho; senão, distribui
+ * as mesas de cada área em grade, na ordem da identificação.
+ */
+export function floorPositions(tables: Table[]): Record<string, { x: number; y: number }> {
+  if (tables.every((table) => LAYOUT[table.id] && table.area === (Number(table.id.slice(1)) <= 8 ? 'salao' : 'varanda'))) {
+    return LAYOUT;
+  }
+  const positions: Record<string, { x: number; y: number }> = {};
+  for (const area of ['salao', 'varanda'] as const) {
+    const { columns, top, bottom } = AREA_GRID[area];
+    const inArea = tables.filter((table) => table.area === area).sort((a, b) => a.id.localeCompare(b.id, 'pt-BR', { numeric: true }));
+    const rows = Math.max(1, Math.ceil(inArea.length / columns.length));
+    const step = rows > 1 ? (bottom - top) / (rows - 1) : 0;
+    inArea.forEach((table, index) => {
+      positions[table.id] = { x: columns[index % columns.length], y: top + Math.floor(index / columns.length) * step };
+    });
+  }
+  return positions;
+}
+
 function shapeOf(capacity: number) {
   if (capacity <= 2) return { w: 70, h: 70, round: true };
   if (capacity <= 4) return { w: 88, h: 88, round: false };
@@ -93,6 +120,7 @@ export function FloorPage() {
   const today = parisDate(now);
   const { settings } = data;
 
+  const positions = useMemo(() => floorPositions(data.tables), [data.tables]);
   const [mode, setMode] = useState<'now' | 'forecast'>('now');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [blockId, setBlockId] = useState<string | null>(null);
@@ -352,7 +380,7 @@ export function FloorPage() {
             <div className={`floor-map${mode === 'forecast' ? ' floor-map--forecast' : ''}`}>
               <FloorBackground />
               {views.map((view) => {
-                const position = LAYOUT[view.table.id] ?? { x: 500, y: 320 };
+                const position = positions[view.table.id] ?? { x: 500, y: 320 };
                 const shape = shapeOf(view.table.capacity);
                 const stateKey = view.state ?? 'neutral';
                 const Icon = view.state ? TABLE_STATE_ICONS[view.state] : null;
