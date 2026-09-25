@@ -1,7 +1,7 @@
 import { CircleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
-import { t } from '../i18n';
+import { useT } from '../i18n';
 
 interface FieldProps {
   id: string;
@@ -19,6 +19,7 @@ export function describedBy(id: string, hint?: ReactNode, error?: string | null)
 
 /** Rótulo, dica e erro associados ao controle por id e aria-describedby. */
 export function Field({ id, label, hint, error, optional, className, children }: FieldProps) {
+  const t = useT();
   return (
     <div className={`field${className ? ` ${className}` : ''}`}>
       <label className="field__label" htmlFor={id}>

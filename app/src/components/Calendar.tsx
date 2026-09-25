@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { addDays, addMonths, daysOfMonth, monthOfDate, weekdayIndex } from '../domain/time';
 import type { LocalDate, MonthKey } from '../domain/types';
-import { formatDayNumber, formatLocalDateSpoken, formatMonth, t } from '../i18n';
+import { useI18n } from '../i18n';
 
 export type CalendarDayStatus = 'available' | 'full' | 'unavailable';
 
@@ -23,6 +23,8 @@ interface CalendarProps {
  * PageUp/PageDown. Dias indisponíveis continuam focáveis para explicar o motivo.
  */
 export function Calendar({ month, onMonthChange, minMonth, maxMonth, selected, today, onSelect, dayInfo, labelledBy }: CalendarProps) {
+  const { t, f } = useI18n();
+  const { formatDayNumber, formatLocalDateSpoken, formatMonth } = f;
   const [focusDate, setFocusDate] = useState<LocalDate>(selected ?? today);
   const buttons = useRef(new Map<LocalDate, HTMLButtonElement>());
   const shouldFocus = useRef(false);

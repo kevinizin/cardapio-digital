@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router';
 import { LogoLink, ParisClock } from '../../components/Brand';
 import { DemoRibbon, PersistenceBanner } from '../../components/DemoChrome';
 import { t } from '../../i18n';
+import { useStore } from '../../state/store';
 import { AdminActionsProvider } from './AdminActions';
 
 const a = t.admin.layout;
@@ -33,6 +34,7 @@ function NavItems({ className }: { className: string }) {
 }
 
 export function AdminLayout() {
+  const demo = useStore().kind === 'demo';
   return (
     <AdminActionsProvider>
       <div className="adm">
@@ -60,7 +62,7 @@ export function AdminLayout() {
             </nav>
             <div className="adm-sidebar__foot">
               <ParisClock />
-              <p>{a.demoNote}</p>
+              {demo && <p>{a.demoNote}</p>}
             </div>
           </aside>
           <main id="conteudo" className="adm-main" tabIndex={-1}>

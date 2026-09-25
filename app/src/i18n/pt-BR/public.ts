@@ -1,6 +1,7 @@
 import { formatDuration } from '../format';
 
 const hoursText = (minutes: number) => (minutes % 60 === 0 ? `${minutes / 60} h` : formatDuration(minutes));
+const plural = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` : `${n} ${many}`);
 
 export const publicMessages = {
   nav: {
@@ -9,18 +10,26 @@ export const publicMessages = {
     lookupShort: 'Consultar',
     book: 'Reservar mesa',
     bookShort: 'Reservar',
+    language: 'Idioma',
   },
   footer: {
-    fictional: 'Aromas da Vivi — cozinha brasileira em Paris.',
+    tagline: 'Aromas da Vivi — cozinha brasileira em Paris.',
     formats: 'Datas no formato dia/mês/ano e horários de Paris, em 24 horas.',
-    noContact: 'Esta demonstração não possui telefone, e-mail ou endereço reais.',
+    demoNoContact: 'Esta demonstração não possui telefone, e-mail ou endereço reais.',
+  },
+  contact: {
+    label: 'Contato do restaurante',
+    address: 'Endereço',
+    phone: 'Telefone',
+    email: 'E-mail',
+    instagram: 'Instagram',
   },
   home: {
     documentTitle: 'Reservas',
     eyebrow: 'Cozinha brasileira · Paris',
-    heading: 'Uma mesa à sua espera, no ritmo de Paris.',
+    heading: 'O Brasil à mesa, aqui em Paris.',
     lead:
-      'Cozinha de estação, vinhos de pequenos produtores e um salão acolhedor com varanda coberta. Reserve online em poucos passos e receba um código para consultar ou cancelar quando precisar.',
+      'Cozinha brasileira feita com carinho, num ambiente acolhedor para reunir amigos e família. Reserve sua mesa online em poucos passos e receba um código para consultar ou cancelar quando precisar.',
     ctaBook: 'Reservar mesa',
     ctaLookup: 'Consultar reserva',
     hoursTitle: 'Horários',
@@ -28,16 +37,19 @@ export const publicMessages = {
     closed: 'Fechado',
     todayOpen: (hours: string) => `Hoje: ${hours}`,
     todayClosed: 'Hoje: fechado',
-    nextOpening: (label: string) => `Próxima abertura: ${label}`,
+    nextOpening: (date: string, time: string) => `Próxima abertura: ${date} às ${time}`,
+    weekdaysPlain: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'],
+    dayPair: (first: string, second: string) => `${first} e ${second.toLowerCase()}`,
+    dayRange: (first: string, last: string) => `${first} a ${last.toLowerCase()}`,
     onlineGroups: (max: number) => `Reservas online para grupos de 1 a ${max} pessoas.`,
-    houseEyebrow: 'La maison',
-    houseTitle: 'Um bistrô de bairro, feito para ficar',
-    kitchenTitle: 'Cozinha de estação',
-    kitchenText: 'Cardápio curto, que muda com o mercado e respeita o tempo de cada prato.',
-    roomTitle: 'Salão e varanda coberta',
+    houseEyebrow: 'A casa',
+    houseTitle: 'Um cantinho do Brasil para chamar de seu',
+    kitchenTitle: 'Sabores do Brasil',
+    kitchenText: 'Uma cozinha brasileira feita com calma e carinho, para comer sem pressa e se sentir em casa.',
+    roomTitle: 'Um salão acolhedor',
     roomText: (tables: number, seats: number) =>
-      `${tables} mesas e ${seats} lugares entre o salão principal e a varanda coberta, para casais, famílias e pequenos grupos.`,
-    timeTitle: 'Tempo para aproveitar',
+      `${plural(tables, 'mesa', 'mesas')} e ${plural(seats, 'lugar', 'lugares')} para receber casais, famílias e amigos.`,
+    timeTitle: 'Sem pressa',
     timeText: (duration: string, tolerance: number) =>
       `Cada reserva prevê cerca de ${duration} à mesa. Sugerimos chegar no horário; a tolerância é de ${tolerance} minutos.`,
     howEyebrow: 'Como funciona',
@@ -57,6 +69,7 @@ export const publicMessages = {
       `Para grupos com mais de ${max} pessoas, a reserva é combinada diretamente com o restaurante, porque as mesas não são unidas nas reservas online.`,
     groupsDemo:
       'Nesta demonstração não há canal de contato real; numa versão publicada, os contatos oficiais do restaurante apareceriam aqui.',
+    ctaTitle: 'Sua mesa está à sua espera.',
   },
   booking: {
     documentTitle: 'Reservar mesa',
@@ -69,7 +82,7 @@ export const publicMessages = {
     back: 'Voltar',
     partyLegend: 'Quantas pessoas?',
     partyOption: (n: number) => (n === 1 ? '1 pessoa' : `${n} pessoas`),
-    partyUnit: (n: number) => (n === 1 ? 'pessoa' : 'pessoas'),
+    partyUnit: (n: number): string => (n === 1 ? 'pessoa' : 'pessoas'),
     summaryTitle: 'Resumo',
     summaryLabel: 'Resumo da reserva',
     stepDone: '(concluída)',
@@ -95,7 +108,7 @@ export const publicMessages = {
     },
     dateExplain: {
       past: 'Essa data já passou.',
-      closed: (weekday: string, note?: string) => (note ? `Fechado nessa data: ${note}` : `O restaurante não abre nesse dia (${weekday}).`),
+      closed: (weekday: string, note?: string) => (note ? `Fechado nessa data: ${note}` : `O restaurante não abre nesse dia (${weekday.toLowerCase()}).`),
       beyond_window: (days: number, last: string) => `As reservas online vão até ${last} (${days} dias a partir de hoje).`,
       full: 'Não há mais horários para esse tamanho de grupo nessa data.',
     },
@@ -150,6 +163,7 @@ export const publicMessages = {
     copy: 'Copiar código',
     copied: 'Código copiado',
     simulated: 'Confirmação simulada nesta demonstração: nenhum e-mail ou mensagem foi enviado.',
+    noEmail: 'Não enviamos e-mail de confirmação: anote ou copie o código acima.',
     summary: 'Resumo',
     lookup: 'Consultar reserva',
     bookAnother: 'Fazer outra reserva',
@@ -178,15 +192,16 @@ export const publicMessages = {
       `A reserva de ${date} às ${time} será cancelada e o horário ficará disponível para outras pessoas. Esta ação não pode ser desfeita.`,
     cancelConfirm: 'Sim, cancelar',
     cancelledTitle: 'Reserva cancelada',
-    cancelledText: 'O horário foi liberado. Confirmação simulada: nenhuma mensagem foi enviada.',
+    cancelledText: 'O horário foi liberado.',
+    cancelledDemo: 'Confirmação simulada: nenhuma mensagem foi enviada.',
     deadlinePassed: (minutes: number) =>
       `Faltam menos de ${hoursText(minutes)} para o horário, então o cancelamento online não está mais disponível. Procure o restaurante diretamente.`,
     alreadyCancelled: (when: string) => `Esta reserva foi cancelada em ${when}.`,
     seated: 'Sua chegada foi registrada. Bom apetite!',
     completed: 'Atendimento concluído. Obrigado pela visita!',
     noShow: 'A reserva foi registrada como ausência.',
-    changeNote:
-      'Para alterar dia, horário ou quantidade de pessoas, fale com o restaurante: nesta demonstração, alterações são feitas pela administração.',
+    changeNote: 'Para alterar dia, horário ou quantidade de pessoas, fale diretamente com o restaurante.',
+    changeNoteDemo: 'Nesta demonstração, alterações são feitas pela administração.',
     newLookup: 'Nova consulta',
   },
   notFound: {

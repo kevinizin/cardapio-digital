@@ -1,8 +1,9 @@
 import { Link } from 'react-router';
 import { useDocumentTitle } from '../../components/PageLoading';
-import { t } from '../../i18n';
+import { useT } from '../../i18n';
 
 export function NotFoundPage() {
+  const t = useT();
   useDocumentTitle(t.public.notFound.documentTitle);
   return (
     <section className="container pub-narrow pub-section">

@@ -14,19 +14,10 @@ import type { DomainError, DomainErrorCode } from '../../domain/errors';
 import { findException, getDayStatus, lastBookableDate } from '../../domain/schedule';
 import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate, weekdayIndex } from '../../domain/time';
 import type { Customer, LocalDate, LocalTime } from '../../domain/types';
-import {
-  errorMessage,
-  formatDuration,
-  formatLocalDate,
-  formatLocalDateCompact,
-  formatLocalDateLong,
-  formatParisOffset,
-  formatTime,
-  t,
-} from '../../i18n';
+import { hasContact } from '../../config/restaurant';
+import { useI18n, useT } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
-
-const b = t.public.booking;
+import { ContactList } from './PublicChrome';
 const EMPTY_CUSTOMER: Customer = { name: '', email: '', phone: '', notes: '' };
 const CUSTOMER_FIELDS = ['name', 'email', 'phone', 'notes'];
 const SLOT_ERRORS = new Set<DomainErrorCode>([
@@ -72,6 +63,7 @@ function restoreDraft(): DraftState {
 }
 
 function SummaryRow({ label, value, onEdit }: { label: string; value: ReactNode; onEdit?: () => void }) {
+  const b = useT().public.booking;
   return (
     <div className="summary-row">
       <dt>{label}</dt>
@@ -88,6 +80,9 @@ function SummaryRow({ label, value, onEdit }: { label: string; value: ReactNode;
 }
 
 export function BookingPage() {
+  const { t, f, errorMessage } = useI18n();
+  const { formatDuration, formatLocalDate, formatLocalDateCompact, formatLocalDateLong, formatParisOffset, formatTime } = f;
+  const b = t.public.booking;
   useDocumentTitle(b.documentTitle);
   const data = useData();
   const store = useStore();
@@ -152,7 +147,7 @@ export function BookingPage() {
     const map: Record<string, string> = {};
     for (const error of customerErrors) if (error.field && !map[error.field]) map[error.field] = errorMessage(error);
     return map;
-  }, [customerErrors]);
+  }, [customerErrors, errorMessage]);
 
   const dayInfo = (date: LocalDate): { status: CalendarDayStatus; description: string } => {
     const entry = monthSummary?.get(date);
@@ -200,7 +195,7 @@ export function BookingPage() {
       const exception = findException(settings, draft.date);
       return (
         <Notice tone="warning" title={label}>
-          <p>{b.dateExplain.closed(t.weekdays[weekdayIndex(draft.date)].toLowerCase(), exception?.note)}</p>
+          <p>{b.dateExplain.closed(t.weekdays[weekdayIndex(draft.date)], exception?.note)}</p>
           <p className="notice__title">{b.otherDates}</p>
           {suggestionList}
         </Notice>
@@ -345,7 +340,7 @@ export function BookingPage() {
                 {draft.largeGroup ? (
                   <Notice tone="neutral" title={b.largerTitle}>
                     <p>{b.largerText(rules.onlineMaxPartySize)}</p>
-                    <p className="subtle">{b.largerDemo}</p>
+                    {hasContact() ? <ContactList /> : store.kind === 'demo' && <p className="subtle">{b.largerDemo}</p>}
                   </Notice>
                 ) : (
                   <div className="booking-fieldset">

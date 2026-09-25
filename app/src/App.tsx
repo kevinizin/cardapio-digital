@@ -10,6 +10,7 @@ import { HomePage } from './features/public/HomePage';
 import { LookupPage } from './features/public/LookupPage';
 import { NotFoundPage } from './features/public/NotFoundPage';
 import { PublicLayout } from './features/public/PublicLayout';
+import { LocaleProvider } from './i18n';
 import { StoreProvider } from './state/store';
 
 // A administração é carregada sob demanda para manter leve a página pública.
@@ -33,23 +34,25 @@ function RouteEffects() {
 export function App({ store }: { store: AppStore }) {
   return (
     <StoreProvider store={store}>
-      <ToastProvider>
-        <BrowserRouter>
-          <RouteEffects />
-          <ErrorBoundary>
-            <Routes>
-              <Route path="admin/*" element={<Suspense fallback={<PageLoading />}><AdminApp /></Suspense>} />
-              <Route element={<PublicLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="reservar" element={<BookingPage />} />
-                <Route path="reserva/:code" element={<ConfirmationPage />} />
-                <Route path="consultar" element={<LookupPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </ToastProvider>
+      <BrowserRouter>
+        <LocaleProvider>
+          <ToastProvider>
+            <RouteEffects />
+            <ErrorBoundary>
+              <Routes>
+                <Route path="admin/*" element={<Suspense fallback={<PageLoading />}><AdminApp /></Suspense>} />
+                <Route element={<PublicLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="reservar" element={<BookingPage />} />
+                  <Route path="reserva/:code" element={<ConfirmationPage />} />
+                  <Route path="consultar" element={<LookupPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
+              </Routes>
+            </ErrorBoundary>
+          </ToastProvider>
+        </LocaleProvider>
+      </BrowserRouter>
     </StoreProvider>
   );
 }

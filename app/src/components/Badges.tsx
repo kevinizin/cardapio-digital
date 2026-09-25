@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import type { LiveTableState } from '../domain/occupancy';
 import type { ReservationSource, ReservationStatus } from '../domain/types';
-import { t } from '../i18n';
+import { useT } from '../i18n';
 
 export const RESERVATION_STATUS_ICONS: Record<ReservationStatus, LucideIcon> = {
   confirmed: CalendarCheck,
@@ -41,6 +41,7 @@ export const SOURCE_ICONS: Record<ReservationSource, LucideIcon> = {
 };
 
 export function ReservationStatusBadge({ status }: { status: ReservationStatus }) {
+  const t = useT();
   const Icon = RESERVATION_STATUS_ICONS[status];
   return (
     <span className={`badge badge--${status}`}>
@@ -51,6 +52,7 @@ export function ReservationStatusBadge({ status }: { status: ReservationStatus }
 }
 
 export function TableStateBadge({ state, forecast = false }: { state: LiveTableState; forecast?: boolean }) {
+  const t = useT();
   const Icon = TABLE_STATE_ICONS[state];
   return (
     <span className={`badge badge--${state}`}>
@@ -62,6 +64,7 @@ export function TableStateBadge({ state, forecast = false }: { state: LiveTableS
 }
 
 export function SourceLabel({ source }: { source: ReservationSource }) {
+  const t = useT();
   const Icon = SOURCE_ICONS[source];
   return (
     <span className="source-label">

@@ -1,7 +1,7 @@
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { DomainError, DomainWarning } from '../domain/errors';
-import { conflictMessage, errorMessage, t, warningMessage } from '../i18n';
+import { conflictMessage, useI18n } from '../i18n';
 import { useData } from '../state/store';
 
 /* ---------- Toasts ---------- */
@@ -23,6 +23,7 @@ const ToastContext = createContext<(toast: ToastInput) => void>(() => undefined)
 const TOAST_ICONS = { success: CircleCheck, info: Info, warning: TriangleAlert, error: CircleAlert } as const;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [items, setItems] = useState<ToastItem[]>([]);
   const counter = useRef(0);
 
@@ -94,6 +95,7 @@ export function Notice({ tone = 'info', title, children, icon, className, role }
 /** Erros das regras, com a lista de conflitos quando houver (uso administrativo). */
 export function InlineErrors({ errors, showConflicts = true }: { errors: DomainError[]; showConflicts?: boolean }) {
   const data = useData();
+  const { errorMessage } = useI18n();
   if (!errors.length) return null;
   return (
     <Notice tone="danger" role="alert" title={errors.length === 1 ? errorMessage(errors[0]) : undefined}>
@@ -119,6 +121,7 @@ export function InlineErrors({ errors, showConflicts = true }: { errors: DomainE
 }
 
 export function WarningList({ warnings }: { warnings: DomainWarning[] }) {
+  const { warningMessage } = useI18n();
   if (!warnings.length) return null;
   return (
     <Notice tone="warning" role="status">
@@ -133,13 +136,14 @@ export function WarningList({ warnings }: { warnings: DomainWarning[] }) {
 
 /** Mapa campo → primeira mensagem de erro, para formulários. */
 export function useFieldErrors(errors: DomainError[]) {
+  const { errorMessage } = useI18n();
   return useMemo(() => {
     const map: Record<string, string> = {};
     for (const error of errors) {
       if (error.field && !map[error.field]) map[error.field] = errorMessage(error);
     }
     return map;
-  }, [errors]);
+  }, [errors, errorMessage]);
 }
 
 export function EmptyState({ icon, title, children }: { icon?: ReactNode; title: string; children?: ReactNode }) {

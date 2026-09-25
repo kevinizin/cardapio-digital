@@ -13,7 +13,7 @@ import type { AppStore } from './data/appStore';
 import { DemoStore } from './data/demoStore';
 import { RemoteStore } from './data/remoteStore';
 import { BrowserStorageRepository } from './data/repository';
-import { t } from './i18n';
+import { getBundle, HTML_LANG, initialLocale, isAdminPath, t } from './i18n';
 
 /**
  * `VITE_DATA_MODE=demo` mantém a demonstração com dados fictícios no
@@ -38,11 +38,15 @@ async function start() {
   try {
     render(await RemoteStore.load('public'));
   } catch {
+    // Fora do roteador: o idioma segue a escolha do visitante (a administração, português).
+    const locale = isAdminPath(window.location.pathname) ? 'pt' : initialLocale();
+    const texts = locale === 'pt' ? t : getBundle(locale).t;
+    document.documentElement.lang = HTML_LANG[locale];
     root.render(
       <div className="boot-error" role="alert">
-        <p>{t.remote.bootError}</p>
+        <p>{texts.remote.bootError}</p>
         <button type="button" className="btn btn--primary" onClick={() => window.location.reload()}>
-          {t.remote.retry}
+          {texts.remote.retry}
         </button>
       </div>,
     );

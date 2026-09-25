@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
-import { t } from '../i18n';
+import { useT } from '../i18n';
 
 export interface DialogProps {
   open: boolean;
@@ -21,6 +21,7 @@ const FOCUSABLE = '[data-autofocus], input:not([disabled]), select:not([disabled
  * inerte e devolve o foco a quem abriu.
  */
 export function Dialog({ open, onClose, title, description, children, footer, variant = 'default', dismissible = true }: DialogProps) {
+  const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const pointerStartedOnBackdrop = useRef(false);
