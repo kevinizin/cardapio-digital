@@ -137,6 +137,12 @@ function securityHeaders(res: ServerResponse, path: string) {
   if (path.startsWith('/admin') || path.startsWith('/api/')) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
 }
 
+function createReadStreamHeaders(res: ServerResponse, file: string, headOnly: boolean) {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+  if (headOnly) res.end();
+  else createReadStream(file).pipe(res);
+}
+
 export function createHandler(config: AppConfig) {
   const clock = config.clock ?? Date.now;
   const loginLimiter = new RateLimiter(10, 15 * MINUTE);
@@ -291,6 +297,15 @@ export function createHandler(config: AppConfig) {
     }
     const requested = normalize(join(staticRoot, path));
     const inside = requested === staticRoot || requested.startsWith(staticRoot + sep);
+    // Pasta com index.html (ex.: /manual/): serve o index; sem a barra final, redireciona.
+    if (inside && existsSync(requested) && statSync(requested).isDirectory() && existsSync(join(requested, 'index.html'))) {
+      if (!path.endsWith('/')) {
+        res.writeHead(301, { Location: `${path}/` }).end();
+        return;
+      }
+      createReadStreamHeaders(res, join(requested, 'index.html'), req.method === 'HEAD');
+      return;
+    }
     let file = inside && existsSync(requested) && statSync(requested).isFile() ? requested : null;
     if (!file) {
       // Arquivo inexistente com extensão: 404. Rotas do site (sem extensão): index.html.

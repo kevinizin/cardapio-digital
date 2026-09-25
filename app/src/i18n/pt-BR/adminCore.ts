@@ -25,6 +25,7 @@ export const adminCore = {
       reservations: 'Reservas',
       monthly: 'Dashboard mensal',
       settings: 'Configurações',
+      manual: 'Manual',
     },
     demoNote: 'Painel aberto para demonstração, sem login. Uma versão real exigiria autenticação administrativa.',
   },

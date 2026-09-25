@@ -1,4 +1,4 @@
-import { CalendarDays, ChartColumn, LayoutDashboard, List, Map as MapIcon, Settings } from 'lucide-react';
+import { BookOpen, CalendarDays, ChartColumn, LayoutDashboard, List, Map as MapIcon, Settings } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { LogoLink, ParisClock } from '../../components/Brand';
@@ -29,6 +29,13 @@ function NavItems({ className }: { className: string }) {
           </NavLink>
         </li>
       ))}
+      <li>
+        {/* Manual estático (public/manual), aberto em outra aba. */}
+        <a href="/manual/" target="_blank" rel="noopener" className="adm-nav__link">
+          <BookOpen aria-hidden="true" />
+          {a.nav.manual}
+        </a>
+      </li>
     </ul>
   );
 }
