@@ -3,6 +3,9 @@ import { formatDuration } from '../format';
 const hoursText = (minutes: number) => (minutes % 60 === 0 ? `${minutes / 60} h` : formatDuration(minutes));
 const plural = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` : `${n} ${many}`);
 
+/** Termina a frase com ponto, a não ser que a mensagem já termine com pontuação. */
+const sentence = (text: string) => (/[.!?…]$/.test(text) ? text : `${text}.`);
+
 export const publicMessages = {
   nav: {
     label: 'Navegação principal',
@@ -26,6 +29,17 @@ export const publicMessages = {
     whatsapp: 'WhatsApp',
     mapTitle: 'Ver no mapa (Google Maps)',
     whatsappTitle: 'Conversar com o restaurante pelo WhatsApp',
+  },
+  notice: {
+    label: 'Aviso do restaurante',
+    dismiss: 'Fechar aviso',
+    closedToday: (message?: string | null) => sentence(`Hoje estamos fechados${message ? ` — ${message}` : ''}`),
+    upcomingRange: (from: string, to: string, message?: string | null) =>
+      sentence(`Atenção: fechado de ${from} a ${to}${message ? ` — ${message}` : ''}`),
+    upcomingDay: (date: string, message?: string | null) => sentence(`Atenção: fechado em ${date}${message ? ` — ${message}` : ''}`),
+    reopen: (weekday: string, date: string, time: string, tomorrow: boolean) =>
+      tomorrow ? `Voltamos amanhã, ${weekday.toLowerCase()}, ${date}, às ${time}.` : `Voltamos ${weekday.toLowerCase()}, ${date}, às ${time}.`,
+    closedException: 'O restaurante estará fechado excepcionalmente nessa data.',
   },
   home: {
     documentTitle: 'Reservas',

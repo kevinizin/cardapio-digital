@@ -5,6 +5,7 @@ import { hasContact } from '../../config/restaurant';
 import { DemoRibbon, PersistenceBanner } from '../../components/DemoChrome';
 import { useT } from '../../i18n';
 import { useStore } from '../../state/store';
+import { ClosureBanner } from './ClosureNotice';
 import { ContactList, LanguageSwitcher } from './PublicChrome';
 import './public.css';
 
@@ -18,6 +19,7 @@ export function PublicLayout() {
         {t.common.skipToContent}
       </a>
       <DemoRibbon area="public" />
+      <ClosureBanner />
       <header className="site-header">
         <div className="container site-header__inner">
           <LogoLink to="/" />

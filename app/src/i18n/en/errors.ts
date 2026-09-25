@@ -152,6 +152,14 @@ export function errorMessage(error: DomainError): string {
       return `The note can be up to ${p.max} characters long.`;
     case 'SCHEDULE_CONFLICTS':
       return 'Some upcoming bookings would no longer fit the opening hours. Cancel them with a reason or change them before saving.';
+    case 'CLOSURE_RANGE_INVALID':
+      return 'The end date must be the same as or after the start date.';
+    case 'CLOSURE_TOO_LONG':
+      return `Close at most ${p.max} days at a time.`;
+    case 'CLOSURE_GUESTS_PRESENT':
+      return 'Guests are being served right now. Finish those services before closing today.';
+    case 'CLOSURE_MESSAGE_TOO_LONG':
+      return `The message to customers can be up to ${p.max} characters.`;
     case 'CAPACITY_INVALID':
       return `Capacity must be between ${p.min} and ${p.max} seats.`;
     case 'TABLE_CHANGE_CONFLICTS':

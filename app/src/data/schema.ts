@@ -17,7 +17,7 @@ const dayRule = z.object({ lunch: shiftConfig, dinner: shiftConfig });
 const settingsSchema = z.object({
   weeklyVersions: z.array(z.object({ effectiveFrom: localDate, weekly: z.array(dayRule).length(7) })).min(1),
   exceptions: z.array(
-    z.object({ id: z.string().min(1), date: localDate, closed: z.boolean(), lunch: shiftConfig, dinner: shiftConfig, note: z.string() }),
+    z.object({ id: z.string().min(1), date: localDate, closed: z.boolean(), lunch: shiftConfig, dinner: shiftConfig, note: z.string(), publicMessage: z.object({ fr: z.string().optional(), pt: z.string().optional(), en: z.string().optional() }).optional() }),
   ),
   rules: z.object({
     serviceMinutes: count,

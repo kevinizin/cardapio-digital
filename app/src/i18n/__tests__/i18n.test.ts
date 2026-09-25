@@ -91,6 +91,20 @@ describe('dicionários do site público', () => {
     }
   });
 
+  it('aviso de fechamento nos três idiomas', () => {
+    const fr = getBundle('fr').t.public.notice;
+    const pt = getBundle('pt').t.public.notice;
+    const en = getBundle('en').t.public.notice;
+    expect(fr.closedToday(null)).toBe('Aujourd’hui, nous sommes fermés.');
+    expect(fr.closedToday('Congés annuels')).toBe('Aujourd’hui, nous sommes fermés — Congés annuels.');
+    expect(fr.reopen('Mardi', '30/09', '12:00', false)).toBe('Réouverture le mardi 30/09 à 12:00.');
+    expect(fr.upcomingRange('lun. 10/08', 'lun. 24/08', 'Travaux !')).toBe('Attention\u00a0: fermé du lun. 10/08 au lun. 24/08 — Travaux !');
+    expect(pt.closedToday(null)).toBe('Hoje estamos fechados.');
+    expect(pt.reopen('Terça-feira', '30/09', '12:00', false)).toBe('Voltamos terça-feira, 30/09, às 12:00.');
+    expect(en.closedToday(null)).toBe('We’re closed today.');
+    expect(en.reopen('Tuesday', '30/09', '12:00', true)).toBe('We reopen tomorrow, Tuesday 30/09, at 12:00.');
+  });
+
   it('francês e inglês não carregam textos em português', () => {
     const { t: fr } = getBundle('fr');
     const { t: en } = getBundle('en');

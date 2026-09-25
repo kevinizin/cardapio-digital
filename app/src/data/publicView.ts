@@ -11,12 +11,15 @@ export const HIDDEN_CODE = '-';
 /**
  * Versão pública dos dados: mantém só o necessário para calcular horários
  * livres (mesa, início, durações e situação). Nomes, contatos, códigos,
- * observações e históricos nunca saem do servidor para o site do cliente.
+ * observações (inclusive as internas das exceções) e históricos nunca saem
+ * do servidor para o site do cliente.
  */
 export function toPublicData(data: DemoData, nowMs: number): DemoData {
   const since = nowMs - 12 * HOUR_MS;
   return {
     ...data,
+    // A observação das exceções é interna (em português); o cliente só vê `publicMessage`.
+    settings: { ...data.settings, exceptions: data.settings.exceptions.map((e) => ({ ...e, note: '' })) },
     reservations: data.reservations
       .filter((r) => BLOCKING.has(r.status) && toMs(r.startAt) >= since)
       .map(redactReservation),

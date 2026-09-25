@@ -151,6 +151,14 @@ export function errorMessage(error: DomainError): string {
       return `A observação pode ter até ${p.max} caracteres.`;
     case 'SCHEDULE_CONFLICTS':
       return 'Há reservas futuras que deixariam de caber no funcionamento. Cancele com justificativa ou altere essas reservas antes de salvar.';
+    case 'CLOSURE_RANGE_INVALID':
+      return 'A data final precisa ser igual ou posterior à data inicial.';
+    case 'CLOSURE_TOO_LONG':
+      return `Feche no máximo ${p.max} dias de uma vez.`;
+    case 'CLOSURE_GUESTS_PRESENT':
+      return 'Há clientes sendo atendidos agora. Conclua esses atendimentos antes de fechar o dia de hoje.';
+    case 'CLOSURE_MESSAGE_TOO_LONG':
+      return `A mensagem aos clientes pode ter até ${p.max} caracteres.`;
     case 'CAPACITY_INVALID':
       return `A capacidade deve ficar entre ${p.min} e ${p.max} lugares.`;
     case 'TABLE_CHANGE_CONFLICTS':

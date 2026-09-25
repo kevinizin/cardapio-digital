@@ -22,6 +22,7 @@ import { useData, useNow, useSnapshot, useStore } from '../../state/store';
 import { useAdminActions } from './AdminActions';
 import { PageHead } from './AdminLayout';
 import { placeOf } from './adminFormat';
+import { ClosuresPanel } from './ClosuresPanel';
 import './settings.css';
 
 const s = t.admin.settings;
@@ -269,7 +270,7 @@ function WeeklySection() {
 
 const emptyException = () => ({
   date: '',
-  closed: true,
+  closed: false,
   lunch: { enabled: true, start: '12:00', end: '15:00' },
   dinner: { enabled: true, start: '19:00', end: '23:00' },
   note: '',
@@ -294,8 +295,10 @@ function ExceptionsSection() {
   const [removeId, setRemoveId] = useState<string | null>(null);
   const [removeErrors, setRemoveErrors] = useState<DomainError[]>([]);
 
-  const upcoming = data.settings.exceptions.filter((exception) => exception.date >= today);
-  const pastCount = data.settings.exceptions.length - upcoming.length;
+  // Fechamentos aparecem agrupados em "Fechar dias"; aqui ficam os horários especiais.
+  const special = data.settings.exceptions.filter((exception) => !exception.closed);
+  const upcoming = special.filter((exception) => exception.date >= today);
+  const pastCount = special.length - upcoming.length;
   const toRemove = data.settings.exceptions.find((exception) => exception.id === removeId);
 
   const add = (event: FormEvent) => {
@@ -314,6 +317,7 @@ function ExceptionsSection() {
 
   return (
     <Section id="excecoes" title={s.sections.exceptions} intro={s.exceptions.intro}>
+      <ClosuresPanel />
       <div className="stack">
         <h3 className="drawer-section__title">{s.exceptions.upcoming}</h3>
         {upcoming.length === 0 ? (

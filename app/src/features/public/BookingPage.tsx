@@ -11,12 +11,13 @@ import { findNextAvailableDates, getDayAvailability, summarizeDates, type Sugges
 import { validateCustomer } from '../../domain/customer';
 import { LIMITS } from '../../domain/defaults';
 import type { DomainError, DomainErrorCode } from '../../domain/errors';
-import { findException, getDayStatus, lastBookableDate } from '../../domain/schedule';
-import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate, weekdayIndex } from '../../domain/time';
+import { getDayStatus, lastBookableDate } from '../../domain/schedule';
+import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate } from '../../domain/time';
 import type { Customer, LocalDate, LocalTime } from '../../domain/types';
 import { formatWhatsapp, hasContact, RESTAURANT_CONTACT, whatsappUrl } from '../../config/restaurant';
 import { useI18n, useT } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
+import { ClosedDayExplain } from './ClosureNotice';
 import { ContactList } from './PublicChrome';
 const EMPTY_CUSTOMER: Customer = { name: '', email: '', phone: '', notes: '' };
 const CUSTOMER_FIELDS = ['name', 'email', 'phone', 'notes'];
@@ -203,10 +204,9 @@ export function BookingPage() {
       );
     }
     if (dateStatus === 'closed') {
-      const exception = findException(settings, draft.date);
       return (
         <Notice tone="warning" title={label}>
-          <p>{b.dateExplain.closed(t.weekdays[weekdayIndex(draft.date)], exception?.note)}</p>
+          <ClosedDayExplain date={draft.date} />
           <p className="notice__title">{b.otherDates}</p>
           {suggestionList}
         </Notice>

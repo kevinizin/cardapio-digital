@@ -1,0 +1,97 @@
+/* ---------- Aviso de fechamento (faixa no topo do site público) ---------- */
+.closure-banner {
+  position: relative;
+  z-index: 44;
+  background:
+    linear-gradient(90deg, rgb(201 162 74 / 0.18), transparent 24%, transparent 76%, rgb(201 162 74 / 0.18)),
+    var(--wine-900);
+  color: var(--brand-cream);
+}
+
+.closure-banner::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--gold-leaf);
+}
+
+.closure-banner__inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: 0.75rem var(--gutter) calc(0.75rem + 2px);
+}
+
+.closure-banner__icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.1rem;
+  color: var(--gold-300);
+}
+
+.closure-banner__text {
+  flex: 1;
+  display: grid;
+  gap: 0.2rem;
+  font-size: var(--t-sm);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.closure-banner__text p:first-child {
+  font-weight: 600;
+}
+
+.closure-banner__close {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: -0.4rem -0.5rem -0.4rem 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--brand-cream);
+  cursor: pointer;
+}
+
+.closure-banner__close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.closure-banner__close:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.closure-banner__close:focus-visible {
+  outline: 2px solid var(--gold-300);
+  outline-offset: 2px;
+}
+
+@media (min-width: 720px) {
+  .closure-banner__inner {
+    align-items: center;
+    justify-content: center;
+    padding-inline: calc(var(--gutter) + 2.5rem);
+  }
+
+  .closure-banner__text {
+    flex: 0 1 auto;
+    text-align: center;
+  }
+
+  .closure-banner__close {
+    position: absolute;
+    right: var(--gutter);
+    top: 50%;
+    margin: 0;
+    transform: translateY(-50%);
+  }
+}

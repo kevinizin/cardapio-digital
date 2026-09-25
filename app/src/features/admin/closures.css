@@ -1,0 +1,143 @@
+/* ---------- Fechar dias (Configurações) ---------- */
+.closures__form {
+  border-color: var(--wine-200);
+  background: var(--blush-100);
+}
+
+.closures__head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.closures__head > svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 0.1rem;
+  color: var(--wine-900);
+}
+
+.closures__head .field__hint {
+  margin-top: 0.2rem;
+  max-width: 60ch;
+}
+
+.closures__messages {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.closures__message-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.closures__preview {
+  padding: 0.55rem 0.8rem;
+  border-left: 3px solid var(--wine-900);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--wine-950);
+  font-weight: 600;
+  font-size: var(--t-sm);
+}
+
+.closures__list {
+  display: grid;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.closures__list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.closures__list li:last-child {
+  border-bottom: 0;
+}
+
+.closures__range {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.closures__today {
+  margin-left: 0.5rem;
+  vertical-align: 0.1em;
+}
+
+.closures__lang {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--fg-muted);
+  font-size: var(--t-xs);
+}
+
+/* Reservas afetadas pelo fechamento */
+.closure-affected {
+  display: grid;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.closure-affected li {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 0.25rem 0.9rem;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-sm);
+}
+
+.closure-affected li:last-child {
+  border-bottom: 0;
+}
+
+.closure-affected__when {
+  color: var(--wine-950);
+  font-weight: 600;
+}
+
+.closure-affected__contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.9rem;
+  min-width: 0;
+}
+
+.closure-affected__contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  overflow-wrap: anywhere;
+}
+
+.closure-affected__contact svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 640px) {
+  .closure-affected li {
+    grid-template-columns: 1fr;
+  }
+}
