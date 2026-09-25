@@ -11,8 +11,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <style>
 :root{
+  color-scheme:light;
   --wine:#841731; --wine-deep:#5c0f22; --gold:#c9a24a; --gold-text:#7a5c1c;
-  --bg:#f8f3ea; --surface:#fffdf8; --surface-2:#f3e2e3; --surface-3:#f1ead9;
+  --bg:#ffffff; --surface:#fbf8f3; --surface-2:#f3e2e3; --surface-3:#f1ead9;
   --text:#2a2224; --muted:#5f5053; --line:#e3d6c6; --line-strong:#cdb9a3;
   --link:#841731; --accent:#841731; --accent-ink:#fffdf8;
   --tip-bg:#eef4ec; --tip-line:#9bb89a; --warn-bg:#fbf0dc; --warn-line:#d7ad5d;
@@ -20,26 +21,6 @@
   --display:"Cormorant Garamond","Cormorant",Garamond,"Times New Roman",serif;
   --body:"Source Sans 3","Source Sans Pro","Segoe UI",system-ui,-apple-system,sans-serif;
   --gutter:clamp(16px,4vw,40px);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --wine:#e38aa0; --wine-deep:#f2b8c6; --gold:#d9b872; --gold-text:#dcc083;
-    --bg:#1b1416; --surface:#241b1e; --surface-2:#3a2228; --surface-3:#2e2522;
-    --text:#f2e9e4; --muted:#c3b3b0; --line:#3d3033; --line-strong:#5a484b;
-    --link:#eea3b5; --accent:#b8324f; --accent-ink:#fff7f2;
-    --tip-bg:#1f2a20; --tip-line:#5d8a5f; --warn-bg:#2d2416; --warn-line:#a9843c;
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --wine:#e38aa0; --wine-deep:#f2b8c6; --gold:#d9b872; --gold-text:#dcc083;
-  --bg:#1b1416; --surface:#241b1e; --surface-2:#3a2228; --surface-3:#2e2522;
-  --text:#f2e9e4; --muted:#c3b3b0; --line:#3d3033; --line-strong:#5a484b;
-  --link:#eea3b5; --accent:#b8324f; --accent-ink:#fff7f2;
-  --tip-bg:#1f2a20; --tip-line:#5d8a5f; --warn-bg:#2d2416; --warn-line:#a9843c;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
-  color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:16px}
