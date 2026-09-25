@@ -1,0 +1,137 @@
+/*
+ * Camada de tokens. Cores normativas da marca Maison Élise primeiro;
+ * componentes usam apenas os papéis semânticos definidos abaixo.
+ */
+:root {
+  color-scheme: light;
+
+  /* Marca (normativa) */
+  --brand-green: #183d35;
+  --brand-cream: #f7f3ea;
+  --brand-gold: #b89b63;
+  --brand-sage: #dce5dc;
+  --brand-charcoal: #252b28;
+
+  /* Verde */
+  --green-950: #0f2a24;
+  --green-900: #183d35;
+  --green-800: #1f4b41;
+  --green-700: #2b5e52;
+  --green-600: #3f7466;
+  --green-200: #cfdfd5;
+  --green-100: #e4ede7;
+
+  /* Dourado: decorativo; a versão escura é a única usada em texto */
+  --gold-800: #6e5a31;
+  --gold-500: #b89b63;
+  --gold-300: #d8c49c;
+  --gold-100: #f1e8d6;
+
+  /* Sálvia */
+  --sage-300: #c6d4c7;
+  --sage-200: #dce5dc;
+  --sage-100: #ebf1eb;
+
+  /* Neutro quente em 12 degraus */
+  --ink-000: #fffdf8;
+  --ink-050: #fbf8f1;
+  --ink-100: #f7f3ea;
+  --ink-150: #f0ebdf;
+  --ink-200: #e6dfd0;
+  --ink-300: #d5ccba;
+  --ink-400: #b7ae9c;
+  --ink-500: #8c8577;
+  --ink-600: #676257;
+  --ink-700: #4e4b43;
+  --ink-800: #37372f;
+  --ink-900: #252b28;
+
+  /* Estados de mesa e de reserva (sempre acompanhados de ícone e texto) */
+  --state-free: #2f6b4f;
+  --state-free-bg: #e1eee5;
+  --state-reserved: #33557a;
+  --state-reserved-bg: #e2e9f2;
+  --state-occupied: #8a3b2e;
+  --state-occupied-bg: #f5e3dd;
+  --state-prep: #7d5b12;
+  --state-prep-bg: #f6ebd2;
+  --state-blocked: #45423b;
+  --state-blocked-bg: #e4dfd4;
+  --state-inactive: #676257;
+  --state-inactive-bg: #eeebe4;
+  --state-noshow: #7a2e3a;
+  --state-noshow-bg: #f3e0e3;
+
+  --danger: #9b2c2c;
+  --danger-bg: #f8e4e1;
+  --warning: #7d5412;
+  --warning-bg: #fbefd6;
+  --info: #2f5470;
+  --info-bg: #e3ecf3;
+  --success: #2f6b4f;
+  --success-bg: #e1eee5;
+
+  /* Papéis semânticos */
+  --bg: var(--brand-cream);
+  --surface: var(--ink-000);
+  --surface-raised: #ffffff;
+  --surface-muted: var(--ink-050);
+  --surface-sage: var(--brand-sage);
+  --surface-sage-soft: var(--sage-100);
+  --fg: var(--brand-charcoal);
+  --fg-muted: var(--ink-700);
+  --fg-subtle: var(--ink-600);
+  --heading: var(--brand-green);
+  --accent: var(--brand-green);
+  --accent-hover: var(--green-800);
+  --accent-contrast: var(--ink-000);
+  --decor: var(--brand-gold);
+  --line: var(--ink-200);
+  --line-strong: var(--ink-300);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--green-700) 32%, transparent);
+
+  /* Tipografia: títulos serifados, corpo sem serifa */
+  --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Garamond, Georgia, 'Times New Roman', serif;
+  --font-body: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --t-2xs: 0.75rem;
+  --t-xs: 0.8125rem;
+  --t-sm: 0.9375rem;
+  --t-base: 1rem;
+  --t-md: 1.125rem;
+  --t-lg: clamp(1.3rem, 1.15rem + 0.6vw, 1.6rem);
+  --t-xl: clamp(1.65rem, 1.35rem + 1.2vw, 2.2rem);
+  --t-2xl: clamp(2.1rem, 1.55rem + 2.4vw, 3.2rem);
+  --t-3xl: clamp(2.7rem, 1.75rem + 4.4vw, 5.2rem);
+  --lh-tight: 1.08;
+  --lh-snug: 1.3;
+  --lh-body: 1.55;
+
+  /* Espaço, forma e profundidade */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 6.5rem;
+  --radius-xs: 4px;
+  --radius-sm: 7px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(37, 43, 40, 0.06);
+  --shadow: 0 10px 24px -14px rgba(24, 61, 53, 0.22), 0 1px 2px rgba(37, 43, 40, 0.05);
+  --shadow-lg: 0 28px 56px -24px rgba(15, 42, 36, 0.35), 0 2px 6px rgba(37, 43, 40, 0.06);
+  --container: 74rem;
+  --gutter: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+  --tap: 44px;
+
+  /* Tempo */
+  --dur-fast: 0.16s;
+  --dur-base: 0.28s;
+  --dur-slow: 0.6s;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}

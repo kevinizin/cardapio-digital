@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "cardapio",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["servidor-teste.js"],
-      "port": 4173
+      "name": "maison-elise-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "app", "run", "dev", "--", "--port", "5173"],
+      "port": 5173
     }
   ]
 }

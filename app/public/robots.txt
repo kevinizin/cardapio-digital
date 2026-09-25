@@ -1,0 +1,3 @@
+# Demonstração com dados fictícios — não indexar.
+User-agent: *
+Disallow: /
