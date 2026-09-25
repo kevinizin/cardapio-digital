@@ -95,55 +95,52 @@
   padding-inline: var(--gutter);
 }
 
-/* ---------- Logo (provisório em SVG ou imagem oficial via LOGO_IMAGE) ---------- */
+/* ---------- Logo (selo redondo oficial) ---------- */
 .logo {
   position: relative;
   display: block;
   flex: none;
-  width: var(--logo-width, 132px);
-  aspect-ratio: 2 / 1;
+  width: var(--logo-width, 64px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 6px 16px -8px rgba(92, 15, 34, 0.55);
 }
 
-.logo svg,
 .logo img {
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  /* O arquivo tem cantos claros fora do círculo: o recorte os esconde. */
+  clip-path: circle(49.5%);
+  /* Aproxima o nome "Aromas da Vivi", que ocupa só o miolo do selo. */
+  transform: scale(1.12);
 }
 
-.logo img {
-  object-fit: contain;
-}
-
-.logo--wordmark {
-  border-radius: calc(var(--logo-width, 132px) * 0.05);
-  box-shadow: 0 6px 16px -10px rgba(92, 15, 34, 0.55);
-}
-
-.logo__script {
-  font-family: 'Great Vibes', 'Brush Script MT', cursive;
-  font-weight: 400;
+.logo {
+  overflow: hidden;
 }
 
 .logo--header {
-  --logo-width: clamp(104px, 70px + 5vw, 138px);
+  --logo-width: clamp(60px, 44px + 3vw, 84px);
 }
 
 .logo--hero {
-  --logo-width: min(100%, 440px);
+  --logo-width: min(100%, 220px);
 }
 
 .logo--footer {
-  --logo-width: 128px;
+  --logo-width: 96px;
 }
 
 .logo--sidebar {
-  --logo-width: 150px;
+  --logo-width: 120px;
 }
 
 .logo-link {
   display: inline-flex;
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
 }
 
 /* ---------- Site público ---------- */
