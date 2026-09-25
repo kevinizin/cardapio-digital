@@ -94,7 +94,7 @@ export const adminPages = {
     forecastClosed: 'O restaurante não abre nesse horário; mesmo assim, a previsão considera reservas e bloqueios.',
     legendTitle: 'Legenda',
     salao: 'Salão',
-    varanda: 'Varanda coberta',
+    varanda: 'Terraço',
     entrance: 'Entrada',
     bar: 'Balcão',
     kitchen: 'Cozinha',
@@ -214,7 +214,7 @@ export const adminPages = {
     occupancyHint:
       'Minutos de atendimento reservados (sem canceladas, ausências e preparação) divididos pelos minutos das mesas ativas nos turnos abertos. Bloqueios manuais e fechamentos reduzem o tempo disponível uma única vez. Intervalos são recortados aos turnos.',
     occupancyMeta: (reserved: string, available: string) => `${reserved} reservadas de ${available} disponíveis`,
-    occupancyShifts: (lunch: string, dinner: string) => `Almoço ${lunch} · Jantar ${dinner}`,
+    occupancyShifts: (lunch: string, dinner: string) => `Serviço ${lunch} · Segundo turno ${dinner}`,
     realized: 'Ocupação realizada',
     realizedHint:
       'Tempo real entre chegada e conclusão registradas, dividido pelos minutos disponíveis já transcorridos no mês. Usa apenas tempos reais; meses futuros aparecem como indisponíveis.',

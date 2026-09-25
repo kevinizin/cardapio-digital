@@ -86,11 +86,11 @@ export const common = {
   },
   area: {
     salao: 'Dining room',
-    varanda: 'Covered terrace',
+    varanda: 'Terrace',
   },
   shift: {
-    lunch: 'Lunch',
-    dinner: 'Dinner',
+    lunch: 'Service',
+    dinner: 'Second service',
   },
   segment: {
     service: 'service',

@@ -124,7 +124,7 @@ export function errorMessage(error: DomainError): string {
     case 'SHIFT_ORDER_INVALID':
       return 'The opening period must end after it starts.';
     case 'SHIFTS_OVERLAP':
-      return 'Lunch must end before dinner starts.';
+      return 'The first service must end before the second one starts.';
     case 'EXCEPTION_DATE_INVALID':
       return 'Please enter a valid date.';
     case 'EXCEPTION_DATE_PAST':
