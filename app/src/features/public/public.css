@@ -543,13 +543,20 @@
 
 .suggestions {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.5rem;
+  min-width: 0;
   list-style: none;
 }
 
+/* Sem isto, o texto dos botões (sem quebra) alarga o calendário no celular. */
 .suggestions .btn {
+  flex-wrap: wrap;
   justify-content: space-between;
   width: 100%;
+  min-width: 0;
+  white-space: normal;
+  text-align: left;
 }
 
 .booking-summary {
