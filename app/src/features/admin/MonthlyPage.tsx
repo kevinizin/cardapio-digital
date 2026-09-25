@@ -5,6 +5,7 @@ import { BarChart } from '../../components/BarChart';
 import { InfoTip } from '../../components/Field';
 import { useDocumentTitle } from '../../components/PageLoading';
 import { computeMonthlyMetrics, type OccupancyRatio } from '../../domain/metrics';
+import { isSharedTable } from '../../domain/occupancy';
 import { addMonths, MINUTE_MS, parisMonth, toMs } from '../../domain/time';
 import type { MonthKey } from '../../domain/types';
 import { formatDayNumber, formatHours, formatLocalDate, formatMonth, formatNumber, formatPercent, t } from '../../i18n';
@@ -58,6 +59,10 @@ export function MonthlyPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const metrics = useMemo(() => computeMonthlyMetrics(data, month, now), [data, month, nowMinute]);
   const { occupancy } = metrics;
+  // Com áreas por lugares, as horas são "lugares·hora"; o segundo turno só aparece se existir.
+  const bySeats = data.tables.length > 0 && data.tables.every(isSharedTable);
+  const seatHours = (minutes: number) => formatNumber(Math.round(minutes / 60));
+  const hasDinner = occupancy.dinner.ratio !== null && occupancy.dinner.denominatorMinutes > 0;
 
   const daily = metrics.daily.map((d) => ({ key: d.date, label: formatLocalDate(d.date), shortLabel: formatDayNumber(d.date), value: d.reservations }));
   const weekdays = metrics.weekdays.map((w) => ({ key: String(w.weekday), label: t.weekdays[w.weekday], shortLabel: t.weekdaysShort[w.weekday], value: w.reservations }));
@@ -127,28 +132,32 @@ export function MonthlyPage() {
         <Kpi label={m.noShows} hint={m.noShowsHint} value={formatNumber(metrics.noShows.reservations)} meta={m.peopleMeta(metrics.noShows.people)} />
         <Kpi
           label={m.occupancy}
-          hint={m.occupancyHint}
+          hint={bySeats ? m.occupancyHintSeats : m.occupancyHint}
           value={percentOrUnavailable(occupancy.planned)}
           muted={occupancy.planned.ratio === null}
           meta={
             occupancy.planned.ratio === null
               ? m.unavailableMeta
-              : m.occupancyMeta(formatHours(occupancy.planned.numeratorMinutes), formatHours(occupancy.planned.denominatorMinutes))
+              : bySeats
+                ? m.occupancyMetaSeats(seatHours(occupancy.planned.numeratorMinutes), seatHours(occupancy.planned.denominatorMinutes))
+                : m.occupancyMeta(formatHours(occupancy.planned.numeratorMinutes), formatHours(occupancy.planned.denominatorMinutes))
           }
         >
-          {occupancy.planned.ratio !== null && (
+          {occupancy.planned.ratio !== null && hasDinner && (
             <p className="kpi__meta">{m.occupancyShifts(percentOrUnavailable(occupancy.lunch), percentOrUnavailable(occupancy.dinner))}</p>
           )}
         </Kpi>
         <Kpi
           label={m.realized}
-          hint={m.realizedHint}
+          hint={bySeats ? m.realizedHintSeats : m.realizedHint}
           value={percentOrUnavailable(occupancy.realized)}
           muted={occupancy.realized.ratio === null}
           meta={
             occupancy.realized.ratio === null
               ? m.unavailableMeta
-              : m.realizedMeta(formatHours(occupancy.realized.numeratorMinutes), formatHours(occupancy.realized.denominatorMinutes))
+              : bySeats
+                ? m.realizedMetaSeats(seatHours(occupancy.realized.numeratorMinutes), seatHours(occupancy.realized.denominatorMinutes))
+                : m.realizedMeta(formatHours(occupancy.realized.numeratorMinutes), formatHours(occupancy.realized.denominatorMinutes))
           }
         />
       </div>

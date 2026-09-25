@@ -263,6 +263,12 @@ export const adminPages = {
       'Minutos de atendimento reservados (sem canceladas, ausências e preparação) divididos pelos minutos das mesas ativas nos turnos abertos. Bloqueios manuais e fechamentos reduzem o tempo disponível uma única vez. Intervalos são recortados aos turnos.',
     occupancyMeta: (reserved: string, available: string) => `${reserved} reservadas de ${available} disponíveis`,
     occupancyShifts: (lunch: string, dinner: string) => `Serviço ${lunch} · Segundo turno ${dinner}`,
+    occupancyHintSeats:
+      'Quanto dos lugares disponíveis no mês foi reservado: pessoas × tempo de atendimento das reservas (sem canceladas, ausências e arrumação), dividido pela capacidade das áreas × horas abertas. Ex.: 30 lugares ocupados das 20:00 às 21:30 somam 45 lugares·hora. Bloqueios e fechamentos reduzem o total disponível.',
+    occupancyMetaSeats: (reserved: string, available: string) => `${reserved} de ${available} lugares·hora`,
+    realizedHintSeats:
+      'Uso real dos lugares até hoje: pessoas × tempo entre a chegada e a conclusão registradas, dividido pelos lugares·hora já transcorridos no mês. Só conta atendimentos concluídos (ou em andamento).',
+    realizedMetaSeats: (used: string, available: string) => `${used} de ${available} lugares·hora transcorridos`,
     realized: 'Ocupação realizada',
     realizedHint:
       'Tempo real entre chegada e conclusão registradas, dividido pelos minutos disponíveis já transcorridos no mês. Usa apenas tempos reais; meses futuros aparecem como indisponíveis.',

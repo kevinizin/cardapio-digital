@@ -44,6 +44,13 @@ interface Props {
   onSaved: (reservation: Reservation, message: string) => void;
 }
 
+/** Data de hoje e o próximo horário de 5 em 5 minutos, em Paris (cliente que chegou agora). */
+function nowSlot(nowMs: number): { date: string; time: string } {
+  const minutes = Math.ceil((parisMinutesOfDay(nowMs) + 1) / 5) * 5;
+  const time = `${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+  return { date: parisDate(nowMs), time };
+}
+
 /** Criação manual (telefone, presencial) e edição com validação completa. */
 export function ReservationFormDialog({ mode, reservationId, prefill, onClose, onSaved }: Props) {
   const data = useData();
@@ -55,11 +62,13 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
   const seated = original?.status === 'seated';
 
   const [form, setForm] = useState<FormState>(() => {
+    // Cliente sem reserva: já abre com a data e o horário de agora.
+    const walkInNow = !original && prefill?.source === 'walk_in' && !prefill?.time ? nowSlot(now) : null;
     const base: ReservationDraft = original
       ? draftFromReservation(original)
       : {
-          date: prefill?.date ?? currentOrNextShift(settings, now)?.shift.date ?? parisDate(now),
-          time: prefill?.time ?? '',
+          date: walkInNow?.date ?? prefill?.date ?? currentOrNextShift(settings, now)?.shift.date ?? parisDate(now),
+          time: walkInNow?.time ?? prefill?.time ?? '',
           partySize: prefill?.partySize ?? 2,
           tableId: prefill?.tableId ?? AUTO_TABLE,
           serviceMinutes: settings.rules.serviceMinutes,
@@ -131,10 +140,8 @@ export function ReservationFormDialog({ mode, reservationId, prefill, onClose, o
   const generalErrors = errors.filter((error) => !error.field || error.code === 'CONFLICT');
 
   const useNowPreset = () => {
-    const today = parisDate(now);
-    const minutes = Math.ceil((parisMinutesOfDay(now) + 1) / 5) * 5;
-    const time = `${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
-    setForm((current) => ({ ...current, date: today, time, source: 'walk_in' }));
+    const { date, time } = nowSlot(now);
+    setForm((current) => ({ ...current, date, time, source: 'walk_in' }));
   };
 
   const submit = (event: FormEvent) => {
