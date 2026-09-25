@@ -17,7 +17,7 @@
 
 .pub-band {
   border-block: 1px solid var(--line);
-  background: var(--surface-sage-soft);
+  background: var(--surface-blush-soft);
 }
 
 /* ---------- Abertura ---------- */
@@ -89,9 +89,9 @@
   justify-items: center;
   gap: 0.35rem;
   padding: clamp(4rem, 3rem + 5vw, 6.25rem) clamp(1.1rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem);
-  border: 1px solid color-mix(in srgb, var(--green-900) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wine-900) 22%, transparent);
   border-radius: 999px 999px 2px 2px;
-  background: var(--surface-sage-soft);
+  background: var(--surface-blush-soft);
   text-align: center;
 }
 
@@ -126,7 +126,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.2rem 1rem;
   padding-block: 0.7rem;
-  border-top: 1px solid color-mix(in srgb, var(--green-900) 14%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--wine-900) 14%, transparent);
 }
 
 .pub-hours__days {
@@ -198,7 +198,7 @@
   height: 46px;
   border: 1px solid var(--gold-500);
   border-radius: 50%;
-  color: var(--green-900);
+  color: var(--wine-900);
 }
 
 .pub-feature__icon svg {
@@ -233,7 +233,7 @@
 
 .pub-steps li::before {
   content: counter(step, decimal-leading-zero);
-  color: var(--green-800);
+  color: var(--wine-800);
   font-family: var(--font-display);
   font-size: 2.2rem;
   font-weight: 600;
@@ -285,7 +285,7 @@
   margin-top: var(--space-7);
   padding: clamp(1.5rem, 4vw, 2.75rem);
   border-radius: var(--radius-lg);
-  background: var(--surface-sage);
+  background: var(--surface-blush);
 }
 
 .pub-cta__text {
@@ -359,9 +359,9 @@
 }
 
 .stepper__item--done .stepper__num {
-  border-color: var(--green-200);
-  background: var(--green-100);
-  color: var(--green-800);
+  border-color: var(--wine-200);
+  background: var(--wine-100);
+  color: var(--wine-800);
 }
 
 .stepper__item + .stepper__item::before {
@@ -490,7 +490,7 @@
 }
 
 .choice input:hover + .choice__face {
-  border-color: var(--green-600);
+  border-color: var(--wine-600);
 }
 
 .choice input:checked + .choice__face {
@@ -501,7 +501,7 @@
 
 .choice input:focus-visible + .choice__face {
   box-shadow: var(--focus-ring);
-  border-color: var(--green-700);
+  border-color: var(--wine-700);
 }
 
 .choice__face small {
@@ -558,9 +558,9 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
-  border: 1px solid var(--sage-300);
+  border: 1px solid var(--blush-300);
   border-radius: var(--radius-lg);
-  background: var(--surface-sage-soft);
+  background: var(--surface-blush-soft);
 }
 
 .booking-summary__title {
@@ -690,7 +690,7 @@
 }
 
 .calendar__day--available:hover {
-  border-color: var(--green-700);
+  border-color: var(--wine-700);
 }
 
 .calendar__day--full {
@@ -777,8 +777,8 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--green-100);
-  color: var(--green-800);
+  background: var(--wine-100);
+  color: var(--wine-800);
 }
 
 .confirm-card__icon svg {

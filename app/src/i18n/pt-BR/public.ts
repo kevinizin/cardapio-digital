@@ -11,13 +11,13 @@ export const publicMessages = {
     bookShort: 'Reservar',
   },
   footer: {
-    fictional: 'Maison Élise é um restaurante fictício, criado para demonstrar um sistema de reservas.',
+    fictional: 'Aromas da Vivi — cozinha brasileira em Paris.',
     formats: 'Datas no formato dia/mês/ano e horários de Paris, em 24 horas.',
     noContact: 'Esta demonstração não possui telefone, e-mail ou endereço reais.',
   },
   home: {
     documentTitle: 'Reservas',
-    eyebrow: 'Bistrô francês · Paris',
+    eyebrow: 'Cozinha brasileira · Paris',
     heading: 'Uma mesa à sua espera, no ritmo de Paris.',
     lead:
       'Cozinha de estação, vinhos de pequenos produtores e um salão acolhedor com varanda coberta. Reserve online em poucos passos e receba um código para consultar ou cancelar quando precisar.',

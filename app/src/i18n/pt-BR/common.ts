@@ -4,9 +4,9 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` :
 
 export const common = {
   brand: {
-    name: 'Maison Élise',
+    name: 'Aromas da Vivi',
     city: 'Paris',
-    logoAlt: 'Maison Élise, Paris',
+    logoAlt: 'Aromas da Vivi, Paris',
   },
   demo: {
     ribbon: 'Demonstração — dados fictícios',

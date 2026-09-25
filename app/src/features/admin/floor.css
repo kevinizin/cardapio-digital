@@ -70,14 +70,14 @@
 }
 
 .floor-bg__terrace {
-  fill: var(--sage-100);
-  stroke: var(--sage-300);
+  fill: var(--blush-100);
+  stroke: var(--blush-300);
   stroke-width: 3;
   stroke-dasharray: 10 6;
 }
 
 .floor-bg__awning-a {
-  fill: var(--green-800);
+  fill: var(--wine-800);
 }
 
 .floor-bg__awning-b {
@@ -103,7 +103,7 @@
 }
 
 .floor-bg__label {
-  fill: var(--green-800);
+  fill: var(--wine-800);
   font-family: var(--font-display);
   font-size: 30px;
   font-weight: 600;
@@ -246,7 +246,7 @@
 }
 
 .floor-table:focus-visible .floor-table__shape {
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--green-700) 45%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wine-700) 45%, transparent);
 }
 
 .floor-table[aria-pressed='true'] .floor-table__shape {
