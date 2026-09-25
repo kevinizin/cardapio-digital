@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "reservas-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "app", "run", "dev", "--", "--port", "5173"],
+      "port": 5173
+    },
+    {
       "name": "cardapio",
       "runtimeExecutable": "node",
       "runtimeArgs": ["cardapio/servidor-teste.js"],

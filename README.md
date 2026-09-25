@@ -1,9 +1,10 @@
 # Sistemas
 
-Repositório com os sistemas e sites desenvolvidos. Cada sistema fica na sua própria pasta.
+Repositório com os sistemas desenvolvidos. Cada sistema fica na sua própria pasta.
 
 | Pasta | Sistema | Descrição |
 |-------|---------|-----------|
+| [`app/`](app/) | Reservas de mesas | Site do cliente + painel da administração (React + TypeScript + Vite). Veja [`app/README.md`](app/README.md). Identidade em [`identidade/`](identidade), planejamento em [`planejamento-maison-elise.md`](planejamento-maison-elise.md). |
 | [`cardapio/`](cardapio/) | Cardápio digital | Cardápio com QR Code, modelo white-label. Veja `cardapio/LEIA-ME.txt`. |
 
 ## Como adicionar um novo sistema

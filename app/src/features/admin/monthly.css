@@ -1,0 +1,171 @@
+.month-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.month-nav .select {
+  width: auto;
+  min-width: 12.5rem;
+}
+
+.monthly-heading {
+  margin-bottom: var(--space-4);
+  font-size: var(--t-xl);
+}
+
+.monthly-criterion {
+  margin-bottom: var(--space-3);
+  color: var(--fg-muted);
+  font-size: var(--t-sm);
+}
+
+.monthly-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.chart--wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .monthly-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.chart__head {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.chart__title {
+  font-size: var(--t-lg);
+}
+
+.chart__desc {
+  color: var(--fg-subtle);
+  font-size: var(--t-xs);
+}
+
+.chart__frame {
+  display: grid;
+  gap: 0.4rem;
+  padding-top: 1.75rem;
+}
+
+.chart__plot {
+  position: relative;
+  height: 13rem;
+  margin-left: 2.4rem;
+  border-bottom: 1px solid var(--ink-400);
+  border-radius: 2px;
+}
+
+.chart__plot:focus-visible {
+  outline: 2px solid var(--green-700);
+  outline-offset: 6px;
+}
+
+.chart__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.chart__gridline {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 0;
+  border-top: 1px solid var(--line);
+}
+
+.chart__tick {
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  color: var(--fg-subtle);
+  font-size: var(--t-2xs);
+  transform: translateY(-50%);
+}
+
+.chart__bars {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-items: end;
+}
+
+.chart__col {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  padding-inline: 1px;
+}
+
+.chart__col.is-active {
+  background: color-mix(in srgb, var(--sage-200) 65%, transparent);
+}
+
+.chart__bar {
+  width: min(24px, 100%);
+  border-radius: 4px 4px 0 0;
+  background: var(--green-700);
+}
+
+.chart__col.is-active .chart__bar {
+  background: var(--green-900);
+}
+
+.chart__tooltip {
+  position: absolute;
+  top: -0.4rem;
+  z-index: 5;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-xs);
+  background: var(--ink-900);
+  color: var(--ink-000);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.chart__xaxis {
+  display: grid;
+  margin-left: 2.4rem;
+}
+
+.chart__xlabel {
+  overflow: visible;
+  color: var(--fg-subtle);
+  font-size: var(--t-2xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.chart__empty {
+  padding-block: var(--space-5);
+  color: var(--fg-muted);
+}
+
+.chart__toggle {
+  justify-self: start;
+}
