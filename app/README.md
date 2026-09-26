@@ -1,18 +1,96 @@
-# Maison Élise · Sistema de reservas (demonstração)
+# Aromas da Vivi · Sistema de reservas
 
-Demonstração funcional de reservas de mesas para o restaurante **fictício** Maison Élise, em Paris. Tem duas interfaces que usam a mesma fonte de dados:
+Sistema de reservas de mesas do restaurante **Aromas da Vivi**, em Paris. Tem duas interfaces sobre a mesma fonte de dados:
 
 - **Site do cliente**: página inicial, reserva em 4 etapas, confirmação com código e consulta/cancelamento.
-- **Administração**: visão geral do dia, agenda por mesa, mapa do salão, reservas, dashboard mensal e configurações.
+- **Administração** (`/admin`, com senha): visão geral do dia, agenda por mesa, mapa do salão, reservas, dashboard mensal e configurações.
 
-> **Demonstração, dados fictícios.** Não há login, pagamento, envio de e-mail ou banco de dados. Tudo roda no navegador.
+Há dois modos:
+
+| Modo | Onde os dados ficam | Para quê |
+|---|---|---|
+| **Real** (padrão) | Postgres no servidor (`server/`), compartilhado entre todos os aparelhos | O restaurante funcionando |
+| **Demonstração** (`VITE_DATA_MODE=demo`) | `localStorage` de cada navegador, com dados fictícios | Apresentar o sistema a novos clientes |
 
 ---
+
+## Versão real: publicar no Railway
+
+O servidor (`server/`) entrega o site e a API na mesma origem. Ele usa as mesmas regras de negócio do site (`src/domain`) para validar e gravar cada reserva dentro de uma transação, o que impede duas reservas na mesma mesa e horário.
+
+1. No Railway, crie um projeto e adicione um banco **PostgreSQL** (New → Database → PostgreSQL).
+2. Adicione um serviço a partir do repositório do GitHub (New → GitHub Repo) e, em **Settings**:
+   - **Root Directory** = `app`
+   - **Branch** = a branch que vai ao ar
+   - Build e start já vêm de `railway.json` (`npm run build` / `npm start`, healthcheck em `/api/health`).
+3. Em **Variables** do serviço:
+
+   | Variável | Valor |
+   |---|---|
+   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (referência ao banco do projeto) |
+   | `ADMIN_PASSWORD` | senha da equipe para entrar em `/admin` (mínimo 8 caracteres) |
+   | `SESSION_SECRET` | texto aleatório de 32+ caracteres (ex.: `openssl rand -hex 32`) |
+   | `NODE_ENV` | `production` (cookie de sessão só por HTTPS) |
+
+   E-mails aos clientes (opcionais, pelo Brevo):
+
+   | Variável | Valor |
+   |---|---|
+   | `BREVO_API_KEY` | chave da API do Brevo. **Sem ela, o sistema funciona normalmente, só não envia e-mails** (o site diz ao cliente para anotar o código) |
+   | `EMAIL_FROM` | remetente verificado no Brevo (ex.: `reservas@aromasdavivi.fr`); obrigatório com a chave |
+   | `EMAIL_FROM_NAME` | nome do remetente (padrão `Aromas da Vivi`) |
+   | `EMAIL_REPLY_TO` | endereço que recebe as respostas dos clientes (opcional) |
+   | `PUBLIC_URL` | endereço público do site, usado nos links e na logo dos e-mails (padrão `https://reservas-aromasdavivi.up.railway.app`) |
+
+4. Em **Settings → Networking**, gere um domínio público (ou ligue um domínio próprio).
+5. Na primeira inicialização o servidor cria as tabelas e o documento inicial (configurações e mesas, **sem reservas**). Ajuste mesas e horários em **/admin → Configurações**.
+
+**E-mails aos clientes (Brevo)**
+- Criar a chave: em [brevo.com](https://www.brevo.com) (plano gratuito: 300 e-mails/dia), menu **SMTP & API → API Keys → Generate a new API key**; copie a chave para `BREVO_API_KEY`.
+- Verificar o remetente: em **Senders, Domains & Dedicated IPs → Senders → Add a sender**, cadastre o endereço de `EMAIL_FROM` e confirme pelo link recebido. Para melhor entrega (menos spam), autentique também o domínio em **Domains** (registros DKIM/DMARC no DNS).
+- Enviados em francês, português ou inglês (o idioma do site no momento da reserva; reservas da equipe saem em francês):
+  1. **Confirmação**: reserva online e reserva criada pela equipe com e-mail;
+  2. **Alteração**: a equipe mudou dia, horário ou pessoas de uma reserva confirmada;
+  3. **Cancelamento**: pelo cliente ou pela equipe (o motivo interno nunca é enviado);
+  4. **Lembrete**: às 10:00 de Paris da véspera, para as reservas confirmadas do dia seguinte (quem reservou depois disso, ou para o mesmo dia, não recebe).
+- Os e-mails trazem código, data, horário, pessoas, endereço com mapa, link para consultar/cancelar (`/consultar?codigo=…&email=…`), prazo de cancelamento e WhatsApp.
+- Nada disso atrasa ou impede uma reserva: os e-mails entram numa fila (tabela `email_log`), enviada em segundo plano a cada minuto, com até 5 tentativas (espera de 1, 5, 15 e 60 min). A chave de cada e-mail evita duplicados. Na administração, os detalhes da reserva mostram os e-mails enviados ou com falha.
+- Reservas online recusam e-mails temporários (lista `disposable-email-domains`) e domínios que não recebem e-mail (sem MX/A no DNS). Se o DNS falhar ou demorar mais de 3 s, a reserva é aceita.
+
+**Consentimento de novidades (RGPD)**
+- Na etapa "Seus dados" há uma caixa **desmarcada** para receber novidades e eventos; o aceite fica na reserva com data/hora (`marketingOptIn`, `marketingOptInAt`) e aparece nos detalhes e na coluna "Aceita novidades" do CSV. Nenhum e-mail de marketing é enviado pelo sistema.
+
+**Segurança e privacidade**
+- O site do cliente só recebe horários ocupados: nomes, e-mails, telefones, observações e códigos das reservas nunca saem do servidor sem login.
+- Consulta e cancelamento exigem código + e-mail, com limite de tentativas por IP; reservas online também têm limite por IP.
+- Login da administração com cookie `HttpOnly` + `SameSite=Strict`, válido por 12 h, e no máximo 10 tentativas a cada 15 min.
+- Trocar a senha: altere `ADMIN_PASSWORD` no Railway. Para derrubar todas as sessões abertas, troque também `SESSION_SECRET`.
+
+**Cópias de segurança**
+- Toda gravação guarda uma cópia completa na tabela `app_state_history` (revisão + data/hora). Para voltar a uma versão: copie o `data` da revisão desejada para `app_state` (e ajuste `revision` para um número maior que o atual).
+- Em **/admin → Configurações → Dados** há exportação em JSON, e em **Reservas** a exportação em CSV.
+
+**Como funciona a sincronização**
+- A administração aplica cada ação na hora e salva em seguida, informando a revisão em que se baseou. Se outra pessoa salvou antes, a ação é refeita sobre a versão nova; se não fizer mais sentido (ex.: reserva já cancelada), é descartada com aviso.
+- Sem internet, as ações ficam pendentes ("Sem conexão") e são reenviadas automaticamente.
+- Outros aparelhos recebem as novidades em até 20 segundos.
+
+**Rodar a versão real no computador**
+
+```bash
+# precisa de um Postgres local
+export DATABASE_URL=postgres://usuario@localhost:5432/reservas
+export ADMIN_PASSWORD=uma-senha-local SESSION_SECRET=$(openssl rand -hex 32)
+npm run build && npm start   # http://localhost:3000
+```
+
+Testes do banco (use um banco descartável, as tabelas são recriadas): `TEST_DATABASE_URL=postgres://… npm run test:db`.
 
 ## Requisitos
 
 - Node.js 20.19 ou mais recente (testado com Node 24) e npm.
-- Não é preciso chave, conta ou serviço externo.
+- Modo demonstração: não é preciso chave, conta ou serviço externo.
+- Modo real: um banco PostgreSQL (no Railway ou local).
 
 ## Como instalar e rodar
 
@@ -20,8 +98,10 @@ Na pasta `app`:
 
 ```bash
 npm install
-npm run dev
+VITE_DATA_MODE=demo npm run dev
 ```
+
+`npm run dev` sem a variável abre o modo real, que precisa do servidor da API rodando.
 
 Abra o endereço mostrado no terminal (normalmente http://localhost:5173). Se a porta 5173 estiver ocupada, o Vite usa a próxima livre e mostra o endereço; nenhum processo de outro projeto é encerrado.
 
@@ -31,7 +111,9 @@ Outros comandos:
 |---|---|
 | `npm test` | Roda os testes (Vitest), de propósito num fuso diferente de Paris (America/Sao_Paulo) |
 | `npm run typecheck` | Verificação de tipos (TypeScript) |
-| `npm run build` | Verificação de tipos + build estático em `dist/` |
+| `npm run build` | Verificação de tipos + build do site em `dist/` e do servidor em `dist-server/` |
+| `npm start` | Servidor de produção (precisa das variáveis acima) |
+| `npm run test:db` | Testes contra um Postgres descartável (`TEST_DATABASE_URL`) |
 | `npm run preview` | Serve o build de `dist/` localmente (porta 4173 ou a próxima livre) |
 
 As dependências estão fixadas em versões exatas no `package.json` e no `package-lock.json`.
@@ -73,6 +155,15 @@ As rotas funcionam com acesso direto (recarregar ou abrir o link), tanto no `npm
 - Chegada muito antecipada exige mesa livre naquele momento; ausência só após início + tolerância (15 min). Nada é concluído, deslocado ou marcado como ausência automaticamente: atrasos e atendimentos longos geram alertas.
 - Configurações validam conflitos: fechar um dia, reduzir capacidade, desativar mesa ou criar bloqueio que afete reservas é recusado com a lista do que resolver.
 
+## Configuração do Aromas da Vivi (produção)
+
+Na primeira inicialização do banco (`src/domain/restaurantSetup.ts`):
+
+- Reservas controladas **por lugares em cada área**, não por mesa: `SALAO` (30 pessoas ao mesmo tempo) e `TERRACO` (10), ambas `shared: true`. Várias reservas dividem a área enquanto, em todo o período (atendimento + preparação), a soma de pessoas couber na capacidade. Bloqueios fecham a área inteira. A escolha automática tenta o salão e depois o terraço. Capacidades ajustáveis em Configurações (até 200 por área; mesas comuns continuam até 12).
+- Terça a domingo, 12h–22h contínuo; atendimento de 90 min + 10 min de preparação (última reserva às 20h15). Fechado em 25/12/2026 e 01/01/2027.
+- Online: 1 a 8 pessoas, telefone obrigatório (regra "Telefone obrigatório nas reservas online"); grupos maiores falam com o restaurante pelo WhatsApp (`src/config/restaurant.ts`).
+- Um banco já inicializado **não** é alterado: para adotar as áreas num banco existente, ajuste os dados pela administração ou recrie o documento inicial.
+
 ## Dados fictícios
 
 Na primeira abertura, o sistema gera uma única vez, a partir da data atual de Paris:
@@ -106,7 +197,9 @@ Em **Reservas**, **Exportar CSV** baixa as reservas filtradas (separador `;`, UT
 
 Uma versão de produção precisaria de: autenticação administrativa real, banco de dados compartilhado com prevenção transacional de conflitos no servidor, envio real de confirmações, política de retenção e privacidade dos dados pessoais (RGPD/LGPD), além de monitoramento e backups. **Nada disso foi implementado nesta demonstração.**
 
-## Publicação na Vercel
+## Demonstração na Vercel
+
+A Vercel publica apenas a **demonstração** (o `vercel.json` compila com `VITE_DATA_MODE=demo`).
 
 Demonstração publicada em **https://maison-elise-demo.vercel.app** (projeto `maison-elise-demo`, escopo `kevinizins-projects`). Continua com `noindex` e `robots.txt` bloqueando indexação, por ser demonstração; remova isso apenas se virar um site real.
 
@@ -135,6 +228,6 @@ As regras de negócio não conhecem o armazenamento: trocar o `localStorage` por
 
 ## Identidade visual
 
-- Logo original em `public/brand/logo-maison-elise.png` (cópia da imagem em `maison-elise/identidade`). As versões `logo-maison-elise-480.webp` e `-960.webp` são a mesma arte redimensionada, para carregar mais rápido; os ícones do navegador são um recorte do monograma da própria logo.
-- Paleta: verde `#183D35`, creme `#F7F3EA`, dourado `#B89B63` (só decorativo), sálvia `#DCE5DC`, carvão `#252B28`.
+- Logo: o arquivo oficial do Aromas da Vivi ainda está pendente. Até lá, `src/components/Brand.tsx` desenha um logotipo provisório em SVG (Great Vibes dourado sobre bordô); para usar a imagem, coloque-a em `public/brand/` e defina `LOGO_IMAGE` nesse arquivo. Os ícones do navegador (`public/brand/icon-*.png`, `public/favicon.ico`) são provisórios: um "A" em script dourado sobre bordô.
+- Paleta: bordô `#841731`, dourado metálico `#C9A24A` (só decorativo; `#7A5C1C` em texto), creme `#F8F3EA`, rosado `#F3E2E3`, carvão `#2A2224`. Detalhes em `../identidade/referencia-visual.md`.
 - Tipografia auto-hospedada (sem depender de rede): Cormorant Garamond nos títulos e Source Sans 3 no corpo.

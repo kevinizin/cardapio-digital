@@ -7,29 +7,36 @@ import { Notice, useToast } from '../../components/Feedback';
 import { describedBy, Field } from '../../components/Field';
 import { useDocumentTitle } from '../../components/PageLoading';
 import type { DomainError } from '../../domain/errors';
-import { normalizeCode } from '../../domain/ids';
-import { cancelByCustomer, customerCancelState } from '../../domain/lifecycle';
+import { customerCancelState } from '../../domain/lifecycle';
 import { MINUTE_MS, parisDate, parisTime, toMs } from '../../domain/time';
-import { formatDateTime, formatDuration, formatLocalDate, formatLocalDateLong, formatParisOffset, formatTime, t } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
 
-const l = t.public.lookup;
-const b = t.public.booking;
-
 export function LookupPage() {
+  const { t, f, errorMessage } = useI18n();
+  const { formatDateTime, formatDuration, formatLocalDate, formatLocalDateLong, formatParisOffset, formatTime } = f;
+  const l = t.public.lookup;
+  const b = t.public.booking;
   useDocumentTitle(l.documentTitle);
   const [params] = useSearchParams();
   const data = useData();
   const store = useStore();
+  const demo = store.kind === 'demo';
+  const cancelledText = demo ? `${l.cancelledText} ${l.cancelledDemo}` : l.cancelledText;
   const now = useNow(30_000);
   const notify = useToast();
   const [code, setCode] = useState(() => params.get('codigo') ?? '');
-  const [email, setEmail] = useState('');
+  // Link dos e-mails: /consultar?codigo=…&email=… já preenche os dois campos.
+  const [email, setEmail] = useState(() => params.get('email') ?? '');
   const [foundId, setFoundId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [cancelErrors, setCancelErrors] = useState<DomainError[]>([]);
   const [justCancelled, setJustCancelled] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  /** Código e e-mail da consulta que encontrou a reserva (exigidos para cancelar). */
+  const [credentials, setCredentials] = useState<{ code: string; email: string } | null>(null);
 
   const reservation = foundId ? data.reservations.find((r) => r.id === foundId) : undefined;
 
@@ -40,25 +47,34 @@ export function LookupPage() {
       setMessage(l.required);
       return;
     }
-    store.refresh();
-    const normalizedCode = normalizeCode(code);
-    const normalizedEmail = email.trim().toLowerCase();
-    const match = store
-      .getSnapshot()
-      .data.reservations.find((r) => r.code === normalizedCode && r.customer.email.trim().toLowerCase() === normalizedEmail);
-    // Mensagem genérica: não revela se o código existe.
-    setFoundId(match?.id ?? null);
-    setMessage(match ? null : l.notFound);
+    if (searching) return;
+    setSearching(true);
+    const sent = { code, email };
+    void store.lookup(sent.code, sent.email).then((result) => {
+      setSearching(false);
+      if (!result.ok) {
+        setFoundId(null);
+        setMessage(errorMessage(result.errors[0]));
+        return;
+      }
+      const match = result.value.reservation;
+      // Mensagem genérica: não revela se o código existe.
+      setFoundId(match?.id ?? null);
+      setCredentials(match ? sent : null);
+      setMessage(match ? null : l.notFound);
+    });
   };
 
-  const onCancel = () => {
-    if (!reservation) return;
-    const result = store.execute((fresh, nowMs) => cancelByCustomer(fresh, reservation.id, nowMs));
+  const onCancel = async () => {
+    if (!reservation || !credentials || cancelling) return;
+    setCancelling(true);
+    const result = await store.cancelOnline(credentials.code, credentials.email);
+    setCancelling(false);
     if (result.ok) {
       setConfirming(false);
       setCancelErrors([]);
       setJustCancelled(true);
-      notify({ tone: 'success', title: l.cancelledTitle, description: l.cancelledText });
+      notify({ tone: 'success', title: l.cancelledTitle, description: cancelledText });
     } else {
       setCancelErrors(result.errors);
     }
@@ -109,7 +125,7 @@ export function LookupPage() {
               onChange={(event) => setEmail(event.target.value)}
             />
           </Field>
-          <button type="submit" className="btn btn--primary btn--lg">
+          <button type="submit" className="btn btn--primary btn--lg" disabled={searching} aria-busy={searching}>
             <Search aria-hidden="true" />
             {l.submit}
           </button>
@@ -159,7 +175,7 @@ export function LookupPage() {
 
             {reservation.status === 'cancelled' && reservation.cancelledAt && (
               <Notice tone={justCancelled ? 'success' : 'neutral'} title={justCancelled ? l.cancelledTitle : undefined}>
-                <p>{justCancelled ? l.cancelledText : l.alreadyCancelled(formatDateTime(toMs(reservation.cancelledAt)))}</p>
+                <p>{justCancelled ? cancelledText : l.alreadyCancelled(formatDateTime(toMs(reservation.cancelledAt)))}</p>
               </Notice>
             )}
             {reservation.status === 'seated' && <Notice tone="neutral">{l.seated}</Notice>}
@@ -168,7 +184,7 @@ export function LookupPage() {
             {cancelState === 'deadline_passed' && (
               <Notice tone="warning">{l.deadlinePassed(data.settings.rules.customerCancelMinutes)}</Notice>
             )}
-            {reservation.status === 'confirmed' && <p className="muted">{l.changeNote}</p>}
+            {reservation.status === 'confirmed' && <p className="muted">{demo ? `${l.changeNote} ${l.changeNoteDemo}` : l.changeNote}</p>}
 
             <div className="booking-actions">
               <button

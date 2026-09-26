@@ -1,3 +1,4 @@
-# Demonstração com dados fictícios — não indexar.
 User-agent: *
-Disallow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /manual/

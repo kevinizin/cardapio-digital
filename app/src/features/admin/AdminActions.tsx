@@ -5,6 +5,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Dialog } from '../../components/Dialog';
 import { InlineErrors, Notice, useToast, WarningList } from '../../components/Feedback';
 import { describedBy, Field } from '../../components/Field';
+import { EmailHistory } from './EmailHistory';
 import { LIMITS } from '../../domain/defaults';
 import type { DomainError, DomainWarning } from '../../domain/errors';
 import {
@@ -20,14 +21,17 @@ import {
   registerArrival,
   type ReservationAction,
 } from '../../domain/lifecycle';
+import { candidateTables } from '../../domain/availability';
 import {
-  findConflicts,
+  isSharedTable,
+  peakLoad,
   plannedBlockEnd,
   plannedInterval,
   plannedServiceEnd,
   prepEndMs,
   projectedServiceEnd,
   segmentsForTable,
+  tableConflicts,
 } from '../../domain/occupancy';
 import { changeTable, type ReservationDraft } from '../../domain/reservations';
 import { MINUTE_MS, parisDate, toMs } from '../../domain/time';
@@ -44,7 +48,7 @@ import {
   warningMessage,
 } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
-import { historyText } from './adminFormat';
+import { historyText, placeOf } from './adminFormat';
 import { ReservationFormDialog } from './ReservationForm';
 
 const ad = t.admin;
@@ -194,6 +198,7 @@ function ReservationDrawer({
 
   const r = reservation;
   const table = data.tables.find((tb) => tb.id === r.tableId);
+  const shared = isSharedTable(table);
   const start = toMs(r.startAt);
   const states = getActionStates(data, r, now);
   const prepEnd = prepEndMs(r);
@@ -235,7 +240,7 @@ function ReservationDrawer({
       )}
       {lateMinutes > 0 && <Notice tone={now >= noShowAvailableAt(data, r) ? 'warning' : 'info'}>{ad.drawer.late(lateMinutes)}</Notice>}
       {overdueMinutes > 0 && <Notice tone="warning">{ad.drawer.overdue(overdueMinutes)}</Notice>}
-      {prepActive && prepEnd && <Notice tone="info">{ad.drawer.prepActive(formatTime(prepEnd))}</Notice>}
+      {prepActive && prepEnd && <Notice tone="info">{ad.drawer.prepActive(formatTime(prepEnd), shared)}</Notice>}
 
       <section className="drawer-section" aria-label={ad.actions.moreActions}>
         <div className="drawer-actions">
@@ -243,7 +248,7 @@ function ReservationDrawer({
           {button('complete', ad.actions.complete, <UserCheck aria-hidden="true" />, 'btn--primary')}
           {button('endPrep', ad.actions.endPrep, <Sparkles aria-hidden="true" />, 'btn--primary')}
           {button('extendPrep', ad.actions.extendPrep, <Hourglass aria-hidden="true" />)}
-          {button('changeTable', ad.actions.changeTable, <ArrowLeftRight aria-hidden="true" />)}
+          {button('changeTable', shared ? ad.actions.changeArea : ad.actions.changeTable, <ArrowLeftRight aria-hidden="true" />)}
           {button('edit', ad.actions.edit, <Pencil aria-hidden="true" />)}
           {button('noShow', ad.actions.noShow, <UserX aria-hidden="true" />, 'btn--danger-soft')}
           {button('cancel', ad.actions.cancel, <CircleX aria-hidden="true" />, 'btn--danger-soft')}
@@ -272,8 +277,12 @@ function ReservationDrawer({
             </span>
           </DetailRow>
           <DetailRow label={ad.drawer.people}>{t.common.people(r.partySize)}</DetailRow>
-          <DetailRow label={ad.drawer.table}>
-            {table ? ad.drawer.tableValue(table.id, t.area[table.area], table.capacity) : r.tableId}
+          <DetailRow label={shared ? ad.drawer.area : ad.drawer.table}>
+            {table
+              ? shared
+                ? ad.drawer.areaValue(t.area[table.area], table.capacity)
+                : ad.drawer.tableValue(table.id, t.area[table.area], table.capacity)
+              : r.tableId}
           </DetailRow>
           <DetailRow label={ad.drawer.durations}>
             {ad.drawer.durationsValue(formatDuration(r.serviceMinutes), formatDuration(r.prepMinutes))}
@@ -282,6 +291,11 @@ function ReservationDrawer({
           <DetailRow label={ad.drawer.email}>{r.customer.email || ad.drawer.noValue}</DetailRow>
           <DetailRow label={ad.drawer.phone}>{r.customer.phone || ad.drawer.noValue}</DetailRow>
           <DetailRow label={ad.drawer.notes}>{r.customer.notes || ad.drawer.noValue}</DetailRow>
+          <DetailRow label={ad.drawer.marketing}>
+            {r.customer.marketingOptIn
+              ? ad.drawer.marketingYes(r.customer.marketingOptInAt ? formatDateTime(toMs(r.customer.marketingOptInAt)) : '—')
+              : ad.drawer.marketingNo}
+          </DetailRow>
         </dl>
       </section>
 
@@ -309,6 +323,8 @@ function ReservationDrawer({
         </section>
       )}
 
+      <EmailHistory reservationId={r.id} updatedAt={r.updatedAt} />
+
       <section className="drawer-section">
         <h3 className="drawer-section__title">{t.history.title}</h3>
         {r.history.length === 0 ? (
@@ -316,7 +332,7 @@ function ReservationDrawer({
         ) : (
           <ol className="history">
             {r.history.map((entry, index) => {
-              const text = historyText(entry);
+              const text = historyText(entry, data.tables);
               return (
                 <li className="history__item" key={`${entry.at}-${index}`}>
                   <span className="history__when num">
@@ -348,6 +364,7 @@ function ArriveDialog({ id, onClose, report, onChangeTable }: { id: string; onCl
   const [errors, setErrors] = useState<DomainError[]>([]);
   if (!r) return null;
   const check = checkArrival(data, r, now);
+  const place = placeOf(data.tables, r.tableId);
 
   if (!check.ok) {
     return (
@@ -363,14 +380,16 @@ function ArriveDialog({ id, onClose, report, onChangeTable }: { id: string; onCl
             {check.errors.some((e) => e.code === 'TABLE_BUSY_NOW') && (
               <button type="button" className="btn btn--primary" onClick={onChangeTable}>
                 <ArrowLeftRight aria-hidden="true" />
-                {ad.actions.changeTable}
+                {place.shared ? ad.actions.changeArea : ad.actions.changeTable}
               </button>
             )}
           </>
         }
       >
         <InlineErrors errors={check.errors} />
-        {check.errors.some((e) => e.code === 'TABLE_BUSY_NOW') && <p className="muted">{ad.dialogs.arriveBlockedHint}</p>}
+        {check.errors.some((e) => e.code === 'TABLE_BUSY_NOW') && (
+          <p className="muted">{place.shared ? ad.dialogs.arriveBlockedHintShared : ad.dialogs.arriveBlockedHint}</p>
+        )}
       </Dialog>
     );
   }
@@ -379,7 +398,7 @@ function ArriveDialog({ id, onClose, report, onChangeTable }: { id: string; onCl
     <ConfirmDialog
       open
       title={ad.dialogs.arriveTitle}
-      description={ad.dialogs.arriveText(r.customer.name, r.tableId, formatTime(toMs(r.startAt)))}
+      description={ad.dialogs.arriveText(r.customer.name, place, formatTime(toMs(r.startAt)))}
       confirmLabel={ad.dialogs.arriveConfirm}
       errors={errors}
       onClose={onClose}
@@ -396,16 +415,18 @@ function ArriveDialog({ id, onClose, report, onChangeTable }: { id: string; onCl
 }
 
 function CompleteDialog({ id, onClose, report }: { id: string; onClose: () => void; report: Report }) {
+  const data = useData();
   const store = useStore();
   const now = useNow(15_000);
   const r = useReservation(id);
   const [errors, setErrors] = useState<DomainError[]>([]);
   if (!r) return null;
+  const place = placeOf(data.tables, r.tableId);
   return (
     <ConfirmDialog
       open
       title={ad.dialogs.completeTitle}
-      description={ad.dialogs.completeText(r.tableId, formatDuration(r.prepMinutes), formatTime(now + r.prepMinutes * MINUTE_MS))}
+      description={ad.dialogs.completeText(place, formatDuration(r.prepMinutes), formatTime(now + r.prepMinutes * MINUTE_MS))}
       confirmLabel={ad.dialogs.completeConfirm}
       errors={errors}
       onClose={onClose}
@@ -413,37 +434,40 @@ function CompleteDialog({ id, onClose, report }: { id: string; onClose: () => vo
         const result = store.execute((fresh, nowMs) => completeService(fresh, id, nowMs));
         if (!result.ok) return setErrors(result.errors);
         onClose();
-        report(id, ad.toasts.completed(r.tableId, formatTime(prepEndMs(result.value.reservation) ?? now)), result.warnings);
+        report(id, ad.toasts.completed(place, formatTime(prepEndMs(result.value.reservation) ?? now)), result.warnings);
       }}
     />
   );
 }
 
 function EndPrepDialog({ id, onClose, report }: { id: string; onClose: () => void; report: Report }) {
+  const data = useData();
   const store = useStore();
   const r = useReservation(id);
   const [errors, setErrors] = useState<DomainError[]>([]);
   if (!r) return null;
   const prepEnd = prepEndMs(r);
+  const place = placeOf(data.tables, r.tableId);
   return (
     <ConfirmDialog
       open
-      title={ad.dialogs.endPrepTitle}
-      description={ad.dialogs.endPrepText(r.tableId, prepEnd ? formatTime(prepEnd) : t.common.none)}
-      confirmLabel={ad.dialogs.endPrepConfirm}
+      title={ad.dialogs.endPrepTitle(place.shared)}
+      description={ad.dialogs.endPrepText(place, prepEnd ? formatTime(prepEnd) : t.common.none)}
+      confirmLabel={ad.dialogs.endPrepConfirm(place.shared)}
       errors={errors}
       onClose={onClose}
       onConfirm={() => {
         const result = store.execute((fresh, nowMs) => endPrepEarly(fresh, id, nowMs));
         if (!result.ok) return setErrors(result.errors);
         onClose();
-        report(id, ad.toasts.prepEnded(r.tableId));
+        report(id, ad.toasts.prepEnded(place));
       }}
     />
   );
 }
 
 function ExtendPrepDialog({ id, onClose, report }: { id: string; onClose: () => void; report: Report }) {
+  const data = useData();
   const store = useStore();
   const r = useReservation(id);
   const [minutes, setMinutes] = useState(10);
@@ -451,6 +475,7 @@ function ExtendPrepDialog({ id, onClose, report }: { id: string; onClose: () => 
   const [errors, setErrors] = useState<DomainError[]>([]);
   if (!r) return null;
   const prepEnd = prepEndMs(r) ?? 0;
+  const place = placeOf(data.tables, r.tableId);
   const reasonError = errors.find((e) => e.field === 'reason');
   const options: number[] = [];
   for (let m = LIMITS.prepExtension.min; m <= LIMITS.prepExtension.max; m += LIMITS.prepExtension.step) options.push(m);
@@ -459,7 +484,7 @@ function ExtendPrepDialog({ id, onClose, report }: { id: string; onClose: () => 
     <ConfirmDialog
       open
       title={ad.dialogs.extendTitle}
-      description={ad.dialogs.extendText(r.tableId, formatTime(prepEnd))}
+      description={ad.dialogs.extendText(place, formatTime(prepEnd))}
       confirmLabel={ad.dialogs.extendConfirm}
       errors={errors.filter((e) => e.field !== 'reason')}
       onClose={onClose}
@@ -467,7 +492,7 @@ function ExtendPrepDialog({ id, onClose, report }: { id: string; onClose: () => 
         const result = store.execute((fresh, nowMs) => extendPrep(fresh, id, minutes, reason, nowMs));
         if (!result.ok) return setErrors(result.errors);
         onClose();
-        report(id, ad.toasts.prepExtended(r.tableId, formatTime(prepEndMs(result.value.reservation) ?? prepEnd)));
+        report(id, ad.toasts.prepExtended(place, formatTime(prepEndMs(result.value.reservation) ?? prepEnd)));
       }}
     >
       <div className="form-grid form-grid--2">
@@ -596,25 +621,29 @@ function ChangeTableDialog({ id, onClose, report }: { id: string; onClose: () =>
     r.status === 'seated'
       ? { start: now, end: projectedServiceEnd(r, now) + r.prepMinutes * MINUTE_MS }
       : plannedInterval(r);
-  const options = data.tables
-    .filter((table) => table.active && table.capacity >= r.partySize)
-    .sort((a, b) => a.capacity - b.capacity || a.id.localeCompare(b.id, 'en', { numeric: true }))
-    .map((table) => ({
+  const options = candidateTables(data.tables, r.partySize).map((table) => {
+    const segments = segmentsForTable(data, table.id, now, { excludeReservationId: r.id, relevantFrom: interval.start });
+    return {
       table,
       current: table.id === r.tableId,
-      conflicts:
-        table.id === r.tableId
-          ? []
-          : findConflicts(segmentsForTable(data, table.id, now, { excludeReservationId: r.id, relevantFrom: interval.start }), interval),
-    }));
+      conflicts: table.id === r.tableId ? [] : tableConflicts(table, segments, interval, r.partySize),
+      /** Área: menor número de lugares livres no período (sem contar este grupo). */
+      freeSeats: isSharedTable(table) ? Math.max(0, table.capacity - peakLoad(segments, interval, table.capacity)) : null,
+    };
+  });
   const others = options.filter((option) => !option.current);
+  const place = placeOf(data.tables, r.tableId);
+  const areaMode = place.shared;
 
   return (
     <Dialog
       open
       onClose={onClose}
-      title={ad.dialogs.changeTableTitle}
-      description={ad.dialogs.changeTableText(r.partySize, `${formatTime(interval.start)}–${formatTime(interval.end)}`)}
+      title={areaMode ? ad.dialogs.changeAreaTitle : ad.dialogs.changeTableTitle}
+      description={(areaMode ? ad.dialogs.changeAreaText : ad.dialogs.changeTableText)(
+        r.partySize,
+        `${formatTime(interval.start)}–${formatTime(interval.end)}`,
+      )}
       footer={
         <>
           <button type="button" className="btn" onClick={onClose}>
@@ -628,21 +657,21 @@ function ChangeTableDialog({ id, onClose, report }: { id: string; onClose: () =>
               const result = store.execute((fresh, nowMs) => changeTable(fresh, id, selected, nowMs));
               if (!result.ok) return setErrors(result.errors);
               onClose();
-              report(id, ad.toasts.tableChanged(r.tableId, selected));
+              report(id, ad.toasts.tableChanged(place, placeOf(data.tables, selected)));
             }}
           >
-            {ad.dialogs.changeTableConfirm}
+            {areaMode ? ad.dialogs.changeAreaTitle : ad.dialogs.changeTableConfirm}
           </button>
         </>
       }
     >
       {others.length === 0 ? (
-        <Notice tone="warning">{ad.dialogs.noOtherTables}</Notice>
+        <Notice tone="warning">{areaMode ? ad.dialogs.noOtherAreas : ad.dialogs.noOtherTables}</Notice>
       ) : (
         <fieldset className="booking-fieldset" style={{ border: 'none', margin: 0, padding: 0 }}>
-          <legend className="field__label">{ad.dialogs.chooseTable}</legend>
+          <legend className="field__label">{areaMode ? ad.dialogs.chooseArea : ad.dialogs.chooseTable}</legend>
           <ul className="table-options">
-            {options.map(({ table, current, conflicts }) => (
+            {options.map(({ table, current, conflicts, freeSeats }) => (
               <li className="table-option" key={table.id}>
                 <input
                   type="radio"
@@ -654,13 +683,32 @@ function ChangeTableDialog({ id, onClose, report }: { id: string; onClose: () =>
                   onChange={() => setSelected(table.id)}
                 />
                 <label className="table-option__face" htmlFor={`change-table-${table.id}`}>
-                  <span>
-                    <strong>{table.id}</strong> · {t.common.seats(table.capacity)} · {t.area[table.area]}
-                  </span>
+                  {freeSeats !== null ? (
+                    <span>
+                      <strong>{t.area[table.area]}</strong> · {t.common.seats(table.capacity)}
+                    </span>
+                  ) : (
+                    <span>
+                      <strong>{table.id}</strong> · {t.common.seats(table.capacity)} · {t.area[table.area]}
+                    </span>
+                  )}
                   <span className={`badge ${current ? 'badge--neutral' : conflicts.length ? 'badge--occupied' : 'badge--free'}`}>
-                    {current ? ad.dialogs.tableCurrent : conflicts.length ? ad.dialogs.tableBusy : ad.dialogs.tableFree}
+                    {current
+                      ? freeSeats !== null
+                        ? ad.dialogs.areaCurrent
+                        : ad.dialogs.tableCurrent
+                      : freeSeats !== null
+                        ? conflicts.length
+                          ? ad.dialogs.areaFull
+                          : ad.dialogs.areaFree(freeSeats)
+                        : conflicts.length
+                          ? ad.dialogs.tableBusy
+                          : ad.dialogs.tableFree}
                   </span>
-                  {conflicts.length > 0 && <span className="field__hint">{conflictMessage(conflicts[0], data)}</span>}
+                  {conflicts.length > 0 && freeSeats === null && <span className="field__hint">{conflictMessage(conflicts[0], data)}</span>}
+                  {conflicts.length > 0 && freeSeats !== null && (
+                    <span className="field__hint">{ad.dialogs.areaFree(freeSeats)}</span>
+                  )}
                 </label>
               </li>
             ))}

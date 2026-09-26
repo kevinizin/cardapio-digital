@@ -1,0 +1,56 @@
+/* Telas do funcionamento com servidor: erro inicial, login e barra da administração. */
+
+.boot-error {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  min-height: 100vh;
+  align-content: center;
+  padding: var(--space-7) var(--gutter);
+  text-align: center;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+button.demo-ribbon__switch {
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.demo-ribbon__switch:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.login-page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: var(--space-6) var(--gutter);
+  background: var(--bg);
+}
+
+.login-page:focus {
+  outline: none;
+}
+
+.login-card {
+  display: grid;
+  gap: var(--space-4);
+  width: min(100%, 26rem);
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: var(--t-xl);
+}
+
+.login-card .logo {
+  justify-self: center;
+}

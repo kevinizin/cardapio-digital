@@ -2,9 +2,9 @@
 .demo-ribbon {
   position: relative;
   z-index: 45;
-  border-bottom: 1px solid var(--sage-300);
-  background: var(--surface-sage);
-  color: var(--green-900);
+  border-bottom: 1px solid var(--blush-300);
+  background: var(--surface-blush);
+  color: var(--wine-900);
   font-size: var(--t-xs);
 }
 
@@ -36,7 +36,7 @@
 
 .demo-ribbon__clock {
   margin-left: auto;
-  color: var(--green-800);
+  color: var(--wine-800);
 }
 
 .demo-ribbon__switch {
@@ -45,16 +45,16 @@
   gap: 0.4rem;
   min-height: 30px;
   padding: 0.2rem 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--green-800) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wine-800) 28%, transparent);
   border-radius: var(--radius-pill);
-  color: var(--green-900);
+  color: var(--wine-900);
   font-weight: 700;
   text-decoration: none;
 }
 
 .demo-ribbon__switch:hover {
   background: var(--ink-000);
-  color: var(--green-900);
+  color: var(--wine-900);
 }
 
 .demo-ribbon__switch svg {
@@ -95,46 +95,52 @@
   padding-inline: var(--gutter);
 }
 
-/* ---------- Logo (imagem oficial, enquadramento sem margens) ---------- */
+/* ---------- Logo (selo redondo oficial) ---------- */
 .logo {
   position: relative;
   display: block;
   flex: none;
-  width: var(--logo-width, 132px);
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
+  width: var(--logo-width, 64px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 6px 16px -8px rgba(92, 15, 34, 0.55);
 }
 
 .logo img {
-  position: absolute;
-  top: -12.821%;
-  left: -15.385%;
-  width: 131.282%;
-  max-width: none;
-  height: auto;
-  /* O fundo claro da imagem assume a cor da superfície (creme ou sálvia). */
-  mix-blend-mode: darken;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  /* O arquivo tem cantos claros fora do círculo: o recorte os esconde. */
+  clip-path: circle(49.5%);
+  /* Aproxima o nome "Aromas da Vivi", que ocupa só o miolo do selo. */
+  transform: scale(1.12);
+}
+
+.logo {
+  overflow: hidden;
 }
 
 .logo--header {
-  --logo-width: clamp(96px, 60px + 5vw, 132px);
+  --logo-width: clamp(60px, 44px + 3vw, 84px);
 }
 
 .logo--hero {
-  --logo-width: min(100%, 440px);
+  --logo-width: min(100%, 220px);
 }
 
 .logo--footer {
-  --logo-width: 112px;
+  --logo-width: 96px;
 }
 
 .logo--sidebar {
-  --logo-width: 138px;
+  --logo-width: 120px;
 }
 
 .logo-link {
   display: inline-flex;
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
 }
 
 /* ---------- Site público ---------- */
@@ -173,7 +179,7 @@
   min-height: var(--tap);
   padding: 0 0.8rem;
   border-radius: var(--radius-sm);
-  color: var(--green-900);
+  color: var(--wine-900);
   font-size: var(--t-sm);
   font-weight: 600;
   text-decoration: none;
@@ -185,8 +191,8 @@
 }
 
 .site-nav__link:hover {
-  background: var(--sage-100);
-  color: var(--green-900);
+  background: var(--blush-100);
+  color: var(--wine-900);
 }
 
 .site-nav__link[aria-current='page'] {
@@ -256,7 +262,7 @@
 .page-loading .spinner {
   width: 28px;
   height: 28px;
-  color: var(--green-700);
+  color: var(--wine-700);
 }
 
 .source-label {

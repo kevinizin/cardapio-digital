@@ -11,23 +11,14 @@ import { findNextAvailableDates, getDayAvailability, summarizeDates, type Sugges
 import { validateCustomer } from '../../domain/customer';
 import { LIMITS } from '../../domain/defaults';
 import type { DomainError, DomainErrorCode } from '../../domain/errors';
-import { buildOnlineDraft, createReservation } from '../../domain/reservations';
-import { findException, getDayStatus, lastBookableDate } from '../../domain/schedule';
-import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate, weekdayIndex } from '../../domain/time';
+import { getDayStatus, lastBookableDate } from '../../domain/schedule';
+import { daysOfMonth, localToMs, MINUTE_MS, monthOfDate, parisDate } from '../../domain/time';
 import type { Customer, LocalDate, LocalTime } from '../../domain/types';
-import {
-  errorMessage,
-  formatDuration,
-  formatLocalDate,
-  formatLocalDateCompact,
-  formatLocalDateLong,
-  formatParisOffset,
-  formatTime,
-  t,
-} from '../../i18n';
+import { formatWhatsapp, hasContact, RESTAURANT_CONTACT, whatsappUrl } from '../../config/restaurant';
+import { useI18n, useT } from '../../i18n';
 import { useData, useNow, useStore } from '../../state/store';
-
-const b = t.public.booking;
+import { ClosedDayExplain } from './ClosureNotice';
+import { ContactList } from './PublicChrome';
 const EMPTY_CUSTOMER: Customer = { name: '', email: '', phone: '', notes: '' };
 const CUSTOMER_FIELDS = ['name', 'email', 'phone', 'notes'];
 const SLOT_ERRORS = new Set<DomainErrorCode>([
@@ -68,11 +59,18 @@ function restoreDraft(): DraftState {
     largeGroup: Boolean(raw.largeGroup),
     date: typeof raw.date === 'string' ? raw.date : null,
     time: typeof raw.time === 'string' ? raw.time : null,
-    customer: { name: text(customer.name), email: text(customer.email), phone: text(customer.phone), notes: text(customer.notes) },
+    customer: {
+      name: text(customer.name),
+      email: text(customer.email),
+      phone: text(customer.phone),
+      notes: text(customer.notes),
+      ...(customer.marketingOptIn === true ? { marketingOptIn: true } : {}),
+    },
   };
 }
 
 function SummaryRow({ label, value, onEdit }: { label: string; value: ReactNode; onEdit?: () => void }) {
+  const b = useT().public.booking;
   return (
     <div className="summary-row">
       <dt>{label}</dt>
@@ -89,6 +87,9 @@ function SummaryRow({ label, value, onEdit }: { label: string; value: ReactNode;
 }
 
 export function BookingPage() {
+  const { t, f, errorMessage, locale } = useI18n();
+  const { formatDuration, formatLocalDate, formatLocalDateCompact, formatLocalDateLong, formatParisOffset, formatTime } = f;
+  const b = t.public.booking;
   useDocumentTitle(b.documentTitle);
   const data = useData();
   const store = useStore();
@@ -96,6 +97,7 @@ export function BookingPage() {
   const navigate = useNavigate();
   const { settings } = data;
   const { rules } = settings;
+  const phoneRequired = rules.phoneRequired === true;
   const nowMinute = Math.floor(now / MINUTE_MS);
   const today = parisDate(now);
   const lastDate = lastBookableDate(settings, now);
@@ -108,6 +110,8 @@ export function BookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  /** Campo a focar na próxima troca de etapa (erro devolvido pelo servidor). */
+  const focusFieldRef = useRef<string | null>(null);
   const isFirstStepRender = useRef(true);
 
   const partySize = Math.min(draft.partySize, rules.onlineMaxPartySize);
@@ -120,7 +124,9 @@ export function BookingPage() {
       isFirstStepRender.current = false;
       return;
     }
-    headingRef.current?.focus();
+    const field = focusFieldRef.current ? document.getElementById(`booking-${focusFieldRef.current}`) : null;
+    focusFieldRef.current = null;
+    (field ?? headingRef.current)?.focus();
   }, [draft.step]);
 
   // Rascunho antigo com data que já passou volta ao início do fluxo.
@@ -153,7 +159,7 @@ export function BookingPage() {
     const map: Record<string, string> = {};
     for (const error of customerErrors) if (error.field && !map[error.field]) map[error.field] = errorMessage(error);
     return map;
-  }, [customerErrors]);
+  }, [customerErrors, errorMessage]);
 
   const dayInfo = (date: LocalDate): { status: CalendarDayStatus; description: string } => {
     const entry = monthSummary?.get(date);
@@ -198,10 +204,9 @@ export function BookingPage() {
       );
     }
     if (dateStatus === 'closed') {
-      const exception = findException(settings, draft.date);
       return (
         <Notice tone="warning" title={label}>
-          <p>{b.dateExplain.closed(t.weekdays[weekdayIndex(draft.date)].toLowerCase(), exception?.note)}</p>
+          <ClosedDayExplain date={draft.date} />
           <p className="notice__title">{b.otherDates}</p>
           {suggestionList}
         </Notice>
@@ -225,12 +230,12 @@ export function BookingPage() {
 
   const goToDetailsOrReview = () => {
     if (!selectedSlot) return;
-    const valid = validateCustomer(draft.customer, { emailRequired: true }).length === 0;
+    const valid = validateCustomer(draft.customer, { emailRequired: true, phoneRequired }).length === 0;
     update({ step: slotTaken && valid ? 3 : 2 });
   };
 
   const goToReview = () => {
-    const errors = validateCustomer(draft.customer, { emailRequired: true });
+    const errors = validateCustomer(draft.customer, { emailRequired: true, phoneRequired });
     setCustomerErrors(errors);
     if (errors.length) {
       document.getElementById(`booking-${errors[0].field}`)?.focus();
@@ -244,10 +249,9 @@ export function BookingPage() {
     submittingRef.current = true;
     setSubmitting(true);
     setSubmitErrors([]);
-    const input = { date: draft.date, time: draft.time, partySize, customer: draft.customer };
-    // Deixa a interface mostrar "Confirmando…" antes de revalidar com os dados mais recentes.
-    window.setTimeout(() => {
-      const result = store.execute((fresh, nowMs) => createReservation(fresh, buildOnlineDraft(fresh, input), nowMs, { channel: 'online' }));
+    const input = { date: draft.date, time: draft.time, partySize, customer: draft.customer, locale };
+    // O servidor revalida com os dados mais recentes antes de gravar.
+    void store.createOnline(input).then((result) => {
       if (result.ok) {
         const { code } = result.value.reservation;
         rememberReservationCode(code);
@@ -265,14 +269,15 @@ export function BookingPage() {
       const customerProblems = result.errors.filter((error) => error.field && CUSTOMER_FIELDS.includes(error.field));
       if (customerProblems.length) {
         setCustomerErrors(customerProblems);
+        focusFieldRef.current = customerProblems[0].field ?? null;
         update({ step: 2 });
         return;
       }
       setSubmitErrors(result.errors);
-    }, 0);
+    });
   };
 
-  const setCustomer = (field: keyof Customer, value: string) =>
+  const setCustomer = (field: 'name' | 'email' | 'phone' | 'notes', value: string) =>
     setDraft((current) => ({ ...current, customer: { ...current.customer, [field]: value } }));
 
   const startMs = draft.date && draft.time ? localToMs(draft.date, draft.time) : null;
@@ -346,8 +351,8 @@ export function BookingPage() {
 
                 {draft.largeGroup ? (
                   <Notice tone="neutral" title={b.largerTitle}>
-                    <p>{b.largerText(rules.onlineMaxPartySize)}</p>
-                    <p className="subtle">{b.largerDemo}</p>
+                    <p>{b.largerText(rules.onlineMaxPartySize, Boolean(RESTAURANT_CONTACT.whatsapp))}</p>
+                    {hasContact() ? <ContactList /> : store.kind === 'demo' && <p className="subtle">{b.largerDemo}</p>}
                   </Notice>
                 ) : (
                   <div className="booking-fieldset">
@@ -485,7 +490,7 @@ export function BookingPage() {
                       required
                     />
                   </Field>
-                  <Field id="booking-phone" label={b.phone} optional hint={b.phoneHint} error={fieldErrors.phone}>
+                  <Field id="booking-phone" label={b.phone} optional={!phoneRequired} hint={b.phoneHint} error={fieldErrors.phone}>
                     <input
                       id="booking-phone"
                       className="input"
@@ -497,6 +502,7 @@ export function BookingPage() {
                       onChange={(event) => setCustomer('phone', event.target.value)}
                       aria-invalid={Boolean(fieldErrors.phone)}
                       aria-describedby={describedBy('booking-phone', b.phoneHint, fieldErrors.phone)}
+                      required={phoneRequired}
                     />
                   </Field>
                   <Field
@@ -518,6 +524,38 @@ export function BookingPage() {
                     />
                   </Field>
                 </div>
+                <div className="stack" style={{ '--stack-gap': '0.25rem' } as React.CSSProperties}>
+                  <label className="checkbox booking-optin">
+                    <input
+                      type="checkbox"
+                      checked={draft.customer.marketingOptIn === true}
+                      onChange={(event) =>
+                        setDraft((current) => {
+                          const { marketingOptIn: _previous, ...rest } = current.customer;
+                          return { ...current, customer: event.target.checked ? { ...rest, marketingOptIn: true } : rest };
+                        })
+                      }
+                      aria-describedby="booking-optin-hint"
+                    />
+                    <span>{b.marketingOptIn}</span>
+                  </label>
+                  <p className="field__hint" id="booking-optin-hint">
+                    {b.marketingHint}
+                  </p>
+                </div>
+                <p className="field__hint booking-privacy">
+                  {b.privacyNote}{' '}
+                  {RESTAURANT_CONTACT.whatsapp ? (
+                    <>
+                      {b.privacyDelete}{' '}
+                      <a href={whatsappUrl(RESTAURANT_CONTACT.whatsapp)} target="_blank" rel="noopener noreferrer">
+                        {formatWhatsapp(RESTAURANT_CONTACT.whatsapp)}
+                      </a>
+                    </>
+                  ) : (
+                    b.privacyDeleteGeneric
+                  )}
+                </p>
                 <div className="booking-actions">
                   <button type="button" className="btn" onClick={() => update({ step: 1 })}>
                     {b.back}

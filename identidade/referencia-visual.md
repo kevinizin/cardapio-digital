@@ -1,18 +1,44 @@
-# Maison Élise — identidade fictícia
+# Aromas da Vivi — referência visual
 
-Logo criada com a ferramenta integrada de geração de imagens, em PNG com fundo claro.
+Restaurante brasileiro em Paris. A interface de reservas segue as cores do logo oficial.
+
+## Logo
+
+- **Arquivo oficial: pendente.** O logo existe só como imagem de referência: "Aromas" em script cursivo dourado metálico, com um pequeno chapéu de chef sobre o "o"; embaixo, à direita, "da Vivi" em script dourado menor, com um brilho; tudo sobre fundo bordô (~#841731).
+- Até o arquivo chegar, `app/src/components/Brand.tsx` desenha um **logotipo provisório** em SVG (fonte Great Vibes, dourado em degradê sobre um cartão bordô), nas variantes header, hero, footer e sidebar.
+- Para trocar pelo arquivo oficial: coloque a imagem em `app/public/brand/` (de preferência WebP + PNG, com fundo bordô ou transparente) e defina `LOGO_IMAGE` em `Brand.tsx` com o caminho, por exemplo `'/brand/logo-aromas-da-vivi.webp'`.
+- Ícones do navegador (`app/public/brand/icon-32/180/192/512.png` e `app/public/favicon.ico`) também são provisórios: um "A" em script dourado sobre bordô. Devem ser refeitos a partir do arquivo oficial.
 
 ## Paleta normativa para a interface
-- Verde profundo: #183D35 — botões principais, títulos e navegação.
-- Creme: #F7F3EA — fundo principal.
-- Dourado suave: #B89B63 — detalhes decorativos, não texto pequeno sobre creme.
-- Sálvia: #DCE5DC — superfícies secundárias.
-- Carvão: #252B28 — texto corrido.
 
-As cores HEX são a referência de implementação; a imagem gerada pode apresentar pequenas variações.
+| Papel | Cor | Uso |
+| --- | --- | --- |
+| Bordô (marca) | `#841731` | Botões principais, títulos, navegação, fundo do logo |
+| Bordô escuro | `#5C0F22` | Hover de botões principais |
+| Bordô — degraus claros | `#93213E` · `#A3304D` · `#B24A63` | Links, foco, bordas de controles |
+| Bordô — tintas | `#ECCCD3` · `#F8E8EB` | Seleção, selos |
+| Dourado metálico | `#C9A24A` | Só decorativo (filetes, marcadores, letras do logo); nunca texto pequeno sobre creme |
+| Dourado escuro (texto) | `#7A5C1C` | Único dourado permitido em texto |
+| Dourado — tintas | `#E6CF8F` · `#F6EDD6` | Realces, fundo de selos |
+| Creme | `#F8F3EA` | Fundo principal |
+| Rosado | `#F3E2E3` · `#FAF0F0` · borda `#E4C6CB` | Superfícies secundárias (faixa de aviso, chamadas, item ativo) |
+| Carvão | `#2A2224` | Texto corrido |
 
-## Prompt original
-Use case: logo-brand. Create a refined original fictional Paris restaurant logo for "Maison Élise", with the smaller exact text "PARIS" below. One single finished logo, not a brand presentation sheet. Warm French bistro elegance, restrained contemporary heritage style. Custom elegant serif wordmark, impeccably readable accented Élise. Above the wordmark a compact original monogram ME in a simple architectural arch suggesting a Parisian restaurant doorway, subtle small gold detail. Flat crisp vector-like artwork, no photographic mockup, no shadows, no gradients, no watermark, no extra text or palette swatches. Centered balanced composition, generous but not excessive margins, landscape 3:2 canvas. Solid warm ivory background #F7F3EA; principal lettering and emblem deep forest green #183D35; restrained matte champagne gold accent #B89B63. Suitable for reservation website header and restaurant identity. Lettering should be substantial enough for small screens, understated and welcoming, avoid ornate flourishes and Eiffel Tower clichés.
+Degradê do dourado (logo): `#F7E2A3 → #E0BF6C → #C9A24A → #A8822F → #E8CD82`.
 
-## Prompt de refinamento final
-Edit this logo: retain the exact Maison Élise and PARIS text and architectural ME monogram composition. Correct the background to a completely uniform opaque light ivory #F7F3EA covering every pixel behind the logo. All lettering and arch must be solid dark forest green #183D35, clearly readable with strong contrast. Small fleur-de-lis and horizontal rules in flat muted gold #B89B63. Remove ALL glow, shadows, gradients, black areas and lighting effects. Flat ink on ivory, crisp clean graphic logo.
+As cores de estado das mesas e reservas (livre verde, reservada azul, ocupada tijolo, preparo âmbar, bloqueada/inativa cinza) continuam separadas da marca. Para não se confundir com o bordô, **ausência** passou a violeta (`#5B3D82` sobre `#ECE6F4`) e **perigo** a vermelho-alaranjado (`#A3321A`, hover `#852611`, fundo `#FBE7DF`).
+
+## Contraste (WCAG AA)
+
+Pares verificados com script (mínimo 4,5:1 texto, 3:1 texto grande/elementos de interface):
+
+- Carvão sobre creme: 14,05:1 · bordô sobre creme: 8,85:1 · bordô sobre rosado: 7,82:1
+- Creme claro sobre botão bordô: 9,62:1 (hover 13,36:1) · links `#93213E` sobre creme: 7,52:1
+- Dourado escuro `#7A5C1C` sobre creme: 5,63:1 · sobre `#F6EDD6`: 5,33:1
+- Dourado `#C9A24A` sobre bordô (letras do logo, texto grande): 4,07:1
+- Borda `#B24A63` sobre branco: 5,10:1 · foco `#A3304D` sobre creme: 6,15:1
+- Branco sobre botão de perigo: 6,93:1 · todos os selos de estado ≥ 5,10:1
+
+## Tipografia
+
+- Títulos: Cormorant Garamond. Corpo: Source Sans 3. Logo provisório: Great Vibes.

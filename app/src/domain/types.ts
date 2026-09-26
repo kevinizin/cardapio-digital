@@ -19,6 +19,12 @@ export interface Table {
   capacity: number;
   area: Area;
   active: boolean;
+  /**
+   * Mesa compartilhada (área controlada por lugares): `capacity` é o máximo de
+   * pessoas ao mesmo tempo e várias reservas podem se sobrepor enquanto a soma
+   * de pessoas couber. Ausente/false = mesa comum (uma reserva por vez).
+   */
+  shared?: boolean;
 }
 
 /** Registro de ativação/desativação de mesa, usado nos cálculos históricos. */
@@ -57,7 +63,17 @@ export interface DateException {
   closed: boolean;
   lunch: ShiftConfig;
   dinner: ShiftConfig;
+  /** Observação interna (administração, em português); nunca exibida ao cliente. */
   note: string;
+  /** Aviso opcional aos clientes, por idioma do site público. */
+  publicMessage?: PublicMessage;
+}
+
+/** Texto exibido ao cliente em cada idioma do site (vazio/ausente = sem mensagem). */
+export interface PublicMessage {
+  fr?: string;
+  pt?: string;
+  en?: string;
 }
 
 export interface BookingRules {
@@ -69,6 +85,8 @@ export interface BookingRules {
   arrivalToleranceMinutes: number;
   customerCancelMinutes: number;
   onlineMaxPartySize: number;
+  /** Telefone obrigatório nas reservas online (ausente = opcional). */
+  phoneRequired?: boolean;
 }
 
 export interface Settings {
@@ -138,7 +156,15 @@ export interface Customer {
   email: string;
   phone: string;
   notes: string;
+  /** Aceitou receber novidades e eventos por e-mail (opcional, desmarcado por padrão). */
+  marketingOptIn?: boolean;
+  /** Quando o aceite foi registrado (prova do consentimento, RGPD). */
+  marketingOptInAt?: IsoInstant;
 }
+
+/** Idioma do cliente para os e-mails (o mesmo do site público). */
+export type CustomerLocale = 'fr' | 'pt' | 'en';
+export const CUSTOMER_LOCALES: readonly CustomerLocale[] = ['fr', 'pt', 'en'];
 
 export interface Reservation {
   id: string;
@@ -164,6 +190,8 @@ export interface Reservation {
   cancelReason: string | null;
   noShowAt: IsoInstant | null;
   history: HistoryEntry[];
+  /** Idioma em que a reserva foi feita no site (e-mails); ausente = francês. */
+  locale?: CustomerLocale;
 }
 
 export interface TableBlock {

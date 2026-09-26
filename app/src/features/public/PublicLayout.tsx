@@ -1,23 +1,30 @@
 import { Search } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { Logo, LogoLink } from '../../components/Brand';
+import { hasContact } from '../../config/restaurant';
 import { DemoRibbon, PersistenceBanner } from '../../components/DemoChrome';
-import { t } from '../../i18n';
+import { useT } from '../../i18n';
+import { useStore } from '../../state/store';
+import { ClosureBanner } from './ClosureNotice';
+import { ContactList, LanguageSwitcher } from './PublicChrome';
 import './public.css';
 
-const p = t.public;
-
 export function PublicLayout() {
+  const t = useT();
+  const p = t.public;
+  const demo = useStore().kind === 'demo';
   return (
     <div className="site">
       <a className="skip-link" href="#conteudo">
         {t.common.skipToContent}
       </a>
       <DemoRibbon area="public" />
+      <ClosureBanner />
       <header className="site-header">
         <div className="container site-header__inner">
           <LogoLink to="/" />
           <nav className="site-nav" aria-label={p.nav.label}>
+            <LanguageSwitcher className="site-nav__lang" />
             <NavLink to="/consultar" className="site-nav__link">
               <Search aria-hidden="true" />
               <span className="label-long">{p.nav.lookup}</span>
@@ -38,10 +45,12 @@ export function PublicLayout() {
         <div className="container site-footer__inner">
           <Logo variant="footer" />
           <div className="site-footer__text">
-            <p>{p.footer.fictional}</p>
+            <p>{p.footer.tagline}</p>
+            <ContactList />
             <p>{p.footer.formats}</p>
-            <p>{p.footer.noContact}</p>
+            {demo && !hasContact() && <p>{p.footer.demoNoContact}</p>}
           </div>
+          <LanguageSwitcher className="site-footer__lang" />
         </div>
       </footer>
     </div>

@@ -3,12 +3,13 @@ import { normalizeCustomer, validateCustomer } from './customer';
 import { LIMITS } from './defaults';
 import { err, fail, ok, type DomainError, type Result } from './errors';
 import { cryptoRandom, generateId, generateReservationCode, type RandomSource } from './ids';
-import { buildOccupancyIndex, findConflicts, projectedServiceEnd } from './occupancy';
+import { buildOccupancyIndex, isSharedTable, projectedServiceEnd, tableConflicts, tableParams } from './occupancy';
 import { findShiftForInterval, getDayStatus, isOnGrid } from './schedule';
 import { isValidLocalDate, isValidLocalTime, localToMs, MINUTE_MS, parisDate, parisTime, toIso, toMs } from './time';
 import { RESERVATION_SOURCES } from './types';
 import type {
   Customer,
+  CustomerLocale,
   DemoData,
   FieldChange,
   Interval,
@@ -22,12 +23,14 @@ export interface ReservationDraft {
   date: LocalDate;
   time: LocalTime;
   partySize: number;
-  /** 'auto' atribui a menor mesa livre que comporte o grupo. */
+  /** 'auto' atribui a menor mesa livre que comporte o grupo (ou a primeira área com lugares). */
   tableId: string;
   serviceMinutes: number;
   prepMinutes: number;
   customer: Customer;
   source: ReservationSource;
+  /** Idioma do cliente (reservas online), usado nos e-mails. */
+  locale?: CustomerLocale;
 }
 
 export interface ValidatedDraft {
@@ -59,10 +62,12 @@ export function draftFromReservation(reservation: Reservation): ReservationDraft
 /** Rascunho do fluxo público: sempre com mesa automática e as durações vigentes. */
 export function buildOnlineDraft(
   data: DemoData,
-  input: { date: LocalDate; time: LocalTime; partySize: number; customer: Customer },
+  input: { date: LocalDate; time: LocalTime; partySize: number; customer: Customer; locale?: CustomerLocale },
 ): ReservationDraft {
+  const { locale, ...rest } = input;
   return {
-    ...input,
+    ...rest,
+    ...(locale ? { locale } : {}),
     tableId: AUTO_TABLE,
     serviceMinutes: data.settings.rules.serviceMinutes,
     prepMinutes: data.settings.rules.prepMinutes,
@@ -142,7 +147,13 @@ export function validateDraft(
   if (!RESERVATION_SOURCES.includes(draft.source) || (online && draft.source !== 'online')) {
     errors.push(err('SOURCE_INVALID', { field: 'source' }));
   }
-  errors.push(...validateCustomer(draft.customer, { emailRequired: online || draft.source === 'online' }));
+  // Telefone obrigatório vale só para o site (a administração registra sem telefone quando precisa).
+  errors.push(
+    ...validateCustomer(draft.customer, {
+      emailRequired: online || draft.source === 'online',
+      phoneRequired: online && rules.phoneRequired === true,
+    }),
+  );
   if (errors.length) return fail(...errors);
 
   // Quem já está à mesa ocupa desde agora até o término projetado + preparação.
@@ -154,24 +165,31 @@ export function validateDraft(
   const index = buildOccupancyIndex(data, nowMs, { excludeReservationId: original?.id, relevantFrom: interval.start });
 
   if (draft.tableId === AUTO_TABLE) {
-    const table = pickTable(candidateTables(data.tables, draft.partySize), interval, index);
+    const table = pickTable(candidateTables(data.tables, draft.partySize), interval, index, draft.partySize);
     if (!table) return fail(err(online ? 'SLOT_UNAVAILABLE' : 'NO_TABLE_AVAILABLE', { field: 'tableId' }));
     return ok({ startMs, endMs, tableId: table.id, customer: normalizeCustomer(draft.customer) });
   }
 
   const table = data.tables.find((t) => t.id === draft.tableId);
   if (!table) return fail(err('TABLE_NOT_FOUND', { field: 'tableId' }));
-  if (tableChanged && !table.active) return fail(err('TABLE_INACTIVE', { field: 'tableId', params: { table: table.id } }));
+  if (tableChanged && !table.active) return fail(err('TABLE_INACTIVE', { field: 'tableId', params: tableParams(table) }));
   if (table.capacity < draft.partySize) {
     return fail(
-      err('TABLE_TOO_SMALL', { field: 'tableId', params: { table: table.id, capacity: table.capacity, partySize: draft.partySize } }),
+      err('TABLE_TOO_SMALL', { field: 'tableId', params: { ...tableParams(table), capacity: table.capacity, partySize: draft.partySize } }),
     );
   }
-  if (tableChanged || timingChanged) {
-    const conflicts = findConflicts(index.get(table.id) ?? [], interval);
-    if (conflicts.length) return fail(err('CONFLICT', { field: 'tableId', conflicts, params: { table: table.id } }));
+  // Numa área compartilhada, aumentar o grupo também pode lotar a área.
+  const partyGrew = !original || draft.partySize > original.partySize;
+  if (tableChanged || timingChanged || (isSharedTable(table) && partyGrew)) {
+    const conflicts = tableConflicts(table, index.get(table.id) ?? [], interval, draft.partySize);
+    if (conflicts.length) return fail(err('CONFLICT', { field: 'tableId', conflicts, params: tableParams(table) }));
   }
   return ok({ startMs, endMs, tableId: table.id, customer: normalizeCustomer(draft.customer) });
+}
+
+function marketingConsent(customer: Customer): Pick<Customer, 'marketingOptIn' | 'marketingOptInAt'> {
+  if (!customer.marketingOptIn) return {};
+  return { marketingOptIn: true, ...(customer.marketingOptInAt ? { marketingOptInAt: customer.marketingOptInAt } : {}) };
 }
 
 export function replaceReservation(data: DemoData, updated: Reservation): DemoData {
@@ -188,6 +206,7 @@ export function createReservation(
   if (!validated.ok) return validated;
   const random = context.random ?? cryptoRandom;
   const createdAt = toIso(nowMs);
+  const { customer } = validated.value;
   const reservation: Reservation = {
     id: generateId('res', random),
     code: generateReservationCode(new Set(data.reservations.map((r) => r.code)), random),
@@ -196,7 +215,8 @@ export function createReservation(
     startAt: toIso(validated.value.startMs),
     serviceMinutes: draft.serviceMinutes,
     prepMinutes: draft.prepMinutes,
-    customer: validated.value.customer,
+    // O instante do aceite de novidades é sempre o da gravação.
+    customer: customer.marketingOptIn ? { ...customer, marketingOptInAt: createdAt } : customer,
     source: draft.source,
     status: 'confirmed',
     createdAt,
@@ -210,6 +230,7 @@ export function createReservation(
     cancelReason: null,
     noShowAt: null,
     history: [{ at: createdAt, kind: 'created', actor: context.channel === 'online' ? 'customer' : 'admin' }],
+    ...(draft.locale ? { locale: draft.locale } : {}),
   };
   return ok({ data: { ...data, reservations: [...data.reservations, reservation] }, reservation });
 }
@@ -261,7 +282,8 @@ export function updateReservation(
     startAt: toIso(startMs),
     serviceMinutes: draft.serviceMinutes,
     prepMinutes: draft.prepMinutes,
-    customer,
+    // A edição administrativa não mexe no aceite de novidades do cliente.
+    customer: { ...customer, ...marketingConsent(original.customer) },
     source: draft.source,
     updatedAt: at,
     history: [...original.history, { at, kind: onlyTable ? 'table_changed' : 'updated', actor: 'admin', changes }],

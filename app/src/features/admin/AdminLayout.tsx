@@ -1,9 +1,10 @@
-import { CalendarDays, ChartColumn, LayoutDashboard, List, Map as MapIcon, Settings } from 'lucide-react';
+import { BookOpen, CalendarDays, ChartColumn, LayoutDashboard, List, Map as MapIcon, Settings } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { LogoLink, ParisClock } from '../../components/Brand';
 import { DemoRibbon, PersistenceBanner } from '../../components/DemoChrome';
 import { t } from '../../i18n';
+import { useStore } from '../../state/store';
 import { AdminActionsProvider } from './AdminActions';
 
 const a = t.admin.layout;
@@ -28,11 +29,19 @@ function NavItems({ className }: { className: string }) {
           </NavLink>
         </li>
       ))}
+      <li>
+        {/* Manual estático (public/manual), aberto em outra aba. */}
+        <a href="/manual/" target="_blank" rel="noopener" className="adm-nav__link">
+          <BookOpen aria-hidden="true" />
+          {a.nav.manual}
+        </a>
+      </li>
     </ul>
   );
 }
 
 export function AdminLayout() {
+  const demo = useStore().kind === 'demo';
   return (
     <AdminActionsProvider>
       <div className="adm">
@@ -60,7 +69,7 @@ export function AdminLayout() {
             </nav>
             <div className="adm-sidebar__foot">
               <ParisClock />
-              <p>{a.demoNote}</p>
+              {demo && <p>{a.demoNote}</p>}
             </div>
           </aside>
           <main id="conteudo" className="adm-main" tabIndex={-1}>

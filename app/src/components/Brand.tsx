@@ -1,23 +1,22 @@
 import { Clock } from 'lucide-react';
 import { Link } from 'react-router';
-import { formatParisOffset, formatTime, t } from '../i18n';
+import { useI18n, useT } from '../i18n';
 import { useNow } from '../state/store';
 
 type LogoVariant = 'header' | 'hero' | 'footer' | 'sidebar';
 
-/**
- * Logo oficial (imagem existente, proporção preservada). As margens de fundo
- * claro são recortadas só no enquadramento e o fundo se funde ao creme.
- */
+/** Logo oficial do Aromas da Vivi (selo redondo, dourado sobre bordô). */
+export const LOGO_IMAGE = '/brand/logo-aromas-da-vivi.jpg';
+
+/** Logo da marca nas variantes header, hero, footer e sidebar. */
 export function Logo({ variant = 'header', eager = false }: { variant?: LogoVariant; eager?: boolean }) {
+  const t = useT();
   return (
     <span className={`logo logo--${variant}`}>
       <img
-        src="/brand/logo-maison-elise-480.webp"
-        srcSet="/brand/logo-maison-elise-480.webp 480w, /brand/logo-maison-elise-960.webp 960w"
-        sizes={variant === 'hero' ? '(max-width: 640px) 80vw, 520px' : '220px'}
-        width={1536}
-        height={1024}
+        src={LOGO_IMAGE}
+        width={256}
+        height={256}
         alt={t.brand.logoAlt}
         decoding="async"
         loading={eager ? 'eager' : 'lazy'}
@@ -27,8 +26,9 @@ export function Logo({ variant = 'header', eager = false }: { variant?: LogoVari
 }
 
 export function LogoLink({ to, variant = 'header' }: { to: string; variant?: LogoVariant }) {
+  const t = useT();
   return (
-    <Link to={to} className="logo-link" aria-label={`${t.brand.name} — início`}>
+    <Link to={to} className="logo-link" aria-label={t.brand.homeLink}>
       <Logo variant={variant} eager />
     </Link>
   );
@@ -37,6 +37,8 @@ export function LogoLink({ to, variant = 'header' }: { to: string; variant?: Log
 /** Relógio de Paris, para deixar claro o fuso de todos os horários. */
 export function ParisClock({ compact = false }: { compact?: boolean }) {
   const now = useNow(15_000);
+  const { t, f } = useI18n();
+  const { formatParisOffset, formatTime } = f;
   return (
     <span className="paris-clock" title={t.demo.timezoneNote(formatParisOffset(now))}>
       <Clock aria-hidden="true" />

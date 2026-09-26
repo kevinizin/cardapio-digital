@@ -11,6 +11,10 @@ export function normalizeCustomer(input: Customer): Customer {
     email: input.email.trim().toLowerCase(),
     phone: input.phone.trim().replace(/\s+/g, ' '),
     notes: input.notes.trim(),
+    // Aceite de novidades só é guardado quando marcado (nunca "false" explícito).
+    ...(input.marketingOptIn === true
+      ? { marketingOptIn: true, ...(input.marketingOptInAt ? { marketingOptInAt: input.marketingOptInAt } : {}) }
+      : {}),
   };
 }
 
@@ -19,7 +23,7 @@ export function isValidEmail(email: string): boolean {
 }
 
 /** Valida dados de contato. Não coleta dados sensíveis: apenas nome, e-mail, telefone e observação. */
-export function validateCustomer(input: Customer, options: { emailRequired: boolean }): DomainError[] {
+export function validateCustomer(input: Customer, options: { emailRequired: boolean; phoneRequired?: boolean }): DomainError[] {
   const customer = normalizeCustomer(input);
   const errors: DomainError[] = [];
 
@@ -37,7 +41,9 @@ export function validateCustomer(input: Customer, options: { emailRequired: bool
     errors.push(err('EMAIL_INVALID', { field: 'email' }));
   }
 
-  if (customer.phone) {
+  if (!customer.phone) {
+    if (options.phoneRequired) errors.push(err('PHONE_REQUIRED', { field: 'phone' }));
+  } else {
     const digits = customer.phone.replace(/\D/g, '').length;
     if (customer.phone.length > LIMITS.phoneMaxLength)
       errors.push(err('PHONE_TOO_LONG', { field: 'phone', params: { max: LIMITS.phoneMaxLength } }));

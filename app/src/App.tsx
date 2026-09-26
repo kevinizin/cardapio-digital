@@ -3,13 +3,14 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/Feedback';
 import { PageLoading } from './components/PageLoading';
-import type { DemoStore } from './data/demoStore';
+import type { AppStore } from './data/appStore';
 import { BookingPage } from './features/public/BookingPage';
 import { ConfirmationPage } from './features/public/ConfirmationPage';
 import { HomePage } from './features/public/HomePage';
 import { LookupPage } from './features/public/LookupPage';
 import { NotFoundPage } from './features/public/NotFoundPage';
 import { PublicLayout } from './features/public/PublicLayout';
+import { LocaleProvider } from './i18n';
 import { StoreProvider } from './state/store';
 
 // A administração é carregada sob demanda para manter leve a página pública.
@@ -30,26 +31,28 @@ function RouteEffects() {
   return null;
 }
 
-export function App({ store }: { store: DemoStore }) {
+export function App({ store }: { store: AppStore }) {
   return (
     <StoreProvider store={store}>
-      <ToastProvider>
-        <BrowserRouter>
-          <RouteEffects />
-          <ErrorBoundary>
-            <Routes>
-              <Route path="admin/*" element={<Suspense fallback={<PageLoading />}><AdminApp /></Suspense>} />
-              <Route element={<PublicLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="reservar" element={<BookingPage />} />
-                <Route path="reserva/:code" element={<ConfirmationPage />} />
-                <Route path="consultar" element={<LookupPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </ToastProvider>
+      <BrowserRouter>
+        <LocaleProvider>
+          <ToastProvider>
+            <RouteEffects />
+            <ErrorBoundary>
+              <Routes>
+                <Route path="admin/*" element={<Suspense fallback={<PageLoading />}><AdminApp /></Suspense>} />
+                <Route element={<PublicLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="reservar" element={<BookingPage />} />
+                  <Route path="reserva/:code" element={<ConfirmationPage />} />
+                  <Route path="consultar" element={<LookupPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
+              </Routes>
+            </ErrorBoundary>
+          </ToastProvider>
+        </LocaleProvider>
+      </BrowserRouter>
     </StoreProvider>
   );
 }

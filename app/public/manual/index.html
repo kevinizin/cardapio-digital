@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<title>Manual Aromas da Vivi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --wine:#841731; --wine-deep:#5c0f22; --gold:#c9a24a; --gold-text:#7a5c1c;
+  --bg:#ffffff; --surface:#fbf8f3; --surface-2:#f3e2e3; --surface-3:#f1ead9;
+  --text:#2a2224; --muted:#5f5053; --line:#e3d6c6; --line-strong:#cdb9a3;
+  --link:#841731; --accent:#841731; --accent-ink:#fffdf8;
+  --tip-bg:#eef4ec; --tip-line:#9bb89a; --warn-bg:#fbf0dc; --warn-line:#d7ad5d;
+  --shadow:0 1px 2px rgba(60,20,30,.06),0 6px 20px rgba(60,20,30,.06);
+  --display:"Cormorant Garamond","Cormorant",Garamond,"Times New Roman",serif;
+  --body:"Source Sans 3","Source Sans Pro","Segoe UI",system-ui,-apple-system,sans-serif;
+  --gutter:clamp(16px,4vw,40px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:var(--gutter);-webkit-text-size-adjust:100%}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--link);text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--display);color:var(--wine);text-wrap:balance;line-height:1.15;margin:0}
+h2{font-size:clamp(2rem,4.2vw,2.6rem);font-weight:600}
+h3{font-size:1.65rem;font-weight:600}
+h4{font-family:var(--body);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-text);font-weight:700}
+p,ul,ol{margin:0}
+.num{font-variant-numeric:tabular-nums}
+b,strong{font-weight:700}
+kbd,.ui{font-family:var(--body);font-weight:700;color:var(--text);background:var(--surface-3);border:1px solid var(--line);border-radius:6px;padding:0 .35em;white-space:nowrap}
+
+/* header */
+.top{max-width:1240px;margin-inline:auto;display:flex;align-items:center;gap:18px;padding-block:22px 18px;border-bottom:1px solid var(--line)}
+.top img{width:64px;height:64px;border-radius:50%;box-shadow:var(--shadow);flex:none}
+.top__title{display:flex;flex-direction:column;gap:2px}
+.top__eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-text);font-weight:700}
+.top h1{font-size:clamp(1.9rem,4.5vw,2.7rem);font-weight:600}
+.top__meta{margin-left:auto;font-size:.9rem;color:var(--muted);text-align:right;max-width:44ch}
+@media (max-width:720px){.top{flex-wrap:wrap}.top__meta{margin-left:0;text-align:left;max-width:none;flex-basis:100%}}
+
+/* layout */
+.layout{max-width:1240px;margin-inline:auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:48px;padding-block:28px 80px}
+@media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr);gap:24px}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:.95rem;padding-right:6px}
+.toc details{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.toc summary{cursor:pointer;padding:12px 14px;font-weight:700;color:var(--wine);list-style:none;display:flex;justify-content:space-between;align-items:center}
+.toc summary::-webkit-details-marker{display:none}
+.toc summary::after{content:"+";font-size:1.2rem;color:var(--gold-text)}
+.toc details[open] summary::after{content:"–"}
+.toc nav{padding:4px 14px 14px}
+.toc ol{list-style:none;padding:0;display:flex;flex-direction:column;gap:1px}
+.toc ol ol{padding-left:12px;border-left:1px solid var(--line);margin:2px 0 6px 4px}
+.toc a{display:block;padding:4px 8px;border-radius:6px;color:var(--text);text-decoration:none;line-height:1.35}
+.toc a:hover{background:var(--surface-3)}
+.toc a.is-current{background:var(--surface-2);color:var(--wine);font-weight:700}
+.toc ol ol a{color:var(--muted);font-size:.9rem}
+@media (min-width:961px){.toc summary{display:none}.toc details{border:0;background:none}.toc nav{padding:0}}
+@media (max-width:960px){.toc{position:static;max-height:none;overflow:visible;padding:0}}
+
+main{min-width:0;display:flex;flex-direction:column;gap:72px}
+section.part{display:flex;flex-direction:column;gap:28px;scroll-margin-top:16px}
+.part__head{display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:2px solid var(--gold)}
+.part__head p{color:var(--muted);max-width:68ch}
+.feature{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px;padding-top:6px}
+.feature + .feature{border-top:1px solid var(--line);padding-top:30px}
+.prose{max-width:68ch;display:flex;flex-direction:column;gap:12px}
+.prose ul,.prose ol{padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.lead{font-size:1.1rem}
+
+.label{display:inline-block;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--gold-text);margin-bottom:2px}
+.block{display:flex;flex-direction:column;gap:6px;max-width:68ch}
+.block ol,.block ul{padding-left:1.35em;display:flex;flex-direction:column;gap:6px}
+.example{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:0 10px 10px 0;padding:14px 18px;max-width:68ch;display:flex;flex-direction:column;gap:6px}
+.example .label{color:var(--gold-text)}
+.note{border-radius:10px;padding:12px 16px;max-width:68ch;border:1px solid var(--tip-line);background:var(--tip-bg)}
+.note--warn{border-color:var(--warn-line);background:var(--warn-bg)}
+.note b:first-child{color:var(--text)}
+
+figure{margin:0;display:flex;flex-direction:column;gap:8px;max-width:100%}
+figure img{border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);background:var(--surface)}
+figcaption{font-size:.9rem;color:var(--muted);max-width:68ch}
+.shot--narrow img{max-width:560px;width:100%}
+.shot--mid img{max-width:780px;width:100%}
+.shot--phone img{max-width:340px;width:100%}
+.shot--tiny img{max-width:460px;width:100%}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;align-items:start}
+.gallery--phones{grid-template-columns:repeat(auto-fit,minmax(220px,300px))}
+
+/* quick start */
+.steps5{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;counter-reset:q}
+.steps5 li{counter-increment:q;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px}
+.steps5 li::before{content:counter(q);font-family:var(--display);font-size:2.1rem;font-weight:700;color:var(--wine);line-height:1}
+.steps5 strong{font-size:1.02rem}
+.steps5 span{color:var(--muted);font-size:.95rem}
+
+/* scenarios */
+.scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.scen a{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--text)}
+.scen a:hover{border-color:var(--gold)}
+.scen a b{color:var(--wine);font-size:1.02rem}
+.scen a span{color:var(--muted);font-size:.93rem;line-height:1.45}
+.scenario{display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface);max-width:78ch}
+.scenario h3{font-size:1.45rem}
+.scenario ol,.scenario ul{padding-left:1.3em;display:flex;flex-direction:column;gap:5px}
+
+/* tables */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:.95rem;min-width:560px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-text);background:var(--surface-3)}
+tr:last-child td{border-bottom:0}
+td.val{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* capacity bar */
+.timebar{max-width:640px;display:flex;flex-direction:column;gap:6px}
+.timebar__row{display:flex;height:40px;border-radius:8px;overflow:hidden;border:1px solid var(--line-strong)}
+.timebar__svc{flex:90;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;padding-left:12px;font-weight:700;font-size:.92rem}
+.timebar__prep{flex:10;min-width:64px;background:repeating-linear-gradient(135deg,var(--gold) 0 6px,var(--surface-3) 6px 12px);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.timebar__scale{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* glossary */
+dl.gloss{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:0;max-width:78ch;border-top:1px solid var(--line)}
+dl.gloss dt,dl.gloss dd{padding:12px 0;border-bottom:1px solid var(--line);margin:0}
+dl.gloss dt{font-weight:700;color:var(--wine);padding-right:16px}
+@media (max-width:560px){dl.gloss{grid-template-columns:1fr}dl.gloss dt{border-bottom:0;padding-bottom:0}}
+
+/* faq */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:78ch}
+.faq details{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.faq summary{cursor:pointer;padding:14px 16px;font-weight:700;color:var(--text)}
+.faq details[open] summary{color:var(--wine)}
+.faq details > div{padding:0 16px 16px;display:flex;flex-direction:column;gap:8px}
+
+.foot{max-width:1240px;margin-inline:auto;border-top:1px solid var(--line);padding-block:20px 40px;color:var(--muted);font-size:.9rem}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <img src="img/logo.jpg" alt="Logotipo Aromas da Vivi" width="64" height="64">
+  <div class="top__title">
+    <span class="top__eyebrow">Sistema de reservas · Manual da equipe</span>
+    <h1>Aromas da Vivi</h1>
+  </div>
+  <p class="top__meta">20 Avenue Duquesne, 75007 Paris<br>Site dos clientes: <a href="https://reservas-aromasdavivi.up.railway.app" target="_blank" rel="noopener">reservas-aromasdavivi.up.railway.app</a><br>Painel da equipe: o mesmo endereço + <b>/admin</b></p>
+</header>
+
+<div class="layout">
+  <aside class="toc" aria-label="Sumário">
+    <details id="toc-details" open>
+      <summary>Sumário</summary>
+      <nav>
+        <ol>
+          <li><a href="#comeco-rapido">Começo rápido</a></li>
+          <li><a href="#situacoes">Situações do dia a dia</a></li>
+          <li><a href="#site-cliente">Site do cliente</a>
+            <ol>
+              <li><a href="#site-inicio">Página inicial</a></li>
+              <li><a href="#site-idiomas">Idiomas FR · PT · EN</a></li>
+              <li><a href="#site-reserva">Reserva em 4 etapas</a></li>
+              <li><a href="#site-confirmacao">Confirmação</a></li>
+              <li><a href="#site-consultar">Consultar e cancelar</a></li>
+            </ol>
+          </li>
+          <li><a href="#painel">Painel da equipe</a>
+            <ol>
+              <li><a href="#painel-entrar">Entrar e sair</a></li>
+              <li><a href="#visao-geral">Visão geral</a></li>
+              <li><a href="#agenda">Agenda</a></li>
+              <li><a href="#salao">Salão</a></li>
+              <li><a href="#reservas">Reservas</a></li>
+              <li><a href="#detalhes">Detalhes da reserva</a></li>
+              <li><a href="#nova-reserva">Nova reserva</a></li>
+              <li><a href="#sem-reserva">Cliente sem reserva</a></li>
+              <li><a href="#acoes">Ações do atendimento</a></li>
+              <li><a href="#bloqueios">Bloquear uma área</a></li>
+              <li><a href="#dashboard">Dashboard mensal</a></li>
+              <li><a href="#configuracoes">Configurações</a></li>
+              <li><a href="#sincronizacao">Tudo salvo / Sem conexão</a></li>
+              <li><a href="#painel-celular">No celular</a></li>
+            </ol>
+          </li>
+          <li><a href="#lotacao">Como a lotação funciona</a></li>
+          <li><a href="#emails">O que o cliente recebe</a></li>
+          <li><a href="#cuidados">Dicas e cuidados</a></li>
+          <li><a href="#glossario">Glossário</a></li>
+          <li><a href="#perguntas">Perguntas frequentes</a></li>
+        </ol>
+      </nav>
+    </details>
+  </aside>
+
+  <main id="conteudo">
+
+    <!-- ================= COMEÇO RÁPIDO ================= -->
+    <section class="part" id="comeco-rapido">
+      <div class="part__head">
+        <h2>Começo rápido</h2>
+        <p class="lead">O sistema tem duas partes. O <b>site do cliente</b> é onde as pessoas reservam, em francês, português ou inglês. O <b>painel</b> (<b>/admin</b>) é onde a equipe acompanha o dia, registra chegadas e cuida das reservas. As duas partes usam os mesmos dados: uma reserva feita no site aparece no painel em poucos segundos, em todos os aparelhos.</p>
+      </div>
+      <div class="prose"><p>Durante o serviço, estas cinco coisas resolvem quase tudo:</p></div>
+      <ol class="steps5">
+        <li><strong>Abrir a Visão geral</strong><span>Entre no painel com a senha da equipe. A primeira tela mostra o dia: reservas, pessoas esperadas, quem já está no salão e quantos lugares estão livres.</span></li>
+        <li><strong>Conferir as próximas chegadas</strong><span>A lista <b>Próximas chegadas</b> mostra quem chega, a que horas, quantas pessoas e se está atrasado.</span></li>
+        <li><strong>Registrar a chegada</strong><span>Quando o grupo senta, toque em <b>Registrar chegada</b>. A reserva passa a <b>Cliente presente</b>.</span></li>
+        <li><strong>Concluir o atendimento</strong><span>Quando o grupo vai embora, toque em <b>Concluir atendimento</b>. Os lugares ficam 10 minutos em arrumação e depois voltam a ficar livres.</span></li>
+        <li><strong>Olhar os alertas</strong><span>O quadro <b>Alertas</b> avisa quem está atrasado, quem passou da tolerância e onde a casa pode lotar.</span></li>
+      </ol>
+      <figure>
+        <img width="1280" height="800" src="img/painel-visao-geral.webp" alt="Tela Visão geral do painel com cartões do dia, próximas chegadas, alertas e lotação" loading="lazy">
+        <figcaption>A Visão geral numa sexta-feira às 20:05. As imagens deste manual usam dados de exemplo com nomes fictícios.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================= SITUAÇÕES ================= -->
+    <section class="part" id="situacoes">
+      <div class="part__head">
+        <h2>Situações do dia a dia</h2>
+        <p>Procure a situação e siga os passos. Cada item leva ao passo a passo completo mais abaixo.</p>
+      </div>
+      <div class="scen">
+        <a href="#sit-telefone"><b>Cliente ligou para reservar</b><span>Nova reserva com origem Telefone.</span></a>
+        <a href="#sit-sem-reserva"><b>Chegou sem reserva</b><span>Cliente sem reserva, com o horário de agora.</span></a>
+        <a href="#sit-atraso"><b>Cliente atrasou</b><span>15 minutos de tolerância, depois ausência.</span></a>
+        <a href="#sit-grupo"><b>Grupo com mais de 8 pessoas</b><span>O site manda para o WhatsApp; a equipe registra.</span></a>
+        <a href="#sit-mudar"><b>Cliente quer mudar o horário</b><span>Editar a reserva; o cliente recebe e-mail.</span></a>
+        <a href="#sit-cancelar"><b>Cliente quer cancelar</b><span>Pelo site até 2 h antes, ou pela equipe.</span></a>
+        <a href="#sit-chuva"><b>Choveu: fechar o terraço</b><span>Bloqueio da área por algumas horas.</span></a>
+        <a href="#sit-fechar"><b>O restaurante vai fechar</b><span>Férias, feriado, evento privado.</span></a>
+        <a href="#sit-cheia"><b>Casa cheia</b><span>Por que o horário some e o que oferecer.</span></a>
+        <a href="#sit-liberou"><b>A mesa liberou antes</b><span>Concluir e liberar os lugares na hora.</span></a>
+        <a href="#sit-email"><b>O e-mail não chegou</b><span>Spam e histórico de e-mails.</span></a>
+        <a href="#sit-senha"><b>Esqueci ou quero trocar a senha</b><span>A troca é feita no Railway, pelo Kevin.</span></a>
+        <a href="#sit-internet"><b>A internet caiu</b><span>Sem conexão: não feche a página.</span></a>
+        <a href="#sit-mes"><b>Ver como foi o mês</b><span>Dashboard mensal.</span></a>
+        <a href="#sit-novidades"><b>Lista de quem aceita novidades</b><span>Exportar CSV e filtrar.</span></a>
+      </div>
+
+      <div class="scenario" id="sit-telefone">
+        <h3>Cliente ligou para reservar</h3>
+        <ol>
+          <li>No painel, toque em <b>Nova reserva</b> (Visão geral, Agenda ou Reservas).</li>
+          <li>Preencha <b>Data</b>, <b>Horário de início</b> e <b>Pessoas</b>. Deixe <b>Área</b> em <b>Automática</b>.</li>
+          <li>Em <b>Origem</b>, escolha <b>Telefone</b>. Escreva o <b>Nome do cliente</b> e o <b>Telefone</b>.</li>
+          <li>Se o cliente der o e-mail, preencha: ele recebe a confirmação e o lembrete.</li>
+          <li>Toque em <b>Criar reserva</b>. O código aparece na tela; se quiser, passe o código ao cliente.</li>
+        </ol>
+        <p><a href="#nova-reserva">Ver Nova reserva com imagens</a></p>
+      </div>
+
+      <div class="scenario" id="sit-sem-reserva">
+        <h3>Chegou sem reserva</h3>
+        <ol>
+          <li>Toque em <b>Cliente sem reserva</b> (Visão geral ou Salão).</li>
+          <li>A data e o horário de agora já vêm preenchidos. Se precisar, toque em <b>Agora (presencial)</b> para atualizar.</li>
+          <li>Informe <b>Pessoas</b> e um nome (pode ser só o primeiro nome) e toque em <b>Criar reserva</b>.</li>
+          <li>Na reserva que abre, toque em <b>Registrar chegada</b>.</li>
+        </ol>
+        <p>Se aparecer <i>“Não há mesa livre nem lugares suficientes para esse grupo nesse horário”</i>, a área está cheia até o grupo terminar. Veja <a href="#sit-cheia">Casa cheia</a>.</p>
+      </div>
+
+      <div class="scenario" id="sit-atraso">
+        <h3>Cliente atrasou</h3>
+        <ul>
+          <li>Até 15 minutos depois do horário, o painel mostra <b>“5 min de atraso”</b> e um aviso azul nos alertas. É só esperar.</li>
+          <li>Depois de 15 minutos, o alerta fica amarelo: <i>“a tolerância terminou. Registre a chegada ou marque ausência.”</i></li>
+          <li>Se o cliente chegar, toque em <b>Registrar chegada</b> normalmente.</li>
+          <li>Se não vier, abra a reserva e toque em <b>Marcar ausência</b>. Os lugares voltam a ficar livres.</li>
+        </ul>
+        <p>O sistema nunca marca ausência sozinho. Se ninguém mexer, a reserva continua ocupando os lugares.</p>
+      </div>
+
+      <div class="scenario" id="sit-grupo">
+        <h3>Grupo com mais de 8 pessoas</h3>
+        <p>No site, quem escolhe <b>Mais de 8</b> vê o WhatsApp do restaurante (+33 7 71 85 74 03) e não consegue reservar online.</p>
+        <ol>
+          <li>Combine tudo com o cliente pelo WhatsApp.</li>
+          <li>No painel, crie a reserva com <b>Nova reserva</b> e o número real de pessoas. Pela equipe, o limite é a capacidade da área (30 no Salão).</li>
+          <li>Na <b>Observação</b>, anote o combinado (ex.: “Menu fechado, chegam às 19h30”).</li>
+        </ol>
+        <p>Um grupo grande ocupa boa parte do Salão por 1h40. Confira antes a linha <b>Lotação</b> na <a href="#agenda">Agenda</a>.</p>
+      </div>
+
+      <div class="scenario" id="sit-mudar">
+        <h3>Cliente quer mudar o horário, o dia ou o número de pessoas</h3>
+        <ol>
+          <li>Em <b>Reservas</b>, busque pelo nome, código ou e-mail e toque em <b>Detalhes</b>.</li>
+          <li>Toque em <b>Editar</b>, mude o que for preciso e toque em <b>Salvar alterações</b>.</li>
+          <li>Se a reserva tem e-mail, o cliente recebe o e-mail de <b>Alteração</b> no idioma dele.</li>
+        </ol>
+        <p>O cliente não consegue mudar sozinho pelo site: o site pede que ele fale com o restaurante.</p>
+      </div>
+
+      <div class="scenario" id="sit-cancelar">
+        <h3>Cliente quer cancelar</h3>
+        <ul>
+          <li><b>Pelo site</b>: até 2 horas antes, o próprio cliente cancela em <b>Consultar reserva</b>, com o código e o e-mail. O horário é liberado na hora.</li>
+          <li><b>Pela equipe</b>: abra a reserva, toque em <b>Cancelar reserva</b> e escreva a <b>Justificativa</b> (obrigatória). O cliente recebe o e-mail de cancelamento; a justificativa é interna e nunca vai no e-mail.</li>
+        </ul>
+      </div>
+
+      <div class="scenario" id="sit-chuva">
+        <h3>Choveu: fechar o terraço</h3>
+        <ol>
+          <li>Vá em <b>Salão</b> e, no cartão do Terraço, toque em <b>Bloquear esta área</b>. Ou vá direto em <b>Configurações → Bloqueios manuais</b>.</li>
+          <li>Escolha <b>Área</b>: Terraço, a data e as horas de início e fim, e escreva o <b>Motivo</b> (ex.: “Chuva”).</li>
+          <li>Toque em <b>Criar bloqueio</b>. O site deixa de oferecer o terraço nesse período.</li>
+          <li>Parou de chover? Toque no bloqueio (na Agenda ou na lista de bloqueios) e em <b>Encerrar agora</b>.</li>
+        </ol>
+        <p>Se já houver reservas no terraço nesse período, o bloqueio é recusado com a lista delas. Mude essas reservas para o Salão com <b>Mudar de área</b> e tente de novo.</p>
+      </div>
+
+      <div class="scenario" id="sit-fechar">
+        <h3>O restaurante vai fechar (férias, feriado, evento)</h3>
+        <ol>
+          <li><b>Configurações → Fechamentos e datas especiais → Fechar dias</b>.</li>
+          <li>Preencha <b>De</b> e <b>Até (inclusive)</b>. Para um dia só, use a mesma data nos dois.</li>
+          <li>Em <b>Motivo (interno)</b> escreva, por exemplo, “Férias”. Só a equipe vê.</li>
+          <li>Se quiser, escreva a mensagem aos clientes em francês, português e inglês.</li>
+          <li>Toque em <b>Fechar dias</b>. O site para de aceitar reservas e mostra um aviso com a data de reabertura.</li>
+        </ol>
+        <p>Se houver reservas nesses dias, o sistema mostra a lista com telefone e e-mail de cada cliente antes de fechar. Feriados franceses aparecem logo abaixo, com o botão <b>Fechar este dia</b>.</p>
+      </div>
+
+      <div class="scenario" id="sit-cheia">
+        <h3>Casa cheia</h3>
+        <p>O sistema controla quantas pessoas estão ao mesmo tempo em cada área: até 30 no Salão e 10 no Terraço. Quando a soma chega ao limite em algum momento da 1h40 do grupo, o horário some do site e a Nova reserva do painel recusa.</p>
+        <ul>
+          <li>Ofereça outro horário: a <b>Agenda</b> mostra na linha <b>Lotação</b> quantas pessoas estão previstas em cada horário.</li>
+          <li>Se o Terraço estiver aberto e com lugar, escolha <b>Área: Terraço</b> na reserva.</li>
+          <li>Se alguém cancelar ou for marcado como ausência, os lugares voltam na hora.</li>
+        </ul>
+      </div>
+
+      <div class="scenario" id="sit-liberou">
+        <h3>A mesa liberou antes do previsto</h3>
+        <ol>
+          <li>Toque em <b>Concluir atendimento</b> assim que o grupo sair. Os lugares entram em arrumação (10 min).</li>
+          <li>Mesa já arrumada? Toque em <b>Concluir preparação</b> e depois em <b>Liberar lugares agora</b>. Os lugares ficam livres na hora e podem ir para o site.</li>
+        </ol>
+      </div>
+
+      <div class="scenario" id="sit-email">
+        <h3>O cliente diz que o e-mail não chegou</h3>
+        <ol>
+          <li>Peça que confira a caixa de <b>spam</b> ou “promoções”.</li>
+          <li>Abra a reserva em <b>Detalhes</b> e veja o quadro <b>E-mails ao cliente</b>: <b>Enviado</b>, <b>Na fila</b>, <b>Falhou</b> ou <b>Não enviado</b>.</li>
+          <li>Confira se o e-mail foi escrito certo. Se estiver errado, corrija em <b>Editar</b>.</li>
+          <li>Em qualquer caso, o código e os dados estão nos detalhes: passe ao cliente por telefone ou WhatsApp.</li>
+        </ol>
+      </div>
+
+      <div class="scenario" id="sit-senha">
+        <h3>Esqueci a senha / quero trocar a senha</h3>
+        <p>A senha da equipe é a mesma para todos e fica guardada no servidor (Railway). Não dá para trocar pelo painel.</p>
+        <ul>
+          <li>Esqueceu? Peça ao Kevin.</li>
+          <li>Quer trocar (por exemplo, quando alguém sai da equipe)? Peça ao Kevin: ele troca no Railway e pode encerrar as sessões abertas em todos os aparelhos.</li>
+          <li>Depois de 10 tentativas erradas em 15 minutos, o login fica bloqueado por 15 minutos.</li>
+        </ul>
+      </div>
+
+      <div class="scenario" id="sit-internet">
+        <h3>A internet caiu</h3>
+        <p>O painel continua funcionando na tela e guarda as ações. No topo aparece: <i>“Sem conexão: as últimas alterações ainda não foram salvas. Não feche esta página; tentaremos de novo automaticamente.”</i></p>
+        <ul>
+          <li><b>Não feche nem recarregue a página</b> até voltar a aparecer <b>Tudo salvo</b> no canto superior.</li>
+          <li>Quando a internet volta, tudo é enviado sozinho.</li>
+          <li>Enquanto estiver sem internet, o site dos clientes não vê as mudanças feitas nesse aparelho.</li>
+        </ul>
+      </div>
+
+      <div class="scenario" id="sit-mes">
+        <h3>Ver como foi o mês</h3>
+        <p>Abra <b>Dashboard mensal</b>. Use as setas ou a lista para escolher o mês. Veja reservas recebidas, pessoas atendidas, cancelamentos, ausências e os dias e horários mais procurados. <a href="#dashboard">Detalhes</a>.</p>
+      </div>
+
+      <div class="scenario" id="sit-novidades">
+        <h3>Lista de clientes que aceitam novidades</h3>
+        <ol>
+          <li>Em <b>Reservas</b>, escolha <b>Período: Todas</b>.</li>
+          <li>Toque em <b>Exportar CSV</b>. O arquivo abre no Excel, Numbers ou Google Planilhas.</li>
+          <li>Filtre a coluna <b>Aceita novidades</b> por <b>Sim</b>. Use só esses e-mails para newsletter ou convites.</li>
+        </ol>
+        <p>O sistema não envia e-mails de novidades. Ele só guarda quem aceitou e quando (prova do consentimento, exigida pelo RGPD).</p>
+      </div>
+    </section>
+
+    <!-- ================= SITE DO CLIENTE ================= -->
+    <section class="part" id="site-cliente">
+      <div class="part__head">
+        <h2>Site do cliente</h2>
+        <p>É o que o cliente vê em <b>reservas-aromasdavivi.up.railway.app</b>. Vale conhecer bem para ajudar quem liga com dúvida.</p>
+      </div>
+
+      <article class="feature" id="site-inicio">
+        <h3>Página inicial</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Apresenta o restaurante, os horários, as regras de reserva e os contatos, e leva à reserva.</p></div>
+        <figure>
+          <img width="1280" height="800" src="img/site-inicio.webp" alt="Página inicial do site com título, botões Reservar mesa e Consultar reserva e o cartão de horários" loading="lazy">
+          <figcaption>O topo da página inicial. A faixa bordô no alto é o aviso de fechamento (aparece até 14 dias antes).</figcaption>
+        </figure>
+        <div class="block">
+          <span class="label">O que aparece</span>
+          <ul>
+            <li><b>Aviso do restaurante</b>: quando há um fechamento próximo, com a mensagem escrita pela equipe e a data de reabertura. O cliente pode fechar o aviso no <b>×</b>.</li>
+            <li><b>Horários</b>: Segunda-feira fechado; Terça a domingo, Serviço 12:00–22:00; “Hoje: 12:00–22:00”; fechamentos futuros; limite de 1 a 8 pessoas online.</li>
+            <li><b>Bom saber</b>: janela de 60 dias, antecedência de 30 minutos, cancelamento online até 2 h antes.</li>
+            <li><b>Grupos maiores</b>: WhatsApp, endereço e Instagram.</li>
+            <li><b>Rodapé</b>: os mesmos contatos e a troca de idioma.</li>
+          </ul>
+        </div>
+        <div class="gallery">
+          <figure class="shot--tiny"><img width="456" height="518" src="img/site-horarios.webp" alt="Cartão de horários: segunda fechado, terça a domingo 12:00 a 22:00" loading="lazy"><figcaption>Cartão <b>Horários</b>.</figcaption></figure>
+          <figure class="shot--tiny"><img width="573" height="233" src="img/site-grupos-whatsapp.webp" alt="Quadro Grupos maiores com WhatsApp, endereço e Instagram" loading="lazy"><figcaption>Quadro <b>Grupos maiores</b>.</figcaption></figure>
+        </div>
+        <figure><img width="1280" height="47" src="img/site-aviso-fechamento.webp" alt="Faixa de aviso: fechado de 06/10 a 12/10, férias da equipe, voltamos terça 13/10 às 12:00" loading="lazy"><figcaption>Aviso de fechamento gerado a partir de <a href="#cfg-fechamentos">Fechar dias</a>.</figcaption></figure>
+        <figure><img width="1280" height="216" src="img/site-rodape.webp" alt="Rodapé com WhatsApp, endereço, Instagram e troca de idioma" loading="lazy"><figcaption>Rodapé com os contatos.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="site-idiomas">
+        <h3>Idiomas FR · PT · EN</h3>
+        <div class="block"><span class="label">Para que serve</span><p>O site abre no idioma do navegador do cliente. Ele pode trocar a qualquer momento nos botões <b>FR</b>, <b>PT</b> e <b>EN</b>, no topo ou no rodapé.</p></div>
+        <figure class="shot--tiny"><img width="455" height="72" src="img/site-idiomas.webp" alt="Botões de idioma FR, PT e EN destacados" loading="lazy"><figcaption>Troca de idioma, ao lado de <b>Consultar reserva</b> e <b>Reservar mesa</b>.</figcaption></figure>
+        <div class="gallery">
+          <figure><img width="1280" height="700" src="img/site-inicio-fr.webp" alt="Página inicial em francês" loading="lazy"><figcaption>Em francês: <b>Réserver une table</b>, <b>Retrouver ma réservation</b>.</figcaption></figure>
+          <figure><img width="1280" height="700" src="img/site-inicio-en.webp" alt="Página inicial em inglês" loading="lazy"><figcaption>Em inglês.</figcaption></figure>
+        </div>
+        <div class="note"><b>Importante:</b> os e-mails ao cliente saem no idioma em que ele reservou. Reservas criadas pela equipe saem em francês.</div>
+      </article>
+
+      <article class="feature" id="site-reserva">
+        <h3>Reserva em 4 etapas</h3>
+        <div class="block"><span class="label">Para que serve</span><p>O cliente reserva sozinho em menos de um minuto. O site só mostra horários com lugar para o grupo inteiro.</p></div>
+
+        <h4>Etapa 1 · Data e pessoas</h4>
+        <div class="block">
+          <ol>
+            <li>O cliente toca em <b>Reservar mesa</b> e escolhe <b>Quantas pessoas?</b> (1 a 8).</li>
+            <li>No calendário, escolhe a data. A legenda explica as cores: <b>Com horários</b>, <b>Sem horários para o grupo</b> e <b>Fechado ou fora da janela</b> (dia riscado).</li>
+            <li>Toca em <b>Continuar</b>.</li>
+          </ol>
+        </div>
+        <figure class="shot--mid"><img width="1147" height="1091" src="img/reserva-etapa1-pessoas-calendario.webp" alt="Etapa 1: escolha de 4 pessoas e calendário de setembro com legenda" loading="lazy"><figcaption>Etapa 1. O resumo à direita acompanha as escolhas.</figcaption></figure>
+        <div class="gallery">
+          <figure><img width="811" height="1273" src="img/reserva-dia-fechado.webp" alt="Segunda-feira 28/09 escolhida: o restaurante não abre nesse dia, com sugestões de outras datas" loading="lazy"><figcaption>Dia fechado: o site explica e sugere as próximas datas com horários.</figcaption></figure>
+          <figure><img width="811" height="657" src="img/reserva-mais-de-8.webp" alt="Opção Mais de 8 escolhida com o quadro Grupos maiores e o WhatsApp" loading="lazy"><figcaption><b>Mais de 8</b>: o site mostra o WhatsApp e não deixa continuar.</figcaption></figure>
+        </div>
+
+        <h4>Etapa 2 · Horário</h4>
+        <div class="block"><p>Aparecem os horários de 15 em 15 minutos, das 12:00 às 20:15, só os que têm lugar. O cliente escolhe e toca em <b>Continuar</b>.</p></div>
+        <figure class="shot--mid"><img width="1147" height="711" src="img/reserva-etapa2-horarios.webp" alt="Etapa 2: grade de horários do sábado 26/09 para 2 pessoas, com 19:00 escolhido" loading="lazy"><figcaption>Etapa 2. A última opção é 20:15, porque 1h30 de atendimento + 10 min de arrumação precisam terminar até 22:00.</figcaption></figure>
+
+        <h4>Etapa 3 · Seus dados</h4>
+        <div class="block">
+          <ul>
+            <li><b>Nome completo</b>, <b>E-mail</b> e <b>Telefone</b> são obrigatórios. O telefone é obrigatório no site por uma regra que a equipe controla (<a href="#cfg-regras">Telefone obrigatório nas reservas online</a>).</li>
+            <li><b>Observação</b> é opcional, até 300 caracteres (ex.: aniversário, cadeirinha para bebê).</li>
+            <li>A caixa <b>Quero receber novidades e eventos do Aromas da Vivi por e-mail</b> vem desmarcada. Só marca quem quer.</li>
+            <li>Abaixo, uma linha explica o uso dos dados e indica o WhatsApp para pedir a exclusão.</li>
+          </ul>
+        </div>
+        <figure class="shot--mid"><img width="811" height="777" src="img/reserva-etapa3-dados.webp" alt="Etapa 3: formulário com nome, e-mail, telefone, observação e caixa de novidades marcada" loading="lazy"><figcaption>Etapa 3, com a caixa de novidades marcada pela cliente.</figcaption></figure>
+
+        <h4>Etapa 4 · Revisão</h4>
+        <div class="block"><p>O cliente confere tudo, pode <b>Alterar</b> qualquer linha e toca em <b>Confirmar reserva</b>. A página lembra a tolerância de 15 minutos e o prazo de cancelamento.</p></div>
+        <figure class="shot--mid"><img width="1147" height="861" src="img/reserva-etapa4-revisao.webp" alt="Etapa 4: revisão com data, horário, pessoas, duração, nome, e-mail, telefone e observação" loading="lazy"><figcaption>Etapa 4.</figcaption></figure>
+        <div class="example"><span class="label">Exemplo</span><p>Marina quer jantar no sábado com uma amiga. Ela escolhe 2 pessoas, sábado 26/09, 19:00, preenche os dados, marca “novidades” e confirma. No painel, a reserva aparece no Salão, com origem <b>Online</b>, em poucos segundos.</p></div>
+      </article>
+
+      <article class="feature" id="site-confirmacao">
+        <h3>Confirmação</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Mostra o <b>Código da reserva</b> (formato XXXX-XXXX), com o botão <b>Copiar código</b>, o resumo e a frase <i>“Enviamos a confirmação para … Se não encontrar, confira a caixa de spam.”</i></p></div>
+        <figure class="shot--mid"><img width="699" height="867" src="img/reserva-confirmada.webp" alt="Tela Reserva confirmada com o código XXXX-XXXX, aviso de e-mail enviado e resumo" loading="lazy"><figcaption>Tela de confirmação.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="site-consultar">
+        <h3>Consultar e cancelar</h3>
+        <div class="block"><span class="label">Para que serve</span><p>O cliente vê a própria reserva e, até 2 horas antes, cancela sozinho. O link do e-mail de confirmação já abre esta página preenchida.</p></div>
+        <div class="block">
+          <span class="label">Como usar (cliente)</span>
+          <ol>
+            <li>Toca em <b>Consultar reserva</b>, digita o <b>Código da reserva</b> e o <b>E-mail</b> e toca em <b>Consultar</b>.</li>
+            <li>Vê <b>Sua reserva</b> com a situação (Confirmada, Cancelada…).</li>
+            <li>Para cancelar, toca em <b>Cancelar reserva</b> e confirma em <b>Sim, cancelar</b>.</li>
+          </ol>
+        </div>
+        <figure><img width="1208" height="746" src="img/consultar-resultado.webp" alt="Consulta: formulário com código e e-mail e o quadro Sua reserva com o botão Cancelar reserva" loading="lazy"><figcaption>Resultado da consulta.</figcaption></figure>
+        <figure class="shot--narrow"><img width="604" height="297" src="img/consultar-cancelar-dialogo.webp" alt="Janela Cancelar esta reserva? com os botões Voltar e Sim, cancelar" loading="lazy"><figcaption>Pedido de confirmação antes de cancelar.</figcaption></figure>
+        <div class="note note--warn"><b>Menos de 2 horas antes</b>, o site não deixa cancelar e pede que o cliente fale com o restaurante. Nesse caso, a equipe cancela pelo painel.</div>
+      </article>
+
+      <article class="feature" id="site-celular">
+        <h3>No celular</h3>
+        <div class="block"><p>A maioria dos clientes reserva pelo celular. O site se adapta: o menu vira ícones e os horários ficam em botões grandes.</p></div>
+        <div class="gallery gallery--phones">
+          <figure class="shot--phone"><img width="780" height="1688" src="img/celular-site-inicio.webp" alt="Página inicial no celular" loading="lazy"><figcaption>Início.</figcaption></figure>
+          <figure class="shot--phone"><img width="780" height="1688" src="img/celular-reserva-calendario.webp" alt="Etapa 1 da reserva no celular" loading="lazy"><figcaption>Etapa 1.</figcaption></figure>
+          <figure class="shot--phone"><img width="780" height="1688" src="img/celular-reserva-horarios.webp" alt="Etapa 2 com os horários no celular" loading="lazy"><figcaption>Etapa 2.</figcaption></figure>
+        </div>
+      </article>
+    </section>
+
+    <!-- ================= PAINEL ================= -->
+    <section class="part" id="painel">
+      <div class="part__head">
+        <h2>Painel da equipe</h2>
+        <p>Endereço: <b>reservas-aromasdavivi.up.railway.app/admin</b>. Funciona no computador, no tablet e no celular. O menu tem seis telas: <b>Visão geral</b>, <b>Agenda</b>, <b>Salão</b>, <b>Reservas</b>, <b>Dashboard mensal</b> e <b>Configurações</b>. Todos os horários são de Paris.</p>
+      </div>
+
+      <article class="feature" id="painel-entrar">
+        <h3>Entrar e sair</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Só quem tem a senha da equipe vê nomes, telefones e e-mails dos clientes.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li>Abra <b>/admin</b>, digite a senha da equipe em <b>Senha</b> e toque em <b>Entrar</b>.</li>
+            <li>A sessão dura 12 horas. Depois disso, o painel pede a senha de novo e envia o que estava pendente.</li>
+            <li>Para sair, toque em <b>Sair</b> no canto superior direito. Faça isso sempre em aparelhos que não são do restaurante.</li>
+          </ol>
+        </div>
+        <div class="gallery">
+          <figure class="shot--tiny"><img width="460" height="560" src="img/painel-login.webp" alt="Tela Área da administração com o campo Senha e o botão Entrar" loading="lazy"><figcaption>Tela de entrada.</figcaption></figure>
+        </div>
+        <figure><img width="1280" height="40" src="img/painel-barra-superior.webp" alt="Barra superior com Tudo salvo à esquerda e Sair à direita, destacados" loading="lazy"><figcaption>Barra do topo: <b>Tudo salvo</b> (situação do salvamento), relógio de Paris, <b>Ver site do cliente</b> e <b>Sair</b>.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="visao-geral">
+        <h3>Visão geral</h3>
+        <div class="block"><span class="label">Para que serve</span><p>O resumo do dia, para deixar aberto durante o serviço. Atualiza sozinho.</p></div>
+        <figure><img width="990" height="180" src="img/visao-geral-cartoes.webp" alt="Quatro cartões: 12 reservas previstas hoje, 37 pessoas esperadas, 19 presentes agora, 4 lugares livres agora" loading="lazy"><figcaption>Os quatro cartões do dia. O <b>i</b> de cada cartão explica a conta.</figcaption></figure>
+        <div class="block">
+          <span class="label">O que cada parte mostra</span>
+          <ul>
+            <li><b>Reservas previstas hoje</b>: todas do dia, menos as canceladas (com o número de concluídas, ausências e canceladas).</li>
+            <li><b>Pessoas esperadas</b>: soma das pessoas do dia, sem canceladas nem ausências.</li>
+            <li><b>Presentes agora</b>: pessoas com chegada registrada que ainda não foram concluídas.</li>
+            <li><b>Lugares livres agora</b>: lugares sem cliente, sem reserva em andamento, sem arrumação e sem bloqueio.</li>
+            <li><b>Próximas chegadas</b>: quem ainda vai chegar, com o botão <b>Registrar chegada</b> e a etiqueta de atraso.</li>
+            <li><b>Alertas</b>: atrasos, tolerância vencida, clientes além do horário e risco de lotação.</li>
+            <li><b>Salão agora</b>: barra de lotação de cada área. Listras cinzas indicam área bloqueada.</li>
+          </ul>
+        </div>
+        <div class="gallery">
+          <figure><img width="612" height="455" src="img/visao-geral-proximas-chegadas.webp" alt="Lista Próximas chegadas com Pierre Roux 35 min de atraso, Sophie Lefèvre 5 min de atraso e outras" loading="lazy"><figcaption><b>Próximas chegadas</b>.</figcaption></figure>
+          <figure><img width="376" height="527" src="img/visao-geral-alertas.webp" alt="Alertas: atenção para Pierre Roux com tolerância vencida e aviso para Sophie Lefèvre dentro da tolerância" loading="lazy"><figcaption><b>Alertas</b>: amarelo é “Atenção”, azul é “Aviso”.</figcaption></figure>
+        </div>
+        <figure class="shot--mid"><img width="612" height="247" src="img/visao-geral-lotacao.webp" alt="Salão agora: Salão 26 de 30 lugares ocupados, Terraço 10 de 10 bloqueado" loading="lazy"><figcaption><b>Salão agora</b>: 26 de 30 no Salão; o Terraço está bloqueado (chuva) e por isso aparece cheio.</figcaption></figure>
+        <figure><img width="988" height="108" src="img/visao-geral-botoes.webp" alt="Título Visão geral do dia com os botões Cliente sem reserva e Nova reserva" loading="lazy"><figcaption>Os atalhos <b>Cliente sem reserva</b> e <b>Nova reserva</b>.</figcaption></figure>
+        <div class="example"><span class="label">Exemplo</span><p>São 20:05. Sophie (20:00) está 5 minutos atrasada: aviso azul, é só esperar. Pierre (19:30) passou da tolerância: alerta amarelo. A equipe liga para ele; se não vier, abre a reserva e marca ausência, e os 2 lugares voltam para o Salão.</p></div>
+      </article>
+
+      <article class="feature" id="agenda">
+        <h3>Agenda</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Mostra o dia inteiro por área, das 12:00 às 22:00: quem vem, quanto tempo fica e quantas pessoas estarão no salão em cada horário.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li>Em <b>Dia</b>, use as setas, digite a data ou toque em <b>Hoje</b>.</li>
+            <li>Em <b>Visualização</b>, escolha <b>Linha do tempo</b> (barras) ou <b>Lista</b>.</li>
+            <li>Use <b>Área</b> e os botões de <b>Situação</b> para filtrar (ex.: esconder as <b>Cancelada</b>). <b>Turno</b> pode ficar em <b>Todos</b>: o restaurante usa um serviço contínuo.</li>
+            <li>Toque numa barra para abrir a reserva. Toque num bloqueio para ver ou encerrar.</li>
+          </ol>
+        </div>
+        <figure><img width="988" height="273" src="img/agenda-filtros.webp" alt="Filtros da agenda: Dia, Turno, Área, Visualização e Situação" loading="lazy"><figcaption>Filtros.</figcaption></figure>
+        <figure><img width="988" height="522" src="img/agenda-linha-do-tempo.webp" alt="Linha do tempo com reservas empilhadas no Salão, linha de lotação e o bloqueio Chuva no Terraço" loading="lazy"><figcaption>Linha do tempo. Cada barra é uma reserva; o pedacinho listrado no fim é a arrumação. A linha vermelha é “agora”. A linha <b>Lotação</b> mostra quantas pessoas estão previstas em cada meia hora: verde tem folga, dourado está perto do limite, bordô está cheio.</figcaption></figure>
+        <figure><img width="988" height="72" src="img/agenda-legenda.webp" alt="Legenda da linha do tempo" loading="lazy"><figcaption>Legenda: tracejado claro é reserva cancelada ou ausência, que não ocupa lugar.</figcaption></figure>
+        <figure class="shot--mid"><img width="1044" height="900" src="img/agenda-lista.webp" alt="Agenda em lista com horários, nomes, situação e botões de ação" loading="lazy"><figcaption>Visualização em <b>Lista</b>, com os botões de ação de cada reserva.</figcaption></figure>
+        <div class="example"><span class="label">Exemplo</span><p>Um cliente liga às 17h perguntando se há lugar para 6 às 20:00. Na linha <b>Lotação</b> aparece 30 às 20:00: está cheio. Às 21:00 aparece 18. A equipe oferece 21:00.</p></div>
+      </article>
+
+      <article class="feature" id="salao">
+        <h3>Salão</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Mostra, área por área, quem está sentado, quem deveria ter chegado, quais lugares estão em arrumação e quem chega na próxima hora. Com <b>Previsão</b>, mostra como estará num dia e horário futuros.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li>Em <b>Consulta</b>, deixe <b>Agora</b> para a situação real. Cada cartão mostra “26 de 30 lugares ocupados” e uma barra: presentes, aguardando chegada e em preparação.</li>
+            <li>Os botões de cada nome fazem a ação direto: <b>Registrar chegada</b>, <b>Concluir atendimento</b>, <b>Concluir preparação</b>.</li>
+            <li>No pé de cada cartão: <b>Cliente sem reserva</b> e <b>Bloquear esta área</b>.</li>
+            <li>Para planejar, escolha <b>Previsão</b>, a <b>Data da previsão</b> e o <b>Horário</b>.</li>
+          </ol>
+        </div>
+        <figure><img width="988" height="859" src="img/salao-agora.webp" alt="Cartões do Salão e do Terraço com listas Na área agora, No horário aguardando chegada, Lugares em preparação e Chegadas na próxima hora" loading="lazy"><figcaption>Modo <b>Agora</b>. O Terraço mostra <b>Área bloqueada até 22:00 · Chuva</b>.</figcaption></figure>
+        <figure class="shot--mid"><img width="1044" height="870" src="img/salao-previsao.webp" alt="Modo Previsão para sábado 26/09 às 20:30 com 14 de 30 lugares previstos no Salão" loading="lazy"><figcaption>Modo <b>Previsão</b>: sábado às 20:30, 14 lugares previstos no Salão.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="reservas">
+        <h3>Reservas</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Encontrar qualquer reserva, passada ou futura, e exportar a lista.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li>Em <b>Buscar</b>, digite nome, código ou e-mail.</li>
+            <li>Em <b>Período</b>: Hoje, Próximos 7 dias, Este mês, Mês passado, Futuras, Passadas, Todas ou Personalizado (De / Até).</li>
+            <li>Filtre por <b>Origem</b> (Online, Telefone, Presencial) e pelos botões de <b>Situação</b>. <b>Limpar filtros</b> volta ao início.</li>
+            <li>Toque em <b>Detalhes</b> para abrir a reserva.</li>
+            <li><b>Exportar CSV</b> baixa exatamente a lista filtrada, para abrir numa planilha.</li>
+          </ol>
+        </div>
+        <figure><img width="1280" height="800" src="img/reservas-lista.webp" alt="Tela Reservas com busca, filtros e lista, com o botão Exportar CSV destacado" loading="lazy"><figcaption>Lista de reservas. <b>Exportar CSV</b> está destacado.</figcaption></figure>
+        <figure class="shot--mid"><img width="1044" height="560" src="img/reservas-busca.webp" alt="Busca por Souza com 1 reserva encontrada: Rafael Souza" loading="lazy"><figcaption>Busca por sobrenome.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="detalhes">
+        <h3>Detalhes da reserva</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Tudo sobre uma reserva num painel lateral: situação, ações possíveis agora, dados do cliente, e-mails enviados e histórico de tudo o que aconteceu.</p></div>
+        <div class="block">
+          <span class="label">O que aparece</span>
+          <ul>
+            <li>No alto: nome, código, data e hora, a situação (ex.: <b>Confirmada</b>) e a origem.</li>
+            <li>Os botões de ação que valem neste momento. Quando uma ação ainda não vale, uma frase explica (ex.: “Ausência disponível a partir das 20:30”).</li>
+            <li>Horário previsto (com o fim da arrumação), pessoas, área, contatos, observação e <b>Novidades por e-mail</b> (Aceitou em … / Não aceitou).</li>
+            <li><b>E-mails ao cliente</b>: cada e-mail com data, hora e situação.</li>
+            <li><b>Histórico</b>: criação, edições (com o antes e o depois), chegada, conclusão, cancelamento.</li>
+          </ul>
+        </div>
+        <div class="gallery">
+          <figure><img width="1280" height="800" src="img/detalhes-reserva.webp" alt="Painel lateral Reserva de Beatriz Almeida com botões Mudar de área, Editar e Cancelar reserva e os dados" loading="lazy"><figcaption>Detalhes de uma reserva futura.</figcaption></figure>
+          <figure><img width="1280" height="800" src="img/detalhes-reserva-fim.webp" alt="Final do painel com E-mails ao cliente (Confirmação, Lembrete, Alteração, todos Enviado) e Histórico" loading="lazy"><figcaption>Rolando até o fim: e-mails e histórico. Aqui a equipe mudou o horário de 20:00 para 20:15, e a cliente recebeu o e-mail de <b>Alteração</b>.</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="feature" id="nova-reserva">
+        <h3>Nova reserva (telefone, WhatsApp, TheFork, balcão)</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Registrar uma reserva que não veio pelo site. Assim o site passa a saber que aqueles lugares estão ocupados.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li>Toque em <b>Nova reserva</b>.</li>
+            <li><b>Data</b> (dd/mm/aaaa), <b>Horário de início</b>, <b>Pessoas</b>.</li>
+            <li><b>Área</b>: deixe <b>Automática (primeira área com lugares)</b>, ou escolha Salão ou Terraço. Cada opção mostra quantos lugares estão livres.</li>
+            <li><b>Origem</b>: Telefone (use também para WhatsApp e TheFork) ou Presencial.</li>
+            <li><b>Atendimento (min)</b> e <b>Preparação (min)</b> já vêm com 90 e 10. Só mude se o grupo combinou algo diferente.</li>
+            <li><b>Nome do cliente</b>, e se tiver, <b>E-mail</b>, <b>Telefone</b> e <b>Observação</b>.</li>
+            <li>Toque em <b>Criar reserva</b>. A reserva abre com a mensagem “Reserva … criada.”</li>
+          </ol>
+        </div>
+        <div class="gallery">
+          <figure><img width="768" height="768" src="img/formulario-nova-reserva.webp" alt="Formulário Nova reserva preenchido para sábado 26/09 às 20:00, 2 pessoas, origem Telefone" loading="lazy"><figcaption>Formulário preenchido.</figcaption></figure>
+          <figure><img width="768" height="768" src="img/nova-reserva-sem-lugar.webp" alt="Formulário com erro: Não há mesa livre nem lugares suficientes para esse grupo nesse horário" loading="lazy"><figcaption>Sem lugar no horário: o sistema recusa e explica.</figcaption></figure>
+        </div>
+        <figure><img width="1280" height="800" src="img/nova-reserva-criada.webp" alt="Reserva de Gustavo Henrique criada, com o código e os dados" loading="lazy"><figcaption>Reserva criada, já com o código.</figcaption></figure>
+        <div class="example"><span class="label">Exemplo</span><p>Um senhor liga às 19h pedindo mesa para dois no sábado às 20h. A atendente cria a reserva com origem <b>Telefone</b>, anota “Pediu mesa perto da janela” e lê o código para ele. Como ele não deu e-mail, não recebe e-mail; a reserva vale do mesmo jeito.</p></div>
+        <div class="note note--warn"><b>TheFork e outras plataformas:</b> reservas que chegam por fora não aparecem aqui sozinhas. Registre cada uma com <b>Nova reserva</b> assim que chegar, para o site não vender os mesmos lugares.</div>
+      </article>
+
+      <article class="feature" id="sem-reserva">
+        <h3>Cliente sem reserva</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Registrar quem chega na porta, para os lugares contarem na lotação.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li>Toque em <b>Cliente sem reserva</b> (Visão geral ou Salão). A origem já vem como <b>Presencial</b>.</li>
+            <li>A data e o horário de agora já vêm preenchidos (<b>Agora (presencial)</b> atualiza, se o formulário ficou aberto um tempo).</li>
+            <li>Preencha <b>Pessoas</b> e o nome e toque em <b>Criar reserva</b>.</li>
+            <li>Na reserva que abre, toque em <b>Registrar chegada</b>.</li>
+          </ol>
+        </div>
+        <figure class="shot--narrow"><img width="768" height="768" src="img/formulario-cliente-sem-reserva.webp" alt="Formulário com o botão Agora (presencial) destacado, 2 pessoas, origem Presencial" loading="lazy"><figcaption>O formulário já abre com a data e o horário de agora.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="acoes">
+        <h3>Ações do atendimento</h3>
+        <div class="block"><p>Toda ação pede uma confirmação antes. Nada acontece sozinho: o sistema nunca conclui, move ou marca ausência por conta própria.</p></div>
+
+        <h4 id="acao-chegada">Registrar chegada</h4>
+        <div class="block"><p>Quando o grupo senta. Pode ser feito a partir de 3 horas antes do horário, se houver lugar desde agora até o fim previsto. A reserva vira <b>Cliente presente</b>.</p></div>
+        <figure class="shot--narrow"><img width="544" height="214" src="img/dialogo-registrar-chegada.webp" alt="Janela Registrar chegada? com o nome, a área e o horário" loading="lazy"><figcaption>Confirmação da chegada.</figcaption></figure>
+
+        <h4 id="acao-concluir">Concluir atendimento</h4>
+        <div class="block"><p>Quando o grupo vai embora. Os lugares ficam em arrumação por 10 minutos (no sistema, “preparação”) e depois voltam a ficar livres sozinhos.</p></div>
+        <figure class="shot--narrow"><img width="544" height="238" src="img/dialogo-concluir-atendimento.webp" alt="Janela Concluir atendimento? explicando que os lugares ficam em preparação por 10 min" loading="lazy"><figcaption>Confirmação da conclusão.</figcaption></figure>
+
+        <h4 id="acao-arrumacao">Encerrar ou estender a arrumação</h4>
+        <div class="block">
+          <ul>
+            <li><b>Concluir preparação</b> → <b>Liberar lugares agora</b>: a mesa já está pronta antes dos 10 minutos.</li>
+            <li><b>Estender preparação</b> (nos detalhes da reserva): precisa de mais tempo. Escolha os <b>Minutos adicionais</b> e escreva o <b>Motivo</b> (fica no histórico).</li>
+          </ul>
+        </div>
+        <div class="gallery">
+          <figure><img width="544" height="276" src="img/dialogo-liberar-lugares.webp" alt="Janela Liberar os lugares antes do previsto? com o botão Liberar lugares agora" loading="lazy"><figcaption>Liberar antes do previsto.</figcaption></figure>
+          <figure><img width="544" height="488" src="img/dialogo-estender-preparacao.webp" alt="Janela Estender preparação com 10 min e o motivo" loading="lazy"><figcaption>Estender a arrumação.</figcaption></figure>
+        </div>
+        <figure><img width="1280" height="800" src="img/detalhes-em-preparacao.webp" alt="Detalhes de uma reserva concluída com lugares em preparação até 20:10" loading="lazy"><figcaption>Reserva concluída com os lugares ainda em arrumação.</figcaption></figure>
+
+        <h4 id="acao-ausencia">Marcar ausência</h4>
+        <div class="block"><p>Aparece 15 minutos depois do horário (a tolerância). Libera os lugares e registra a ausência, que conta no Dashboard mensal.</p></div>
+        <div class="gallery">
+          <figure><img width="1280" height="800" src="img/detalhes-atrasado.webp" alt="Detalhes de Pierre Roux, 35 min após o horário, com Marcar ausência destacado" loading="lazy"><figcaption>35 minutos de atraso: <b>Marcar ausência</b> já está disponível.</figcaption></figure>
+          <figure><img width="544" height="238" src="img/dialogo-marcar-ausencia.webp" alt="Janela Marcar ausência?" loading="lazy"><figcaption>Confirmação.</figcaption></figure>
+        </div>
+
+        <h4 id="acao-cancelar">Cancelar reserva</h4>
+        <div class="block"><p>A <b>Justificativa</b> é obrigatória e fica só no histórico. Se a reserva tem e-mail e ainda é futura, o cliente recebe o e-mail de cancelamento, sem a justificativa.</p></div>
+        <figure class="shot--narrow"><img width="544" height="396" src="img/dialogo-cancelar-reserva.webp" alt="Janela Cancelar reserva? com o campo Justificativa preenchido" loading="lazy"><figcaption>Cancelamento pela equipe.</figcaption></figure>
+
+        <h4 id="acao-area">Mudar de área</h4>
+        <div class="block"><p>Passa a reserva do Salão para o Terraço ou o contrário. A janela mostra quantos lugares a outra área tem livres durante todo o período do grupo.</p></div>
+        <figure class="shot--narrow"><img width="544" height="390" src="img/dialogo-mudar-area.webp" alt="Janela Mudar de área com Salão (área atual) e Terraço (10 lugares livres no período)" loading="lazy"><figcaption>Escolha da nova área.</figcaption></figure>
+
+        <h4 id="acao-editar">Editar</h4>
+        <div class="block"><p>Muda data, horário, pessoas, área, contatos e observação. Se mudar dia, horário ou pessoas de uma reserva com e-mail, o cliente recebe o e-mail de <b>Alteração</b>. Com o cliente já sentado, data, horário e durações ficam travados. Reservas concluídas, canceladas ou com ausência não podem mais ser editadas.</p></div>
+        <figure class="shot--narrow"><img width="768" height="768" src="img/formulario-editar.webp" alt="Formulário Editar reserva com os campos preenchidos e o botão Salvar alterações" loading="lazy"><figcaption>Edição de uma reserva.</figcaption></figure>
+      </article>
+
+      <article class="feature" id="bloqueios">
+        <h3>Bloquear uma área</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Fechar o Terraço ou o Salão por um período (chuva, obra, evento), sem fechar o restaurante.</p></div>
+        <div class="block">
+          <span class="label">Como usar</span>
+          <ol>
+            <li><b>Configurações → Bloqueios manuais</b> (ou <b>Bloquear esta área</b> na tela Salão).</li>
+            <li>Escolha a <b>Área</b>, <b>Data de início</b>, <b>Hora de início</b>, <b>Data de fim</b>, <b>Hora de fim</b> e o <b>Motivo</b>.</li>
+            <li>Toque em <b>Criar bloqueio</b>. Ele aparece em <b>Bloqueios em andamento e futuros</b> como <b>Em andamento</b> ou <b>Agendado</b>.</li>
+            <li>Para desfazer: <b>Remover</b> (bloqueio futuro) ou <b>Encerrar agora</b> (bloqueio em andamento).</li>
+          </ol>
+        </div>
+        <div class="gallery">
+          <figure><img width="988" height="607" src="img/config-bloqueio-formulario.webp" alt="Formulário de bloqueio: Terraço, 27/09/2026 das 12:00 às 16:00, motivo Chuva prevista" loading="lazy"><figcaption>Bloqueio do Terraço preenchido.</figcaption></figure>
+          <figure><img width="988" height="666" src="img/config-bloqueios-lista.webp" alt="Lista com um bloqueio Em andamento (Chuva) e um Agendado (Chuva prevista)" loading="lazy"><figcaption>Lista de bloqueios com <b>Encerrar agora</b> e <b>Remover</b>.</figcaption></figure>
+        </div>
+        <figure class="shot--narrow"><img width="544" height="240" src="img/dialogo-bloqueio-terraco.webp" alt="Janela Bloqueio do Terraço com o motivo Chuva e o botão Encerrar agora" loading="lazy"><figcaption>Tocando no bloqueio na Agenda ou no Salão.</figcaption></figure>
+        <div class="example"><span class="label">Exemplo</span><p>Às 17h começa a chover. A equipe bloqueia o Terraço das 17:15 às 22:00 com o motivo “Chuva”. O site para de oferecer horários que dependiam do Terraço. Às 20h o tempo abre: <b>Encerrar agora</b>, e os 10 lugares voltam.</p></div>
+      </article>
+
+      <article class="feature" id="dashboard">
+        <h3>Dashboard mensal</h3>
+        <div class="block"><span class="label">Para que serve</span><p>Ver como foi (ou como está sendo) o mês, a partir das reservas registradas.</p></div>
+        <figure><img width="1280" height="800" src="img/dashboard-mensal.webp" alt="Dashboard de setembro de 2026 com cartões de indicadores e gráfico de tendência diária" loading="lazy"><figcaption>Setembro de 2026. Escolha o mês pelas setas ou pela lista.</figcaption></figure>
+        <div class="block">
+          <ul>
+            <li><b>Reservas recebidas</b>: criadas no mês (pela data em que foram feitas).</li>
+            <li><b>Reservas previstas</b> e <b>Pessoas previstas</b>: com atendimento no mês.</li>
+            <li><b>Pessoas atendidas</b>: só as reservas concluídas. Por isso vale concluir cada atendimento.</li>
+            <li><b>Cancelamentos</b> e <b>Ausências</b>.</li>
+            <li><b>Ocupação planejada</b> e <b>Ocupação realizada</b>: quanto dos lugares do mês foi usado, em <b>lugares·hora</b> (pessoas × horas à mesa). Ex.: 30 pessoas das 20:00 às 21:30 = 45 lugares·hora. O mês inteiro tem cerca de 10.400 lugares·hora (40 lugares × 10 h × 26 dias), por isso a porcentagem sobe devagar: compare entre meses.</li>
+            <li>Gráficos: <b>Tendência diária</b>, <b>Reservas por dia da semana</b>, <b>Horários mais procurados</b>. <b>Ver tabela</b> mostra os números.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="feature" id="configuracoes">
+        <h3>Configurações</h3>
+        <div class="block"><p>Seis seções, com atalhos no topo da página. Mudanças valem para reservas novas; as reservas já feitas guardam a duração com que foram criadas.</p></div>
+        <figure><img width="988" height="60" src="img/config-menu-secoes.webp" alt="Atalhos das seções: Regras de reserva, Funcionamento semanal, Fechamentos e datas especiais, Mesas e áreas, Bloqueios manuais, Dados" loading="lazy"></figure>
+
+        <h4 id="cfg-regras">Regras de reserva</h4>
+        <div class="block"><p>Duração, arrumação, grade de horários, antecedência, janela, tolerância, prazo de cancelamento, máximo de pessoas online e a caixa <b>Telefone obrigatório nas reservas online</b>. Toque em <b>Salvar regras</b>. Os valores atuais estão na <a href="#regras">tabela de regras</a>.</p></div>
+        <figure><img width="988" height="616" src="img/config-regras.webp" alt="Seção Regras de reserva com os valores atuais e a caixa Telefone obrigatório destacada" loading="lazy"><figcaption>Com a caixa marcada, o site exige telefone. Reservas criadas pela equipe continuam com telefone opcional.</figcaption></figure>
+
+        <h4 id="cfg-funcionamento">Funcionamento semanal</h4>
+        <div class="block"><p>Para cada dia, marque <b>Serviço aberto</b> e escolha <b>Início</b> e <b>Fim</b>. <b>Segundo turno aberto</b> fica desmarcado, porque o restaurante trabalha em serviço contínuo. Toque em <b>Salvar funcionamento</b>. A mudança vale a partir de hoje.</p></div>
+        <figure><img width="988" height="700" src="img/config-funcionamento.webp" alt="Funcionamento semanal: segunda fechada, terça a domingo com Serviço 12:00 a 22:00" loading="lazy"><figcaption>Segunda fechada; terça a domingo 12:00–22:00.</figcaption></figure>
+
+        <h4 id="cfg-fechamentos">Fechamentos e datas especiais</h4>
+        <div class="block">
+          <ol>
+            <li>Em <b>Fechar dias</b>, preencha <b>De</b>, <b>Até (inclusive)</b>, o <b>Motivo (interno)</b> e, se quiser, a <b>Mensagem aos clientes</b> em francês, português e inglês.</li>
+            <li>Toque em <b>Fechar dias</b>.</li>
+            <li>Se houver reservas nesses dias, abre a janela <b>Há reservas nesses dias</b>, com telefone e e-mail de cada cliente. Toque em <b>Voltar</b> para resolver uma a uma, ou em <b>Cancelar estas reservas e fechar</b>. Nesse caso cada cliente recebe o e-mail de cancelamento; ligue também, se puder.</li>
+            <li>Em <b>Próximos fechamentos</b>, <b>Reabrir</b> desfaz um fechamento.</li>
+            <li>Em <b>Feriados na França (próximos 90 dias)</b>, <b>Fechar este dia</b> fecha um feriado com um toque.</li>
+            <li>Mais abaixo, <b>Horário especial numa data</b> muda o horário de um único dia (ex.: fechar às 18h num domingo). Toque em <b>Adicionar exceção</b>.</li>
+          </ol>
+        </div>
+        <div class="gallery">
+          <figure><img width="938" height="625" src="img/config-fechar-dias-preenchido.webp" alt="Formulário Fechar dias preenchido para 14/10/2026, Evento privado, com mensagens nos três idiomas" loading="lazy"><figcaption>Fechando um dia para evento privado.</figcaption></figure>
+          <figure><img width="768" height="326" src="img/dialogo-fechamento-conflito.webp" alt="Janela Há reservas nesses dias com a reserva de Isabelle Roy, telefone e e-mail" loading="lazy"><figcaption>Aviso de reservas afetadas.</figcaption></figure>
+        </div>
+        <div class="gallery">
+          <figure><img width="938" height="209" src="img/config-proximos-fechamentos.webp" alt="Próximos fechamentos: férias de 06/10 a 11/10, Natal 25/12, Ano-novo 01/01, cada um com Reabrir" loading="lazy"><figcaption><b>Próximos fechamentos</b>.</figcaption></figure>
+          <figure><img width="544" height="238" src="img/dialogo-reabrir.webp" alt="Janela Reabrir estes dias?" loading="lazy"><figcaption><b>Reabrir</b> pede confirmação.</figcaption></figure>
+        </div>
+        <figure><img width="938" height="192" src="img/config-feriados.webp" alt="Feriados na França: 01/11 Todos os Santos e 11/11 Armistício, com Fechar este dia" loading="lazy"><figcaption>Feriados franceses dos próximos 90 dias.</figcaption></figure>
+        <div class="example"><span class="label">Exemplo</span><p>Vivi decide tirar férias de terça 06/10 a domingo 11/10. Ela fecha os dias com o motivo “Férias” e escreve “Congés annuels — à très bientôt !”, “Férias da equipe — até breve!” e “Annual holidays — see you soon!”. Na mesma hora, o site mostra o aviso em cada idioma e informa que o restaurante volta terça 13/10 às 12:00.</p></div>
+
+        <h4 id="cfg-areas">Mesas e áreas</h4>
+        <div class="block"><p>Capacidade de cada área, em pessoas ao mesmo tempo, e a caixa <b>Ativa</b>. Hoje: Salão 30, Terraço 10. Toque em <b>Salvar áreas</b>. Se reduzir a capacidade e houver reservas que não caibam, o sistema lista quais resolver antes.</p></div>
+        <figure class="shot--mid"><img width="988" height="436" src="img/config-areas.webp" alt="Mesas e áreas: Salão 30, Terraço 10, ambas ativas" loading="lazy"></figure>
+
+        <h4 id="cfg-dados">Dados</h4>
+        <div class="block"><p>Mostra que tudo está salvo no servidor e o total de reservas. <b>Exportar dados (JSON)</b> baixa uma cópia completa, útil como cópia de segurança antes de grandes mudanças. O servidor também guarda uma cópia a cada alteração.</p></div>
+        <figure><img width="988" height="345" src="img/config-dados.webp" alt="Seção Dados com Salvando automaticamente no servidor e o botão Exportar dados (JSON)" loading="lazy"></figure>
+      </article>
+
+      <article class="feature" id="sincronizacao">
+        <h3>Tudo salvo / Sem conexão</h3>
+        <div class="block"><span class="label">Para que serve</span><p>No canto superior esquerdo, o painel diz se as mudanças já chegaram ao servidor: <b>Salvando…</b> e depois <b>Tudo salvo</b>. Outros aparelhos recebem as novidades em até 20 segundos.</p></div>
+        <figure><img width="1280" height="420" src="img/painel-sem-conexao.webp" alt="Painel com o aviso Sem conexão: as últimas alterações ainda não foram salvas. Não feche esta página" loading="lazy"><figcaption>Sem internet: a ação aparece na tela, mas fica pendente até a conexão voltar.</figcaption></figure>
+        <div class="note note--warn"><b>Não feche a página</b> enquanto aparecer “Sem conexão”. Se duas pessoas mexerem na mesma reserva ao mesmo tempo, o painel refaz a ação sobre a versão mais nova ou avisa que ela não faz mais sentido (ex.: reserva já cancelada).</div>
+      </article>
+
+      <article class="feature" id="painel-celular">
+        <h3>No celular</h3>
+        <div class="block"><p>No celular, o menu fica em botões no topo (deslize para o lado para ver todos) e a Agenda abre em lista. Dica: adicione o painel à tela inicial para abrir como um aplicativo (veja <a href="#cuidados">Dicas</a>).</p></div>
+        <div class="gallery gallery--phones">
+          <figure class="shot--phone"><img width="780" height="1688" src="img/celular-visao-geral.webp" alt="Visão geral no celular" loading="lazy"><figcaption>Visão geral.</figcaption></figure>
+          <figure class="shot--phone"><img width="780" height="1688" src="img/celular-agenda.webp" alt="Agenda no celular com os filtros" loading="lazy"><figcaption>Agenda: filtros.</figcaption></figure>
+          <figure class="shot--phone"><img width="780" height="1688" src="img/celular-agenda-linha.webp" alt="Agenda em lista no celular com os botões Concluir preparação e Concluir atendimento" loading="lazy"><figcaption>Agenda: lista com ações.</figcaption></figure>
+        </div>
+      </article>
+    </section>
+
+    <!-- ================= LOTAÇÃO ================= -->
+    <section class="part" id="lotacao">
+      <div class="part__head">
+        <h2>Como a lotação funciona</h2>
+        <p>O sistema não escolhe mesas. Ele conta pessoas em cada área, e a equipe junta e arruma as mesas conforme as reservas do dia.</p>
+      </div>
+      <div class="prose">
+        <ul>
+          <li><b>Salão: até 30 pessoas ao mesmo tempo. Terraço: até 10.</b> Várias reservas dividem a área enquanto a soma couber.</li>
+          <li>Cada reserva ocupa os lugares por <b>1h30 de atendimento + 10 minutos de arrumação</b>, ou seja, 1h40.</li>
+          <li>Um horário só aparece se o grupo couber <b>durante toda a 1h40</b>, não só no minuto de chegada.</li>
+          <li>O sistema tenta primeiro o Salão e depois o Terraço.</li>
+          <li>Quem está sentado continua contando, mesmo depois do horário previsto, até alguém tocar em <b>Concluir atendimento</b>.</li>
+          <li>Cancelamentos e ausências liberam os lugares na hora.</li>
+        </ul>
+      </div>
+      <div class="timebar" aria-label="Exemplo de uma reserva das 19:00">
+        <div class="timebar__row"><div class="timebar__svc">Atendimento 1h30</div><div class="timebar__prep">+10 min</div></div>
+        <div class="timebar__scale"><span>19:00 chegada</span><span>20:30 fim previsto</span><span>20:40 lugares livres</span></div>
+      </div>
+      <div class="block">
+        <span class="label">Por que um horário não aparece no site</span>
+        <ul>
+          <li>A área não tem lugar para o grupo em algum momento da 1h40.</li>
+          <li>O horário não cabe antes de 22:00 (a última reserva é às 20:15).</li>
+          <li>Faltam menos de 30 minutos para o horário.</li>
+          <li>O dia está fechado (segunda, férias, feriado fechado) ou a área está bloqueada.</li>
+          <li>A data está além de 60 dias.</li>
+          <li>O grupo tem mais de 8 pessoas.</li>
+        </ul>
+      </div>
+      <div class="example"><span class="label">Exemplo</span><p>Às 20:15 de sexta, o Salão tem 30 pessoas previstas. Um casal tenta reservar online para 20:15 e o horário não aparece. Às 20:40 o grupo de 8 do aniversário libera os lugares, e a partir desse ponto o site volta a oferecer horários, se ainda couberem até 22:00.</p></div>
+
+      <h3 id="regras">Regras em vigor</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Regra</th><th>Valor atual</th><th>Onde mudar</th></tr></thead>
+          <tbody>
+            <tr><td>Dias e horários</td><td class="val">Ter–Dom 12:00–22:00</td><td>Configurações → Funcionamento semanal</td></tr>
+            <tr><td>Segunda-feira</td><td class="val">Fechado</td><td>Configurações → Funcionamento semanal</td></tr>
+            <tr><td>Capacidade do Salão</td><td class="val">30 pessoas</td><td>Configurações → Mesas e áreas</td></tr>
+            <tr><td>Capacidade do Terraço</td><td class="val">10 pessoas</td><td>Configurações → Mesas e áreas</td></tr>
+            <tr><td>Duração do atendimento</td><td class="val">90 min</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Preparação da mesa (arrumação)</td><td class="val">10 min</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Grade de horários</td><td class="val">15 min</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Última reserva</td><td class="val">20:15</td><td>Resulta do horário de fechamento e da duração</td></tr>
+            <tr><td>Máximo de pessoas online</td><td class="val">8</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Grupos maiores</td><td class="val">WhatsApp +33 7 71 85 74 03</td><td>Pedir ao Kevin (fica no código do site)</td></tr>
+            <tr><td>Telefone obrigatório online</td><td class="val">Sim</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Antecedência mínima online</td><td class="val">30 min</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Janela de reservas</td><td class="val">60 dias</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Cancelamento pelo cliente</td><td class="val">até 2 h antes</td><td>Configurações → Regras de reserva (120 min)</td></tr>
+            <tr><td>Tolerância de chegada</td><td class="val">15 min</td><td>Configurações → Regras de reserva</td></tr>
+            <tr><td>Fechamentos programados</td><td class="val">25/12/2026 e 01/01/2027</td><td>Configurações → Fechamentos e datas especiais</td></tr>
+            <tr><td>Lembrete por e-mail</td><td class="val">10:00 da véspera</td><td>Fixo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= E-MAILS ================= -->
+    <section class="part" id="emails">
+      <div class="part__head">
+        <h2>O que o cliente recebe</h2>
+        <p>Os e-mails são enviados pelo Brevo, no idioma em que o cliente reservou (francês, português ou inglês). Reservas criadas pela equipe saem em francês. Só recebe quem tem e-mail na reserva.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>E-mail</th><th>Quando</th></tr></thead>
+          <tbody>
+            <tr><td><b>Confirmação</b></td><td>Logo depois de reservar pelo site, ou quando a equipe cria uma reserva com e-mail.</td></tr>
+            <tr><td><b>Alteração</b></td><td>Quando a equipe muda dia, horário ou número de pessoas.</td></tr>
+            <tr><td><b>Cancelamento</b></td><td>Quando o cliente ou a equipe cancela. A justificativa interna nunca é enviada.</td></tr>
+            <tr><td><b>Lembrete</b></td><td>Às 10:00 da véspera. Quem reserva depois disso, ou para o mesmo dia, não recebe.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="prose"><p>Todos trazem o código, data, horário, pessoas, endereço com mapa, o botão para consultar ou cancelar, o prazo de cancelamento e o WhatsApp. Os e-mails nunca atrasam a reserva: se o envio falhar, o sistema tenta de novo até 5 vezes.</p></div>
+      <div class="gallery">
+        <figure><img width="600" height="1076" src="img/email-confirmacao.webp" alt="E-mail de confirmação em português" loading="lazy"><figcaption>Confirmação (português).</figcaption></figure>
+        <figure><img width="600" height="1076" src="img/email-lembrete.webp" alt="E-mail de lembrete em português" loading="lazy"><figcaption>Lembrete da véspera.</figcaption></figure>
+        <figure><img width="600" height="1052" src="img/email-alteracao.webp" alt="E-mail de alteração em português" loading="lazy"><figcaption>Alteração.</figcaption></figure>
+        <figure><img width="600" height="977" src="img/email-cancelamento.webp" alt="E-mail de cancelamento em português" loading="lazy"><figcaption>Cancelamento.</figcaption></figure>
+      </div>
+      <figure class="shot--phone"><img width="375" height="1218" src="img/email-confirmacao-fr-celular.webp" alt="E-mail de confirmação em francês no celular" loading="lazy"><figcaption>A mesma confirmação em francês, no celular.</figcaption></figure>
+    </section>
+
+    <!-- ================= CUIDADOS ================= -->
+    <section class="part" id="cuidados">
+      <div class="part__head"><h2>Dicas e cuidados</h2></div>
+      <div class="prose">
+        <ul>
+          <li><b>Não compartilhe a senha da equipe</b> por mensagem em grupo nem anote em lugar visível. Quando alguém sai da equipe, peça ao Kevin para trocar a senha.</li>
+          <li><b>Toque em Sair</b> em aparelhos que não são do restaurante.</li>
+          <li><b>Privacidade (RGPD):</b> nomes, telefones e e-mails só aparecem no painel, com senha. O site dos clientes nunca mostra dados de outras pessoas. Não escreva dados de saúde ou de pagamento na observação. Se um cliente pedir para apagar os dados, avise o Kevin.</li>
+          <li><b>Novidades por e-mail:</b> só envie newsletter a quem marcou a caixa (coluna <b>Aceita novidades</b> = Sim no CSV).</li>
+          <li><b>TheFork e outras plataformas:</b> registre cada reserva com <b>Nova reserva</b> assim que chegar. Senão o site pode vender os mesmos lugares.</li>
+          <li><b>Conclua cada atendimento</b> quando o grupo sai. Assim os lugares voltam para o site e o Dashboard conta as pessoas atendidas.</li>
+          <li><b>Reservas antigas ainda “Confirmadas”</b> aparecem nos alertas como pendentes. Marque ausência ou cancele com justificativa.</li>
+          <li><b>Adicionar à tela inicial:</b> no iPhone, abra o painel no Safari, toque em Compartilhar e em <b>Adicionar à Tela de Início</b>. No Android, no Chrome, toque nos três pontos e em <b>Adicionar à tela inicial</b>.</li>
+          <li><b>Antes de grandes mudanças</b> (capacidade, horários), exporte uma cópia em <b>Configurações → Dados → Exportar dados (JSON)</b>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= GLOSSÁRIO ================= -->
+    <section class="part" id="glossario">
+      <div class="part__head"><h2>Glossário</h2></div>
+      <dl class="gloss">
+        <dt>Confirmada</dt><dd>Reserva feita, cliente ainda não chegou.</dd>
+        <dt>Cliente presente</dt><dd>Chegada registrada; o grupo está sentado.</dd>
+        <dt>Concluída</dt><dd>O grupo foi embora e o atendimento foi concluído.</dd>
+        <dt>Cancelada</dt><dd>Cancelada pelo cliente (no site) ou pela equipe (com justificativa). Não ocupa lugar.</dd>
+        <dt>Ausência</dt><dd>O cliente não veio e a equipe marcou ausência depois da tolerância de 15 minutos. Não ocupa lugar.</dd>
+        <dt>Arrumação</dt><dd>Os 10 minutos depois de cada atendimento para arrumar a mesa. No painel aparece como “preparação”.</dd>
+        <dt>Bloqueio</dt><dd>Período em que uma área inteira fica fechada (ex.: Terraço por chuva), com motivo.</dd>
+        <dt>Área</dt><dd>Salão ou Terraço. As reservas são controladas por lugares em cada área, não por mesa.</dd>
+        <dt>Lotação</dt><dd>Quantas pessoas estão (ou estarão) numa área ao mesmo tempo, comparado com a capacidade: 30 no Salão, 10 no Terraço.</dd>
+        <dt>Previsão</dt><dd>Modo da tela Salão que mostra a lotação esperada num dia e horário futuros, calculada pelas reservas e bloqueios.</dd>
+        <dt>Tolerância</dt><dd>Os 15 minutos de espera depois do horário antes de poder marcar ausência.</dd>
+        <dt>Código</dt><dd>Identificação da reserva no formato XXXX-XXXX, usada pelo cliente para consultar ou cancelar.</dd>
+        <dt>Origem</dt><dd>Como a reserva chegou: Online (site), Telefone ou Presencial.</dd>
+      </dl>
+    </section>
+
+    <!-- ================= FAQ ================= -->
+    <section class="part" id="perguntas">
+      <div class="part__head"><h2>Perguntas frequentes</h2></div>
+      <div class="faq">
+        <details><summary>Posso aceitar mais de 30 pessoas no Salão?</summary><div><p>Não pelo sistema: ele recusa reservas acima da capacidade em qualquer momento. Se o salão comportar mais num dia especial, mude a capacidade em <b>Configurações → Mesas e áreas</b> e volte ao valor normal depois.</p></div></details>
+        <details><summary>O cliente sentou numa mesa de fora mas a reserva está no Salão. Faz diferença?</summary><div><p>Faz para a lotação. Use <b>Mudar de área</b> para refletir onde ele está de verdade, assim o site calcula certo os lugares livres.</p></div></details>
+        <details><summary>O grupo chegou 40 minutos antes. Dá para registrar a chegada?</summary><div><p>Sim, a partir de 3 horas antes, desde que a área tenha lugar para o grupo desde agora até o fim previsto. Se não tiver, o painel explica e sugere mudar de área.</p></div></details>
+        <details><summary>O grupo ficou além de 1h30. O que acontece?</summary><div><p>Nada muda sozinho. A reserva continua como <b>Cliente presente</b> e ocupa os lugares. Os alertas avisam se isso pode apertar as próximas chegadas.</p></div></details>
+        <details><summary>Registrei a chegada da pessoa errada. Como desfaço?</summary><div><p>O painel não tem botão para desfazer uma chegada. Peça ajuda ao Kevin. Para evitar, confira o nome na janela de confirmação antes de tocar em <b>Registrar chegada</b>.</p></div></details>
+        <details><summary>O cliente perdeu o código.</summary><div><p>Busque em <b>Reservas</b> pelo nome ou e-mail e passe o código por telefone ou WhatsApp.</p></div></details>
+        <details><summary>Mudei a duração nas regras. As reservas antigas mudam?</summary><div><p>Não. Cada reserva guarda a duração com que foi criada. Só as novas usam o valor novo.</p></div></details>
+        <details><summary>Posso usar o painel em dois aparelhos ao mesmo tempo?</summary><div><p>Sim. Todos os aparelhos veem os mesmos dados e se atualizam em até 20 segundos.</p></div></details>
+        <details><summary>O e-mail diz que o cliente pode cancelar até 2 horas antes. E depois disso?</summary><div><p>O site bloqueia o cancelamento e pede que ele fale com o restaurante. A equipe cancela pelo painel, com justificativa.</p></div></details>
+        <details><summary>Um feriado francês vai cair num dia aberto. Preciso fazer algo?</summary><div><p>Só se quiser fechar. Em <b>Configurações → Fechamentos e datas especiais</b>, os feriados dos próximos 90 dias aparecem com o botão <b>Fechar este dia</b>. Se não fizer nada, o restaurante abre normalmente.</p></div></details>
+      </div>
+    </section>
+  </main>
+</div>
+<footer class="foot">Manual do sistema de reservas do Aromas da Vivi, para a equipe. Imagens com dados de exemplo (nomes e contatos fictícios), capturadas numa instância de teste em setembro de 2026.</footer>
+
+<script>
+(function(){
+  var d=document.getElementById('toc-details');
+  var mq=window.matchMedia('(max-width: 960px)');
+  function sync(){ if(mq.matches){ d.removeAttribute('open'); } else { d.setAttribute('open',''); } }
+  sync();
+  if(mq.addEventListener){ mq.addEventListener('change',sync); }
+  d.querySelectorAll('a').forEach(function(a){ a.addEventListener('click',function(){ if(mq.matches){ d.removeAttribute('open'); } }); });
+  var links={};
+  d.querySelectorAll('a[href^="#"]').forEach(function(a){ links[a.getAttribute('href').slice(1)]=a; });
+  if(!('IntersectionObserver' in window)) return;
+  var current=null;
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting && links[e.target.id]){
+        if(current) current.classList.remove('is-current');
+        current=links[e.target.id]; current.classList.add('is-current');
+      }
+    });
+  },{rootMargin:'0px 0px -75% 0px'});
+  Object.keys(links).forEach(function(id){ var el=document.getElementById(id); if(el) io.observe(el); });
+})();
+</script>
+
+</body>
+</html>

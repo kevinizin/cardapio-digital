@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { useT } from '../i18n';
 
 interface State {
   error: Error | null;
@@ -18,18 +19,20 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
 
   render() {
     if (!this.state.error) return this.props.children;
-    return (
-      <div className="error-screen" role="alert">
-        <p className="eyebrow">Maison Élise · demonstração</p>
-        <h1>Algo não saiu como esperado</h1>
-        <p className="muted">
-          A página encontrou um erro inesperado. Os dados salvos neste navegador não foram apagados. Recarregue para
-          tentar novamente.
-        </p>
-        <button type="button" className="btn btn--primary" onClick={() => window.location.reload()}>
-          Recarregar página
-        </button>
-      </div>
-    );
+    return <ErrorScreen />;
   }
+}
+
+function ErrorScreen() {
+  const t = useT();
+  return (
+    <div className="error-screen" role="alert">
+      <p className="eyebrow">{t.brand.name}</p>
+      <h1>{t.errorScreen.title}</h1>
+      <p className="muted">{t.errorScreen.text}</p>
+      <button type="button" className="btn btn--primary" onClick={() => window.location.reload()}>
+        {t.errorScreen.reload}
+      </button>
+    </div>
+  );
 }

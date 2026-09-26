@@ -1,0 +1,308 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║  CARDÁPIO DIGITAL COM QR CODE — MODELO REUTILIZÁVEL                      ║
+║  Copie esta pasta pra cada cliente novo e mexa só no config.js.          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+
+ARQUIVOS DA PASTA
+─────────────────
+  index.html          o cardápio (é o que o cliente vê no celular)
+  qrcode.html         gerador das plaquinhas de QR Code pra imprimir
+  config.js       ★   O ÚNICO QUE VOCÊ EDITA: marca, cores, logo, cardápio
+  app.js              motor do cardápio — não mexa
+  qr.js               gerador de QR Code — não mexa
+  style.css           estilo — não mexa
+  img/                logo e fotos dos produtos
+  servidor-teste.js   só pra testar no seu PC. NÃO precisa subir.
+  LEIA-ME.txt         este arquivo. NÃO precisa subir.
+
+O site é estático puro: não precisa de PHP, banco de dados nem Node.
+Sobe em qualquer hospedagem, até nas mais baratas. Também funciona de
+graça na Vercel, Netlify ou GitHub Pages.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  COMO USAR EM UM CLIENTE NOVO — 6 PASSOS
+═══════════════════════════════════════════════════════════════════════════
+
+1) Copie a pasta inteira e renomeie (ex: "cardapio-lanches-do-ze").
+
+2) Abra config.js e preencha a SEÇÃO 1 (MARCA):
+   nome, whatsapp, cidade, endereço, instagram, chave Pix.
+
+   ATENÇÃO no WhatsApp: é 55 + DDD + número, só números, sem espaço,
+   sem parêntese e sem traço.   Ex: 5592988887777
+
+3) Escolha a cor na SEÇÃO 2. Basta trocar uma palavra:
+
+       const TEMA = "brasa";
+
+   Prontas: brasa · neon · retro · verde · cafe · fogo
+
+4) Coloque a logo em img/ e aponte no config:
+
+       logo: "img/logo.png",
+
+   Se o cliente ainda não mandou a logo, deixe  logo: ""  que o site
+   desenha um monograma com as iniciais. Fica apresentável na hora.
+
+5) Monte o cardápio na SEÇÃO 7 e os horários na SEÇÃO 4.
+
+6) Suba na hospedagem, abra qrcode.html e imprima as plaquinhas.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  A PARTE DO QR CODE
+═══════════════════════════════════════════════════════════════════════════
+
+Abra qrcode.html no navegador (depois de publicar o site).
+
+  · Cole o endereço público do cardápio.
+  · Diga quantas mesas o lugar tem.
+  · Escolha o formato:
+        plaquinha de mesa  → 4 por folha A4
+        adesivo pequeno    → 9 por folha A4
+        cartaz de balcão   → 1 folha A4 inteira
+  · Imprima.
+
+Cada mesa ganha um QR diferente, com o número dela no link. Quando o
+cliente da mesa 7 escaneia, o pedido chega no WhatsApp já escrito
+"MESA 7" — sem ninguém precisar perguntar.
+
+O QR é gerado dentro do navegador. Não passa por site de terceiro,
+funciona sem internet e NUNCA expira (aqueles geradores online de graça
+às vezes desligam o link depois de um tempo — aqui isso não acontece).
+
+
+═══════════════════════════════════════════════════════════════════════════
+  É UM SITE SÓ, QUE SE COMPORTA DE DOIS JEITOS
+═══════════════════════════════════════════════════════════════════════════
+
+Mesmo cardápio, mesmas fotos, mesmo carrinho. O que muda é só a pergunta
+do final, e ela muda conforme o jeito que o cliente chegou:
+
+  ┌─ CLIENTE EM CASA ────────────────────────────────────────────────┐
+  │  Chegou pelo link normal (Instagram, status do zap, Google)      │
+  │                                                                  │
+  │  Fecha o pedido como ENTREGA, e só. Não aparece escolha          │
+  │  nenhuma — pergunta bairro e endereço, soma a taxa.              │
+  └──────────────────────────────────────────────────────────────────┘
+
+  ┌─ CLIENTE NO ESTABELECIMENTO ─────────────────────────────────────┐
+  │  Chegou escaneando o QR da plaquinha                             │
+  │                                                                  │
+  │  Não pergunta entrega, porque ele já está lá dentro.             │
+  │  Escolhe só entre:      Comer aqui   |   Pra viagem              │
+  │                                                                  │
+  │  Sem endereço, sem bairro, sem taxa, sem pedido mínimo.          │
+  │  O pedido chega no WhatsApp assim:                               │
+  │      *PEDIDO #A7F3 — LANCHES DO ZÉ*                              │
+  │      *🪑 MESA 7 · COMER AQUI*                                    │
+  └──────────────────────────────────────────────────────────────────┘
+
+O que liga a versão de salão é o final do link, e o gerador de QR já cuida
+disso sozinho — você não precisa montar nada à mão:
+
+    ?mesa=7     mesa numerada. O número aparece no pedido.
+    ?local=1    lugar sem numeração (balcão, praça de alimentação).
+                Mesma versão, só não escreve número de mesa.
+
+Ou seja: se o cliente não numera as mesas, ponha 0 no campo "Mesas" do
+gerador. Sai um QR único que ainda abre a versão de salão, sem número.
+
+Quem recebe pode ser o celular do balcão, da cozinha ou da garçonete —
+é só qual número você põe no  whatsapp:  do config.js.
+
+Pra trocar as palavras dos dois botões, veja a SEÇÃO 5b do config.js:
+
+    const NA_MESA = {
+      pergunta: "Vai comer aqui ou levar?",
+      comer:    "Comer aqui",
+      viagem:   "Pra viagem"
+    };
+
+
+POR QUE NÃO DÁ PRA O CLIENTE ERRAR
+──────────────────────────────────
+Quem escaneia o QR NÃO TEM opção de entrega. Ela não existe na tela, não
+tem como marcar sem querer. Logo é impossível o pedido de quem está
+sentado na mesa virar entrega e a comida ir pra outro endereço.
+
+"Comer aqui" e "Pra viagem" são as duas pedido no local. Se o cliente
+errar entre elas, o pior que acontece é a cozinha embalar em vez de
+pratear — ninguém fica sem comida.
+
+Além disso, quem está na mesa topa com o contexto 4 vezes:
+
+  1. selo sólido "MESA 7" no topo, que não sai da tela ao rolar
+  2. título da folha do pedido: "Pedido da Mesa 7"
+  3. linha "Tipo do pedido: Mesa 7 · Comer aqui" junto do total
+  4. o próprio botão: "Enviar pedido · Mesa 7"
+
+E o botão "Pedir" do topo desaparece na versão de salão. Ele abria um
+WhatsApp em branco, sem número de mesa — era o único jeito de sair um
+pedido sem identificação. Agora o carrinho é o único caminho.
+
+QUER TIRAR ATÉ O "PRA VIAGEM"?
+Deixe  viagem: ""  no config. Some a escolha inteira: quem escaneia o QR
+só consegue pedir pra comer ali, sem nenhum botão pra clicar errado.
+
+NA HORA DE IMPRIMIR:
+  · margens: Nenhuma
+  · desmarque "ajustar à página" / "fit to page"
+  · imprima 1 folha e teste com o celular ANTES de imprimir tudo
+
+DICA: mande imprimir em papel mais grosso (250g) e plastifique. Plaquinha
+de mesa em papel comum encardece em uma semana.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  MEXENDO NO CARDÁPIO (config.js, SEÇÃO 7)
+═══════════════════════════════════════════════════════════════════════════
+
+Cada produto é uma linha:
+
+  { n:"Cheddar Bacon", d:"Pão brioche, carne 180g...", p:32.90, e:"🥓" },
+
+    n       nome
+    d       descrição
+    p       preço — use PONTO, nunca vírgula:   32.90   (não 32,90)
+    img     foto:  img:"img/cheddar.jpg"
+    e       emoji, quando não tem foto ainda:  e:"🍔"
+    de      preço antigo riscado, vira promoção:  de:37.90
+    tag     selinho na foto:  tag:"Mais pedido"
+    fav     true → também aparece no carrossel "Mais pedidos" do topo
+    extras  grupos de opções:  extras:["ponto","turbina"]
+
+  Tirar um produto  → apague a linha inteira
+  Adicionar         → copie uma linha e mude os dados
+
+Categoria com  compacto: true  vira lista enxuta, sem foto.
+Bom pra bebidas e sobremesas.
+
+
+ADICIONAIS (SEÇÃO 6)
+────────────────────
+  tipo:"unica"    → cliente escolhe só 1 (ponto da carne, sabor do refri)
+  tipo:"varios"   → cliente marca quantos quiser (bacon, cheddar, ovo)
+  obrigatorio:true → não deixa adicionar sem escolher
+
+Adicional com  p:0  não muda o preço. Serve pra "sem cebola", "sem picles".
+
+
+═══════════════════════════════════════════════════════════════════════════
+  COISAS QUE O DONO VAI GOSTAR (já vêm ligadas)
+═══════════════════════════════════════════════════════════════════════════
+
+ABRE E FECHA SOZINHO
+  O site sabe o horário. Fora dele mostra "Fechado" e avisa quando abre.
+  Se quiser travar o envio fora do horário:
+      const ACEITA_FORA_DO_HORARIO = false;
+
+TAXA POR BAIRRO
+  Na SEÇÃO 5, cada bairro com sua taxa. O total já sai somado.
+  Taxa 0 aparece como "grátis".
+
+PEDIDO MÍNIMO
+  ENTREGA.minimo = 40  → trava o envio e mostra quanto falta.
+
+PEDIDO PRONTO NO WHATSAPP
+  Chega com código do pedido, itens, adicionais, observações, taxa,
+  total, forma de pagamento e troco. Nada de anotar errado no papel.
+
+CARRINHO QUE NÃO SOME
+  Se o cliente fechar o navegador sem querer, o pedido continua lá.
+
+FUNCIONA COMO APP
+  Cabe no celular, carrega rápido e o cliente pode salvar na tela inicial.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  MOSTRANDO PRO DONO (o truque da reunião)
+═══════════════════════════════════════════════════════════════════════════
+
+No config.js, no finalzinho, tem:
+
+    const DEMO = true;
+
+Com isso aparece um botão 🎨 no canto da tela. Toque nele e troque a
+paleta AO VIVO na frente do dono. Ele escolhe a cor olhando o cardápio
+dele já pronto — fecha muito mais fácil do que mostrar catálogo de cores.
+
+Depois de fechar:
+  1. ponha a paleta escolhida em  const TEMA = "..."
+  2. mude pra  const DEMO = false;
+
+COR EXATA DA MARCA DELE?
+Copie uma paleta na SEÇÃO 2, dê um nome novo e troque os hex:
+
+    minhaloja: {
+      claro: false,        // true = fundo claro
+      fundo:  "#0A0908",   caixa:  "#151210",
+      caixa2: "#1E1A16",   linha:  "#2B2521",
+      texto:  "#F6F1E8",   texto2: "#A2978A",
+      marca:  "#E8B33C",   // cor principal: preços e botões
+      marca2: "#C4351B"    // cor de apoio: selos e detalhes
+    }
+
+Aí use  const TEMA = "minhaloja";
+A cor do texto sobre os botões é calculada sozinha — não fica ilegível.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  TESTANDO NO SEU COMPUTADOR
+═══════════════════════════════════════════════════════════════════════════
+
+Clicar duas vezes no index.html já funciona pra ver o visual.
+
+Pra testar direito (inclusive o QR das mesas), abra o Prompt de Comando
+na pasta "cardapio" e rode:
+
+    node servidor-teste.js
+
+Depois abra no navegador:
+
+    http://localhost:4173              versão entrega (cliente em casa)
+    http://localhost:4173/?mesa=7      versão salão, mesa 7
+    http://localhost:4173/?local=1     versão salão, sem número de mesa
+    http://localhost:4173/qrcode.html  o gerador de plaquinhas
+
+Pra parar o servidor: Ctrl+C.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  DEPOIS DE EDITAR — IMPORTANTE
+═══════════════════════════════════════════════════════════════════════════
+
+Se você mexer em config.js, app.js ou style.css DEPOIS de já ter
+publicado, aumente o número da versão no fim do nome, dentro do
+index.html e do qrcode.html:
+
+    config.js?v=1    →    config.js?v=2
+    style.css?v=1    →    style.css?v=2
+
+Isso obriga o navegador dos clientes a baixar a versão nova. Sem isso,
+quem já entrou uma vez continua vendo o cardápio velho.
+
+E não esqueça: o <title> e a <meta name="description"> no topo do
+index.html são o que aparece no Google. Troque os dois pra cada cliente
+(está marcado com um comentário bem no começo do arquivo).
+
+
+═══════════════════════════════════════════════════════════════════════════
+  ANTES DE ENTREGAR — CONFERIR
+═══════════════════════════════════════════════════════════════════════════
+
+  [ ] WhatsApp certo, e você MANDOU UM PEDIDO DE TESTE que chegou
+  [ ] preços conferidos com o dono, um por um
+  [ ] horários certos (inclusive o dia de folga)
+  [ ] taxas de bairro conferidas
+  [ ] título e descrição do index.html trocados
+  [ ] DEMO = false
+  [ ] chave Pix certa (copiou e colou pra ver?)
+  [ ] abriu no celular de verdade, não só no computador
+  [ ] imprimiu 1 plaquinha e escaneou com o celular
+
+O conteúdo que vem no modelo é INVENTADO — nome "Brasa & Bacon", número
+5592999999999, preços e bairros são só exemplo. Troque tudo antes de
+mostrar pra qualquer cliente.

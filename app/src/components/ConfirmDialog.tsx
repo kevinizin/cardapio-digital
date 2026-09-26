@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { t } from '../i18n';
+import { useT } from '../i18n';
 import { Dialog } from './Dialog';
 import { InlineErrors } from './Feedback';
 import type { DomainError } from '../domain/errors';
@@ -32,6 +32,7 @@ export function ConfirmDialog({
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
+  const t = useT();
   return (
     <Dialog
       open={open}

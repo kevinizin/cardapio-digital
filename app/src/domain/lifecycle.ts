@@ -1,6 +1,16 @@
 import { LIMITS } from './defaults';
 import { err, fail, ok, type DomainError, type DomainWarning, type Result } from './errors';
-import { findConflicts, plannedBlockEnd, plannedServiceEnd, prepEndMs, segmentsForTable } from './occupancy';
+import {
+  findConflicts,
+  isSharedTable,
+  overloadedReservationIds,
+  plannedBlockEnd,
+  plannedServiceEnd,
+  prepEndMs,
+  segmentsForTable,
+  tableConflicts,
+  tableParams,
+} from './occupancy';
 import { replaceReservation } from './reservations';
 import { MINUTE_MS, toIso, toMs } from './time';
 import type { DemoData, Reservation } from './types';
@@ -32,11 +42,12 @@ export function checkArrival(data: DemoData, reservation: Reservation, nowMs: nu
   }
   if (nowMs >= plannedServiceEnd(reservation)) return fail(err('ARRIVAL_WINDOW_ENDED'));
   const table = data.tables.find((t) => t.id === reservation.tableId);
-  if (!table || !table.active) return fail(err('TABLE_INACTIVE', { params: { table: reservation.tableId } }));
+  if (!table || !table.active) return fail(err('TABLE_INACTIVE', { params: tableParams(table, reservation.tableId) }));
 
   const others = segmentsForTable(data, reservation.tableId, nowMs, { excludeReservationId: reservation.id, relevantFrom: nowMs });
-  const conflicts = findConflicts(others, { start: nowMs, end: plannedBlockEnd(reservation) });
-  if (conflicts.length) return fail(err('TABLE_BUSY_NOW', { conflicts, params: { table: reservation.tableId } }));
+  // Área compartilhada: basta haver lugares para o grupo desde agora até o fim previsto.
+  const conflicts = tableConflicts(table, others, { start: nowMs, end: plannedBlockEnd(reservation) }, reservation.partySize);
+  if (conflicts.length) return fail(err('TABLE_BUSY_NOW', { conflicts, params: tableParams(table) }));
 
   const minutesFromStart = Math.round((nowMs - start) / MINUTE_MS);
   const warnings: DomainWarning[] = [];
@@ -80,12 +91,25 @@ export function completeService(data: DemoData, id: string, nowMs: number): Outc
   const next = replaceReservation(data, updated);
   const warnings: DomainWarning[] = [];
   const prepEnd = prepEndMs(updated) ?? nowMs;
-  const overlapping = findConflicts(
-    segmentsForTable(next, found.tableId, nowMs, { excludeReservationId: id, relevantFrom: nowMs }),
-    { start: nowMs, end: prepEnd },
-  ).filter((c) => c.kind === 'reservation');
-  if (overlapping.length) {
-    warnings.push({ code: 'PREP_OVERLAPS_NEXT', reservationIds: [...new Set(overlapping.map((c) => c.id))], params: { table: found.tableId } });
+  const table = data.tables.find((t) => t.id === found.tableId);
+  if (isSharedTable(table) && table) {
+    // Área: avisa só se a preparação deixar a área acima da capacidade.
+    const overloaded = overloadedReservationIds(
+      segmentsForTable(next, found.tableId, nowMs, { relevantFrom: nowMs }).filter((s) => s.start < prepEnd),
+      table.capacity,
+      nowMs,
+    ).filter((rid) => rid !== id);
+    if (overloaded.length) {
+      warnings.push({ code: 'PREP_OVERLAPS_NEXT', reservationIds: overloaded, params: tableParams(table) });
+    }
+  } else {
+    const overlapping = findConflicts(
+      segmentsForTable(next, found.tableId, nowMs, { excludeReservationId: id, relevantFrom: nowMs }),
+      { start: nowMs, end: prepEnd },
+    ).filter((c) => c.kind === 'reservation');
+    if (overlapping.length) {
+      warnings.push({ code: 'PREP_OVERLAPS_NEXT', reservationIds: [...new Set(overlapping.map((c) => c.id))], params: { table: found.tableId } });
+    }
   }
   return ok({ data: next, reservation: updated }, warnings);
 }
@@ -124,11 +148,14 @@ export function extendPrep(data: DemoData, id: string, minutes: number, reason: 
   const reasonError = validateReason(reason);
   if (reasonError) return fail(reasonError);
   const currentEnd = prepEndMs(found) ?? nowMs;
-  const conflicts = findConflicts(
+  const table = data.tables.find((t) => t.id === found.tableId);
+  const conflicts = tableConflicts(
+    table ?? { capacity: 0 },
     segmentsForTable(data, found.tableId, nowMs, { excludeReservationId: id, relevantFrom: nowMs }),
     { start: currentEnd, end: currentEnd + minutes * MINUTE_MS },
+    found.partySize,
   );
-  if (conflicts.length) return fail(err('CONFLICT', { field: 'minutes', conflicts, params: { table: found.tableId } }));
+  if (conflicts.length) return fail(err('CONFLICT', { field: 'minutes', conflicts, params: tableParams(table, found.tableId) }));
   const at = toIso(nowMs);
   const updated: Reservation = {
     ...found,

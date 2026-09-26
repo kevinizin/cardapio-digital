@@ -5,7 +5,8 @@ import react from '@vitejs/plugin-react';
 // (strictPort: false) sem encerrar processos de outros projetos.
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173, strictPort: false },
+  // No modo real, `npm run dev` repassa /api ao servidor local (`npm start`, porta 3000).
+  server: { port: 5173, strictPort: false, proxy: { '/api': 'http://localhost:3000' } },
   preview: { port: 4173, strictPort: false },
   build: {
     target: 'es2022',

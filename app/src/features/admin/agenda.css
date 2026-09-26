@@ -201,14 +201,14 @@
 
 .tl-seg:focus-visible {
   z-index: 4;
-  outline: 2px solid var(--green-700);
+  outline: 2px solid var(--wine-700);
   outline-offset: 1px;
 }
 
 .tl-seg--service {
-  border-color: var(--green-600);
-  background: var(--green-100);
-  color: var(--green-900);
+  border-color: var(--wine-600);
+  background: var(--wine-100);
+  color: var(--wine-900);
 }
 
 .tl-seg--service.is-seated {
@@ -273,8 +273,8 @@
 }
 
 .legend-swatch--service {
-  border-color: var(--green-600);
-  background: var(--green-100);
+  border-color: var(--wine-600);
+  background: var(--wine-100);
 }
 
 .legend-swatch--seated {
@@ -304,4 +304,78 @@
   width: 3px;
   border: none;
   background: var(--danger);
+}
+
+/* ---------- Áreas compartilhadas (controle por lugares) ---------- */
+.timeline__area {
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.timeline__area:last-child {
+  border-bottom: none;
+}
+
+.timeline__area .timeline__row {
+  border-bottom: none;
+}
+
+.timeline__row--area .timeline__track {
+  padding-bottom: 0.3rem;
+}
+
+.timeline__row--area .timeline__label strong {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.timeline__row--load {
+  min-height: 2.6rem;
+  border-top: 1px dashed var(--line);
+  background: var(--surface-muted);
+}
+
+.timeline__row--load .timeline__label {
+  background: var(--surface-muted);
+}
+
+.tl-load {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 1px;
+}
+
+.tl-load__bar {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  left: 2px;
+  border-radius: 3px 3px 0 0;
+  background: color-mix(in srgb, var(--state-free) 45%, transparent);
+}
+
+.tl-load--high .tl-load__bar {
+  background: color-mix(in srgb, var(--gold-500) 75%, transparent);
+}
+
+.tl-load--full .tl-load__bar {
+  background: color-mix(in srgb, var(--state-occupied) 70%, transparent);
+}
+
+.tl-load__value {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  color: var(--fg);
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  text-shadow: 0 0 3px var(--surface);
+}
+
+.legend-swatch--load {
+  border-color: transparent;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--state-free) 45%, transparent) 0 33%, var(--gold-500) 33% 66%, var(--state-occupied) 66%);
 }

@@ -1,0 +1,156 @@
+import type { Actor } from '../../domain/types';
+import type { common as ptCommon } from '../pt-BR/common';
+
+const plural = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` : `${n} ${many}`);
+const nb = ' ';
+
+export const common = {
+  brand: {
+    name: 'Aromas da Vivi',
+    city: 'Paris',
+    logoAlt: 'Aromas da Vivi, Paris',
+    homeLink: 'Aromas da Vivi — accueil',
+  },
+  demo: {
+    ribbon: 'Démonstration — données fictives',
+    toAdmin: 'Espace de démonstration',
+    toPublic: 'Voir le site client',
+    parisNow: 'Heure de Paris',
+    parisTimes: 'Horaires de Paris',
+    timezoneNote: (offset: string) => `Tous les horaires sont à l’heure de Paris (${offset}).`,
+  },
+  common: {
+    loading: 'Chargement…',
+    close: 'Fermer',
+    cancel: 'Annuler',
+    back: 'Retour',
+    continue: 'Continuer',
+    confirm: 'Confirmer',
+    save: 'Enregistrer',
+    saving: 'Enregistrement…',
+    edit: 'Modifier',
+    remove: 'Supprimer',
+    optional: 'facultatif',
+    today: 'Aujourd’hui',
+    now: 'Maintenant',
+    previous: 'Précédent',
+    next: 'Suivant',
+    search: 'Rechercher',
+    clearFilters: 'Effacer les filtres',
+    all: 'Tous',
+    allFeminine: 'Toutes',
+    details: 'Détails',
+    copy: 'Copier',
+    copied: `Copié${nb}!`,
+    copyFailed: 'Impossible de copier. Sélectionnez le texte et copiez-le manuellement.',
+    unavailable: 'Indisponible',
+    skipToContent: 'Aller au contenu',
+    table: 'Table',
+    none: '—',
+    people: (n: number) => plural(n, 'personne', 'personnes'),
+    reservations: (n: number) => plural(n, 'réservation', 'réservations'),
+    seats: (n: number) => plural(n, 'couvert', 'couverts'),
+    minutes: (n: number) => `${n}${nb}min`,
+    characters: (used: number, max: number) => `${used} sur ${max} caractères`,
+    until: (time: string) => `jusqu’à ${time}`,
+    from: (time: string) => `à partir de ${time}`,
+    range: (start: string, end: string) => `${start}–${end}`,
+    tableLabel: (id: string) => `Table ${id}`,
+    pageNotFound: 'Page introuvable',
+    pageNotFoundText: 'Nous n’avons pas trouvé cette page. Vérifiez l’adresse ou revenez à l’accueil.',
+    goHome: 'Retour à l’accueil',
+  },
+  errorScreen: {
+    title: 'Un imprévu est survenu',
+    text: 'La page a rencontré une erreur inattendue. Les données enregistrées dans ce navigateur n’ont pas été effacées. Rechargez la page pour réessayer.',
+    reload: 'Recharger la page',
+  },
+  reservationStatus: {
+    confirmed: 'Confirmée',
+    seated: 'Client arrivé',
+    completed: 'Terminée',
+    cancelled: 'Annulée',
+    no_show: 'Absence',
+  },
+  tableState: {
+    free: 'Libre',
+    reserved: 'Réservée',
+    occupied: 'Occupée',
+    prep: 'En préparation',
+    blocked: 'Bloquée',
+    inactive: 'Désactivée',
+  },
+  source: {
+    online: 'En ligne',
+    phone: 'Téléphone',
+    walk_in: 'Sur place',
+  },
+  area: {
+    salao: 'Salle',
+    varanda: 'Terrasse',
+  },
+  shift: {
+    lunch: 'Service',
+    dinner: 'Second service',
+  },
+  segment: {
+    service: 'service',
+    prep: 'préparation',
+    block: 'blocage',
+  },
+  weekdays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+  weekdaysShort: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+  actor: {
+    customer: 'Client',
+    admin: 'Administration',
+    system: 'Système',
+  } satisfies Record<Actor, string>,
+  history: {
+    title: 'Historique',
+    empty: 'Aucun enregistrement.',
+    created: (actor: Actor) => (actor === 'customer' ? 'Réservation faite par le client (en ligne)' : 'Réservation enregistrée par l’administration'),
+    updated: 'Réservation modifiée',
+    table_changed: 'Table changée',
+    arrived: (minutes: number) =>
+      minutes < 0
+        ? `Arrivée enregistrée (${-minutes}${nb}min avant l’heure)`
+        : minutes > 0
+          ? `Arrivée enregistrée (${minutes}${nb}min après l’heure)`
+          : 'Arrivée enregistrée à l’heure',
+    completed: (prep: number) => `Service terminé${nb}; préparation de ${prep}${nb}min lancée`,
+    prep_ended: (remaining: number) => `Préparation terminée manuellement (${remaining}${nb}min avant l’heure prévue)`,
+    prep_extended: (minutes: number) => `Préparation prolongée de ${minutes}${nb}min`,
+    cancelled: (actor: Actor) => (actor === 'customer' ? 'Annulée par le client' : 'Annulée par l’administration'),
+    no_show: 'Absence enregistrée',
+    reason: (reason: string) => `Motif${nb}: ${reason}`,
+    fields: {
+      date: 'Date',
+      time: 'Heure',
+      partySize: 'Personnes',
+      tableId: 'Table',
+      serviceMinutes: 'Durée (min)',
+      prepMinutes: 'Préparation (min)',
+      name: 'Nom',
+      email: 'E-mail',
+      phone: 'Téléphone',
+      notes: 'Remarque',
+      source: 'Origine',
+    },
+    change: (field: string, from: string, to: string) => `${field}${nb}: ${from || '—'} → ${to || '—'}`,
+  },
+  persistence: {
+    unavailable:
+      'Le stockage de ce navigateur est indisponible. Les données sont conservées uniquement en mémoire dans cet onglet et seront perdues au rechargement.',
+    quota:
+      'Le stockage du navigateur est plein. Les dernières modifications sont conservées uniquement en mémoire dans cet onglet.',
+    invalid: `Les données enregistrées dans ce navigateur n’ont pas pu être lues. Rien n’a été effacé${nb}: la démonstration fonctionne en mémoire en attendant votre décision.`,
+    downloadRaw: 'Télécharger les données enregistrées (copie brute)',
+    restore: 'Réinitialiser la démonstration',
+    restoreTitle: `Réinitialiser la démonstration${nb}?`,
+    restoreText:
+      'Les données illisibles de cette application seront remplacées par de nouvelles données fictives. Les autres informations du navigateur ne sont pas touchées.',
+    restoredTitle: 'Démonstration réinitialisée',
+    restoredText: 'De nouvelles données fictives ont été générées.',
+    externalUpdate: 'Données mises à jour depuis un autre onglet de ce navigateur.',
+  },
+} satisfies typeof ptCommon;

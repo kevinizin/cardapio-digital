@@ -1,12 +1,14 @@
-# Maison Élise — sistema de reservas (demonstração)
+# Sistemas
 
-Demonstração fictícia de reservas de mesas para um restaurante em Paris, com o site do cliente e o painel da administração sobre a mesma fonte de dados.
+Repositório com os sistemas desenvolvidos. Cada sistema fica na sua própria pasta.
 
-- **Aplicação:** [`app/`](app) — React + TypeScript + Vite. Como instalar, rodar, testar e publicar em [`app/README.md`](app/README.md).
-- **No ar:** https://maison-elise-demo.vercel.app — demonstração com `noindex`; cada visitante recebe a própria cópia dos dados fictícios, guardada no navegador.
-- **Identidade:** [`identidade/`](identidade) — logo e paleta.
-- **Planejamento:** [`planejamento-maison-elise.md`](planejamento-maison-elise.md).
+| Pasta | Sistema | Descrição |
+|-------|---------|-----------|
+| [`app/`](app/) | Reservas de mesas | Site do cliente + painel da administração (React + TypeScript + Vite). Veja [`app/README.md`](app/README.md). Identidade em [`identidade/`](identidade), planejamento em [`planejamento-maison-elise.md`](planejamento-maison-elise.md). |
+| [`cardapio/`](cardapio/) | Cardápio digital | Cardápio com QR Code, modelo white-label. Veja `cardapio/LEIA-ME.txt`. |
 
-Restaurante, reservas, nomes e contatos são fictícios. Não há login, pagamento, envio de e-mail nem banco de dados.
+## Como adicionar um novo sistema
 
-O cardápio digital com QR Code que ocupava este repositório continua no histórico do git (commit `4bad8fc`) e no branch `claude/jolly-hamilton-9k2z8t`.
+1. Crie uma pasta nova na raiz (ex.: `agendamento/`).
+2. Coloque todos os arquivos do sistema dentro dela.
+3. Adicione uma linha na tabela acima.
