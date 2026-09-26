@@ -129,7 +129,7 @@
     text-transform: uppercase;
   }
   .adm-topbar .logo--sidebar {
-    --logo-width: 52px;
+    --logo-width: 112px;
   }
   .adm-tabs {
     display: flex;

@@ -93,7 +93,7 @@ describe('renderização dos e-mails', () => {
     expect(manageUrl(PUBLIC_URL, r)).toBe(manage);
     expect(html).toContain(`href="${manage.replace(/&/g, '&amp;')}"`);
     expect(text).toContain(manage);
-    expect(html).toContain(`src="${PUBLIC_URL}/brand/logo-aromas-da-vivi.jpg"`);
+    expect(html).toContain(`src="${PUBLIC_URL}/brand/logo-email.png"`);
     expect(html).toContain('https://www.google.com/maps/search/?api=1&amp;query=');
     expect(html).toContain('https://wa.me/33771857403');
     expect(html).toContain('+33 7 71 85 74 03');
