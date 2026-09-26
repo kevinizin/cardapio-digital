@@ -84,7 +84,7 @@ export function renderEmail(kind: EmailKind, reservation: Reservation, context: 
       : copy.lead[kind];
   const manage = manageUrl(context.publicUrl, reservation);
   const bookUrl = `${context.publicUrl}/reservar`;
-  const logoUrl = `${context.publicUrl}/brand/logo-aromas-da-vivi.jpg`;
+  const logoUrl = `${context.publicUrl}/brand/logo-email.png`;
   const deadline = copy.cancelDeadline(f.formatDuration(context.customerCancelMinutes));
   const whatsapp = contact.whatsapp ? { url: whatsappUrl(contact.whatsapp), label: formatWhatsapp(contact.whatsapp) } : null;
   const name = firstName(reservation.customer.name);
@@ -186,7 +186,7 @@ export function renderEmail(kind: EmailKind, reservation: Reservation, context: 
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;border-collapse:separate;">
         <tr>
           <td align="center" bgcolor="${BRAND.burgundy}" style="background-color:${BRAND.burgundy};border-radius:18px 18px 0 0;padding:28px 24px 22px;">
-            <img src="${e(logoUrl)}" width="84" height="84" alt="Aromas da Vivi" style="display:block;margin:0 auto;width:84px;height:84px;border-radius:50%;border:2px solid ${BRAND.gold};">
+            <img src="${e(logoUrl)}" width="220" height="85" alt="Aromas da Vivi" style="display:block;margin:0 auto;width:220px;max-width:70%;height:auto;">
             <p style="margin:12px 0 0;font-family:${SERIF};font-size:13px;line-height:18px;letter-spacing:3px;text-transform:uppercase;color:${BRAND.gold};">Aromas da Vivi</p>
           </td>
         </tr>

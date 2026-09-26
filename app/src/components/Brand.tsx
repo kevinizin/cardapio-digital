@@ -5,18 +5,18 @@ import { useNow } from '../state/store';
 
 type LogoVariant = 'header' | 'hero' | 'footer' | 'sidebar';
 
-/** Logo oficial do Aromas da Vivi (selo redondo, dourado sobre bordô). */
-export const LOGO_IMAGE = '/brand/logo-aromas-da-vivi.jpg';
+/** Logo oficial do Aromas da Vivi (letreiro dourado com fundo transparente). */
+export const LOGO_IMAGE = '/brand/logo-aromas-da-vivi.webp';
 
-/** Logo da marca nas variantes header, hero, footer e sidebar. */
+/** Logo da marca nas variantes header, hero, footer e sidebar: letreiro dourado sobre placa bordô. */
 export function Logo({ variant = 'header', eager = false }: { variant?: LogoVariant; eager?: boolean }) {
   const t = useT();
   return (
     <span className={`logo logo--${variant}`}>
       <img
         src={LOGO_IMAGE}
-        width={256}
-        height={256}
+        width={640}
+        height={247}
         alt={t.brand.logoAlt}
         decoding="async"
         loading={eager ? 'eager' : 'lazy'}

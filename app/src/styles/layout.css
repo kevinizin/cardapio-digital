@@ -95,52 +95,43 @@
   padding-inline: var(--gutter);
 }
 
-/* ---------- Logo (selo redondo oficial) ---------- */
+/* ---------- Logo (letreiro dourado sobre placa bordô) ---------- */
 .logo {
   position: relative;
   display: block;
   flex: none;
-  width: var(--logo-width, 64px);
-  aspect-ratio: 1;
-  border-radius: 50%;
+  width: var(--logo-width, 150px);
+  padding: calc(var(--logo-width, 150px) * 0.05) calc(var(--logo-width, 150px) * 0.07);
+  border-radius: calc(var(--logo-width, 150px) * 0.08);
+  background: radial-gradient(120% 140% at 30% 20%, #9a1f3b 0%, #841731 55%, #5c0f22 100%);
   box-shadow: 0 6px 16px -8px rgba(92, 15, 34, 0.55);
 }
 
 .logo img {
   display: block;
   width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  /* O arquivo tem cantos claros fora do círculo: o recorte os esconde. */
-  clip-path: circle(49.5%);
-  /* Aproxima o nome "Aromas da Vivi", que ocupa só o miolo do selo. */
-  transform: scale(1.12);
-}
-
-.logo {
-  overflow: hidden;
+  height: auto;
 }
 
 .logo--header {
-  --logo-width: clamp(60px, 44px + 3vw, 84px);
+  --logo-width: clamp(120px, 96px + 4vw, 170px);
 }
 
 .logo--hero {
-  --logo-width: min(100%, 220px);
+  --logo-width: min(100%, 360px);
 }
 
 .logo--footer {
-  --logo-width: 96px;
+  --logo-width: 170px;
 }
 
 .logo--sidebar {
-  --logo-width: 120px;
+  --logo-width: 176px;
 }
 
 .logo-link {
   display: inline-flex;
-  border-radius: 50%;
+  border-radius: calc(var(--logo-width, 150px) * 0.08);
 }
 
 /* ---------- Site público ---------- */

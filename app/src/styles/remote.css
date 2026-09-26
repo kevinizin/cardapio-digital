@@ -52,5 +52,6 @@ button.demo-ribbon__switch:disabled {
 }
 
 .login-card .logo {
+  --logo-width: 200px;
   justify-self: center;
 }
